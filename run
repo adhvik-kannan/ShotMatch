@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# Function to install dependencies
+install_dependencies() {
+    echo 'Installing dependencies...'
+    if ! npm install; then
+        echo "Error installing npm"
+        return 1
+    fi
+    # if ! npm install date-fns; then
+    #     echo "error installing date-fns"
+    #     return 1
+    # fi
+    # if ! pip install --user -r requirements.txt; then
+    #     echo "Error installation requirements"
+    #     return 1
+    # fi
+    # if ! npm install -g typescript; then
+    #     echo "Error installing typescript"
+    #     return 1
+    # fi
+    # if ! npm install -g yarn; then
+    #     echo "Error installing yarn"
+    #     return 1
+    # fi
+    # if ! npm install @octokit/rest; then
+    #     echo "Error installing octokit/rest"
+    #     return 1
+    # fi
+    # if ! yarn add @octokit/rest; then
+    #     echo "Error adding octokit/rest"
+    #     return 1
+    # fi
+    # if ! npm install @types/node --save-dev; then
+    #     echo "Error installing types/node"
+    #     return 1
+    # fi
+    # if ! npm install ts-node typescript --save-dev; then
+    #     echo "Error installing types/node"
+    #     return 1
+    # fi
+    # if ! npm install axios; then
+    #     echo "Error installing axios"
+    #     return 1
+    # fi
+    # if  ! npm install --save isomorphic-git; then
+    #     echo "Error installing isomorphic-git"
+    #     return 1
+    # fi
+    # if ! npm install winston; then
+    #     echo "Error installing winston"
+    #     return 1
+    # fi
+    # if  ! npm install isomorphic-git http; then
+    #     echo "Error installing isomorphic-git http"
+    #     return 1
+    # fi
+    # if ! npm install --save git-url-parse; then
+    #     echo "Error installing git-url-parse"
+    #     return 1
+    # fi
+    # if ! npm install get-github-url --save; then
+    #     echo "Error installing get-github-url"
+    #     return 1
+    # fi
+    # if  ! npm install eslint eslint-plugin-complexity eslint-plugin-jsdoc --save-dev; then
+    #     echo "Error installing ESLint with TypeScript Support"
+    #     return 1
+    # fi
+    # if  ! npm install -g eslint; then
+    #     echo "Error installing eslint"
+    #     return 1
+    # fi
+    # if  ! npm install marked; then
+    #     echo "Error installing marked"
+    #     return 1
+    # fi
+    # if  ! npm install text-statistics; then
+    #     echo "Error installing text-statistics"
+    #     return 1
+    # fi
+    # if !npm install --save-dev jest; then
+    #     echo "Error installing jest"
+    #     return 1
+    # fi
+    # if !npm install --save-dev ts-jest; then
+    #     echo "Error installing ts-jest"
+    #     return 1
+    # fi
+
+    return 0
+}
+
+# Check if the command is 'install'
+if [ "$#" -ne 1 ]; then
+    echo "Usage: ./run install"
+    exit 1
+fi
+command=$1
+
+if [ "$command" = "install" ]; then
+    install_dependencies
+    exit $?
+elif [ "$command" = "build" ]; then
+    # tsc.cmd src/urlhandler.ts
+    tsc.cmd
+    # node src/urlhandler.js
+    node src/main_program.js
+    exit $?
+elif [ "$command" = "test" ]; then
+    echo "Running tests..."
+    npx tsc
+    npx vitest run --coverage.enabled=true --silent
+    exit $?
+else
+    echo "HI"
+    # if [[ "$command" =~ ^[a-zA-Z]: ]]; then
+    # command=$(cygpath -u "$command")
+    # fi
+    
+    # if [ -f "$command" ]; then
+    #     # do file things
+    #     if [[ "$command" == *.txt ]]; then
+    #         # echo "This is a valid text file filepath."
+    #         #tsc.cmd
+    #         npx tsc
+    #         node src/main_program.js "$command"
+    #         find src/frontend/src -type f -name '*.js' -delete
+    #         exit $?;
+    #     else 
+    #         echo "This is not a valid text file filepath."
+    #         exit 1;
+    #     fi
+    # else 
+    #     echo "Not a valid argument. Command must be either 'install', 'test', or a valid file path to a text file."
+    #     exit 1;
+    fi
+fi

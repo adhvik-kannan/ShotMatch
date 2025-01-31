@@ -1,0 +1,14 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - integration/1.0  # Trigger on push to the integration/1.0 branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      LOG_LEVEL: 2                 # Set log level to 0
+      LOG_FILE: "./logfile.txt"      # Define log file path

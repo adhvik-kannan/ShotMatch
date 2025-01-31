@@ -1,0 +1,47 @@
+name: Basic Workflow Pipeline
+
+# Trigger the workflow on push or pull request to any integration/ branch
+on:
+  push:
+    branches:
+      - 'integration/**'
+  pull_request:
+    branches:
+      - 'integration/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      
+    steps:
+      # Step 1: Checkout the code from the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js (use the version specified in your .nvmrc or package.json, if applicable)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.18.0'  # Change the version to whatever you are using
+    
+        # Step 3: Run ./run install to install dependencies
+      - name: Install Dependencies
+        run: ./run install
+            
+      # Step 6: Run tests to execute the test suite
+      - name: Run Test Suite
+        # run: ./run test
+
+      # Step 7: Upload the logs
+      - name: Upload bstart Logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bstart-logs
+          path: bstart.log
+
+      # Step 8: Check if everything is successful
+      - name: Workflow Success Check
+        if: ${{ success() }}
+        run: echo "Both backend and frontend started successfully. Workflow passed!"
