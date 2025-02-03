@@ -13,6 +13,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      USERNAME: "hello"
+      PASSWORD: "world"
       
     steps:
       # Step 1: Checkout the code from the repository
@@ -31,7 +33,7 @@ jobs:
             
       # Step 6: Run tests to execute the test suite
       - name: Run Test Suite
-        # run: ./run test
+        run: ./run test
 
       # Step 7: Upload the logs
       - name: Upload bstart Logs
