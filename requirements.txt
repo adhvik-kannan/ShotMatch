@@ -18,14 +18,12 @@ bleach==4.1.0
 blinker==1.4
 bottle==0.12.19
 Brotli==1.0.9
-catkin-pkg-modules==1.0.0
 certifi==2020.6.20
 cffi==1.15.0
 chardet==4.0.0
 charset-normalizer==3.3.2
 click==8.0.1
 click-plugins==1.1.1
-cloud-init==24.4
 cloudpickle==2.2.1
 colcon-argcomplete==0.3.3
 colcon-bash==0.5.0
@@ -52,7 +50,6 @@ colcon-ros==0.5.0
 colcon-test-result==0.3.8
 colcon-zsh==0.5.0
 colorama==0.4.4
-command-not-found==0.3
 configobj==5.0.6
 constantly==15.1.0
 cov-core==1.15.0
@@ -62,7 +59,6 @@ cramjam==2.8.4
 cryptography==3.4.8
 cssselect==1.1.0
 cssselect2==0.4.1
-cupshelpers==1.0
 cycler==0.11.0
 dbus-python==1.2.18
 decorator==4.4.2
@@ -72,7 +68,6 @@ diff-match-patch==20200713
 dill==0.3.9
 distlib==0.3.4
 distro==1.7.0
-distro-info==1.1+ubuntu0.2
 dnspython==2.2.1
 docker==5.0.3
 docopt==0.6.2
@@ -100,7 +95,6 @@ GDAL==3.4.1
 gdbgui==0.15.1.0
 Glances==3.2.4.2
 google-pasta==0.2.0
-gpg==1.16.0
 greenlet==1.1.2
 helpdev==0.7.1
 html5lib==1.1
@@ -135,14 +129,12 @@ jupyterlab-pygments==0.1.2
 kazam==1.4.5
 keyring==23.5.0
 kiwisolver==1.3.2
-language-selector==0.1
 lark==1.1.1
 latexcodec==3.0.0
 launchpadlib==1.10.16
 lazr.restfulclient==0.14.4
 lazr.uri==1.0.6
 lazy-object-proxy==0.0.0
-lightdm-gtk-greeter-settings==1.2.2
 llvmlite==0.38.0
 logilab-common==1.8.2
 lxml==4.8.0
@@ -194,7 +186,6 @@ nvidia-nvtx-cu12==12.1.105
 oauthlib==3.2.0
 odfpy==1.4.2
 olefile==0.46
-onboard==1.4.1
 openpyxl==3.0.9
 opt_einsum==3.4.0
 packaging==24.1
@@ -269,9 +260,7 @@ pystache==0.6.0
 pysvn==1.9.15
 pytest==8.3.3
 pytest-cov==3.0.0
-python-apt==2.4.0+ubuntu4
 python-dateutil==2.9.0.post0
-python-debian==0.1.43+ubuntu1.1
 python-engineio==4.2.1
 python-jsonrpc-server==0.4.0
 python-language-server==0.36.2
@@ -327,7 +316,6 @@ spyder-kernels==1.10.2
 spyder-memory-profiler==0.2.1
 ssh-import-id==5.11
 sympy==1.9
-systemd-python==234
 tables==3.7.0
 tblib==3.0.0
 tenacity==6.3.1
@@ -348,12 +336,8 @@ Twisted==22.1.0
 typeguard==4.3.0
 typing_extensions==4.12.2
 tzdata==2024.2
-ubuntu-drivers-common==0.0.0
-ubuntu-pro-client==8001
 ufoLib2==0.13.1
-ufw==0.36.1
 ujson==5.1.0
-unattended-upgrades==0.1
 unicodedata2==14.0.0
 urllib3==2.2.3
 userpath==1.8.0
