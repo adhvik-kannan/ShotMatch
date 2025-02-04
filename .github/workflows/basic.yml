@@ -21,11 +21,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js (use the version specified in your .nvmrc or package.json, if applicable)
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      # Step 2: Set up Python (use the version specified in your .nvmrc or package.json, if applicable)
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          node-version: '18.18.0'  # Change the version to whatever you are using
+          python-version: '3.10.12'  # Change the version to whatever you are using
     
         # Step 3: Run ./run install to install dependencies
       - name: Install Dependencies
