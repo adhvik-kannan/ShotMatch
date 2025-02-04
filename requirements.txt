@@ -1,7 +1,6 @@
 alabaster==1.0.0
 annotated-types==0.7.0
 appdirs==1.4.4
-apturl==0.5.2
 argcomplete==3.0.5
 astroid==2.9.3
 atomicwrites==1.4.0
