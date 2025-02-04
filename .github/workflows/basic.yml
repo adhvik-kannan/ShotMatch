@@ -11,8 +11,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:
+    runs-on: macos-latest
+    env: 
       USERNAME: "hello"
       PASSWORD: "world"
       

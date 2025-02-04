@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import App from "../App";
+import AppNavigator from '../AppNavigator';
 export default function Index() {
   return (
     <View
@@ -9,7 +10,6 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-    <App />
     </View>
   );
 }
