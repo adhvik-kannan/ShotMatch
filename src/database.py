@@ -3,9 +3,9 @@ import os
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
+load_dotenv()
 
 # logging.basicConfig(level=logging.INFO)
 # logger = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ def get_all_users(collection: Collection):
 # Get user by hash
 def get_user_by_hash(collection: Collection, user_hash: str):
     try:
+        print(user_hash)
         user = collection.find_one({"userHash": user_hash})
         if not user:
             # logger.info("User not found")
@@ -89,6 +90,17 @@ def get_user_by_hash(collection: Collection, user_hash: str):
         # logger.debug("Error fetching user", exc_info=True)
         return False, error
 
+def get_user_by_email(collection: Collection, email: str):
+    try:
+        user = collection.find_one({"username": email})
+        if not user:
+            # logger.info("User not found")
+            return False, "User not found"
+        return True, user
+    except Exception as error:
+        # logger.debug("Error fetching user", exc_info=True)
+        return False, error
+        
 # Define data schema 
 ### FIX THIS WITH WHATEVER DATA YOU NEED
 def add_new_data(collection: Collection, name: str, url: str, package_id: str = None, score: str = None, 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 
 interface Props {
@@ -10,8 +10,25 @@ const CreateAccount: React.FC<Props> = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleCreateAccount = () => {
-        // Handle create account logic here
+    const handleCreateAccount = async () => {
+        try {
+            const response = await fetch('http://128.46.4.97:5000/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // Handle successful account creation (e.g., navigate to login)
+                Alert.alert('Success', 'Account created successfully');
+                navigation.navigate('Login');
+            } else {
+                Alert.alert('Error', data.message || 'Account creation failed');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'An error occurred while creating your account.');
+        }
     };
 
     return (
