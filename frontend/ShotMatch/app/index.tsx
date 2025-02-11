@@ -1,15 +1,11 @@
+import { registerRootComponent } from 'expo';
 import { Text, View } from "react-native";
-import App from "../App";
-import AppNavigator from '../AppNavigator';
-export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-    </View>
-  );
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import App from '../App';
+
+// Register only one NavigationContainer at the root
+export default function Index() { 
+    return <App />;
 }
+registerRootComponent(Index);
