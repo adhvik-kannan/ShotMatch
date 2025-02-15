@@ -2,8 +2,7 @@ import pytest
 import cv2
 import mediapipe as mp
 from unittest.mock import MagicMock, patch
-
-from OCR_mediapipe import calculate_angle
+from src.OCR_mediapipe import calculate_angle
 
 mp_pose = mp.solutions.pose
 
