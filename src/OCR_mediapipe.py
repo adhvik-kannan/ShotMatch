@@ -2,69 +2,113 @@ import cv2
 import mediapipe as mp
 import math
 
-def calculate_angle(a, b, c):
-    AB = (a[0] - b[0], a[1] - b[1])
-    CB = (c[0] - b[0], c[1] - b[1])
-    
-    dot_product = AB[0]*CB[0] + AB[1]*CB[1]
-    AB_magnitude = math.sqrt(AB[0]**2 + AB[1]**2)
-    CB_magnitude = math.sqrt(CB[0]**2 + CB[1]**2)
-    
-    if AB_magnitude == 0 or CB_magnitude == 0:
-        return 0.0
-    
-    cos_value = max(min(dot_product / (AB_magnitude * CB_magnitude), 1.0), -1.0)
-    return math.degrees(math.acos(cos_value))
+class PoseAnalyzer:
+    VISIBILITY_THRESHOLD = 0.5  # Set to 0.5 for now
 
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
+    def __init__(self):
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.mp_pose = mp.solutions.pose
+        self.pose = self.mp_pose.Pose(
+            static_image_mode=False,
+            model_complexity=1,
+            smooth_landmarks=True,
+            enable_segmentation=False,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
 
-# PATH of the VIDEO FILE
-cap = cv2.VideoCapture("your_video.mp4")
+    def calculate_angle(self, a, b, c):
+        AB = (a[0] - b[0], a[1] - b[1])
+        CB = (c[0] - b[0], c[1] - b[1])
 
-with mp_pose.Pose(static_image_mode=False, model_complexity=1, smooth_landmarks=True, enable_segmentation=False, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-    
-    while cap.isOpened():
-        success, frame = cap.read()
-        if not success:
-            break
-        
-        frame = cv2.flip(frame, 1)
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = pose.process(image)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
-        if results.pose_landmarks:
-            landmarks = results.pose_landmarks.landmark
-            h, w, _ = image.shape
-            
-            left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
-            left_elbow = landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value]
-            left_wrist = landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value]
-            
-            shoulder_coord = (int(left_shoulder.x * w), int(left_shoulder.y * h))
-            elbow_coord = (int(left_elbow.x * w), int(left_elbow.y * h))
-            wrist_coord = (int(left_wrist.x * w), int(left_wrist.y * h))
-            
-            angle = calculate_angle(shoulder_coord, elbow_coord, wrist_coord)
-            
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS, mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4), mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2))
-            
-            cv2.putText(image, f"Angle: {int(angle)}", (elbow_coord[0], elbow_coord[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            
-            if angle > 160:
-                action = "Arm Extended"
-            elif angle < 60:
-                action = "Arm Bent"
-            else:
-                action = "Neutral"
-            
-            cv2.putText(image, action, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-        
-        cv2.imshow('Pose Detection', image)
-        
-        if cv2.waitKey(1) & 0xFF == 27:
-            break
+        dot_product = AB[0] * CB[0] + AB[1] * CB[1]
+        AB_magnitude = math.sqrt(AB[0]**2 + AB[1]**2)
+        CB_magnitude = math.sqrt(CB[0]**2 + CB[1]**2)
 
-cap.release()
-cv2.destroyAllWindows()
+        if AB_magnitude == 0 or CB_magnitude == 0:
+            return 0.0
+
+        cos_value = max(min(dot_product / (AB_magnitude * CB_magnitude), 1.0), -1.0)
+        return math.degrees(math.acos(cos_value))
+
+    def get_landmark_xy(self, landmarks, index, image_width, image_height):
+        landmark = landmarks[index]
+        if landmark.visibility < self.VISIBILITY_THRESHOLD:
+            return "NONE"
+        x_coord = int(landmark.x * image_width)
+        y_coord = int((1 - landmark.y) * image_height)
+        return [x_coord, y_coord]
+
+    def analyze_video(self, video_path):
+        cap = cv2.VideoCapture(video_path)
+        frame_index = 0
+        output_data = []
+
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
+                break
+
+            rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = self.pose.process(rgb_image)
+
+            # Convert back to BGR for consistent processing (even if not displayed)
+            annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+
+            frame_data = {
+                "shoulder": "NONE",
+                "elbow": "NONE",
+                "wrist": "NONE",
+                "time": frame_index
+            }
+
+            if results.pose_landmarks:
+                landmarks = results.pose_landmarks.landmark
+                h, w, _ = frame.shape
+
+                left_shoulder = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
+                right_shoulder = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
+                
+                left_elbow = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
+                right_elbow = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
+
+                left_wrist = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
+                right_wrist = self.get_landmark_xy(landmarks, self.mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
+
+                frame_data = {
+                    "shoulder": [left_shoulder, right_shoulder],
+                    "elbow": [left_elbow, right_elbow],
+                    "wrist": [left_wrist, right_wrist],
+                    "time": frame_index
+                }
+
+                # Landmark drawing commented out for server use
+                # self.mp_drawing.draw_landmarks(
+                #     annotated_image,
+                #     results.pose_landmarks,
+                #     self.mp_pose.POSE_CONNECTIONS,
+                #     self.mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4),
+                #     self.mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
+                # )
+
+            output_data.append(frame_data)
+
+            # Display commented out for server use
+            # cv2.imshow('Pose Detection', annotated_image)
+
+            frame_index += 1
+            # Break mechanism commented out (requires GUI)
+            # if cv2.waitKey(1) & 0xFF == 27:
+            #     break
+
+        cap.release()
+        # Window cleanup commented out
+        # cv2.destroyAllWindows()
+        
+        return output_data
+
+# Example usage:
+analyzer = PoseAnalyzer()
+pose_data = analyzer.analyze_video("your_video.mp4")  # Replace with your video path
+for frame_info in pose_data:
+    print(frame_info)
