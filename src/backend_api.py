@@ -4,6 +4,7 @@ import jwt
 import datetime
 from functools import wraps
 from database import connect_to_mongodb, add_user, get_all_users, get_user_by_hash, remove_user_by_name, get_user_by_email
+import time
 
 # Constants
 SECRET_KEY = "your_secret_key"
@@ -73,6 +74,22 @@ def login():
 @token_required
 def protected_route(username):
     return jsonify({"message": "You are authorized", "user": username})
+
+@app.route("/process_videos", methods=["POST"])
+def process_videos():
+    data = request.get_json()
+    videos = data.get("videos")
+    if not videos or not isinstance(videos, list):
+        return jsonify({"message": "No videos provided or invalid format"}), 400
+
+    # Process each video (add your processing logic here)
+    # For example, you might store the videos or trigger a video processing task.
+    processed_count = len(videos)
+    time.sleep(60)
+    return jsonify({
+        "message": "Videos processed successfully",
+        "processed_count": processed_count
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
