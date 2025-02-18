@@ -17,7 +17,7 @@ elif [ "$command" = "build" ]; then
     exit $?
 elif [ "$command" = "test" ]; then
     echo "Running tests..."
-    python3 -m pytest test/
+    python3 -m pytest --cov=src test/
     exit $?
 else
     echo "HI"

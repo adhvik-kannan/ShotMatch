@@ -8,6 +8,9 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "backendUrl": "128.46.4.97"
+    },
     "ios": {
       "supportsTablet": true
     },
