@@ -130,6 +130,6 @@ def analyze_video(video_path):
 
 # example usage:
 # analyzer = PoseAnalyzer()
-pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
-for frame_info in pose_data:
-    print(frame_info)
+# pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
+# for frame_info in pose_data:
+#     print(frame_info)
