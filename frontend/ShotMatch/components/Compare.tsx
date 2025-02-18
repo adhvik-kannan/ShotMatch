@@ -114,7 +114,7 @@ const buttonWidth = screenWidth - 40;  // full width with side margins
 const buttonHeight = (screenHeight - 40 - 10) / 2; 
 // 40 accounts for the container padding and 10 for margin between buttons
 
-const Consistency: React.FC<HomeProps> = ({ navigation }) => {
+const Compare: React.FC<HomeProps> = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <ScrollView
@@ -126,7 +126,7 @@ const Consistency: React.FC<HomeProps> = ({ navigation }) => {
                     <TouchableOpacity
                         key={player.id}
                         style={styles.playerButton}
-                        onPress={() => navigation.navigate('UploadVideos')}
+                        onPress={() => navigation.navigate('UploadVideos', {selectedPlayer: player})}
                     >
                         <ImageBackground
                             source={{ uri: player.image }}
@@ -185,4 +185,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Consistency;
+export default Compare;

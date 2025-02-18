@@ -10,7 +10,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         <View style={styles.container}>
             <TouchableOpacity 
                 style={styles.button} 
-                onPress={() => navigation.navigate('Consistency')}
+                onPress={() => navigation.navigate('Compare')}
             >
                 <Text style={styles.buttonText}>Compare With an NBA Player</Text>
             </TouchableOpacity>
