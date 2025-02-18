@@ -66,9 +66,14 @@ def analyze_video(video_path):
         annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
 
         frame_data = {
-            "shoulder": "NONE",
-            "elbow": "NONE",
-            "wrist": "NONE",
+            "left_shoulder": "NONE",
+            "right_shoulder": "NONE",
+            "left_elbow": "NONE",
+            "right_elbow": "NONE",
+            "left_wrist": "NONE",
+            "right_wrist": "NONE",
+            # "elbow": "NONE",
+            # "wrist": "NONE",
             "time": frame_index
         }
 
@@ -86,9 +91,15 @@ def analyze_video(video_path):
             right_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
 
             frame_data = {
-                "shoulder": [left_shoulder, right_shoulder],
-                "elbow": [left_elbow, right_elbow],
-                "wrist": [left_wrist, right_wrist],
+                # "shoulder": [left_shoulder, right_shoulder],
+                # "elbow": [left_elbow, right_elbow],
+                # "wrist": [left_wrist, right_wrist],
+                "left_shoulder": left_shoulder,
+                "right_shoulder": right_shoulder,
+                "left_elbow": left_elbow,
+                "right_elbow": right_elbow,
+                "left_wrist": left_wrist,
+                "right_wrist": right_wrist,
                 "time": frame_index
             }
 
@@ -119,6 +130,6 @@ def analyze_video(video_path):
 
 # example usage:
 # analyzer = PoseAnalyzer()
-pose_data = analyze_video("your_video.mp4")  # Replace with your video path
+pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
 for frame_info in pose_data:
     print(frame_info)
