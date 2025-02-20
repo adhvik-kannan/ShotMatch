@@ -1,18 +1,14 @@
-import json
-import numpy as np
+from scipy.stats import beta
 import math
-from scipy.stats import norm
-
 
 def calculate_angle(vertex, a, b):
     """
-    calculate angle (degrees) for (a -> vertex -> b)
-
+    Calculate the angle (in degrees) between three points: a -> vertex -> b.
     """
     AV = (a[0] - vertex[0], a[1] - vertex[1])
     BV = (b[0] - vertex[0], b[1] - vertex[1])
     
-    dot_product = AV[0]*BV[0] + AV[1]*BV[1]
+    dot_product = AV[0] * BV[0] + AV[1] * BV[1]
     AV_magnitude = math.sqrt(AV[0]**2 + AV[1]**2)
     BV_magnitude = math.sqrt(BV[0]**2 + BV[1]**2)
     
@@ -22,87 +18,105 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-
-# ------------------------------------------------------------------------------------------------
-# ISSUES - its on normal distribution rn but realistically your armor isnt bending past 0-180 range so maybe cap the distribution somehow
-# ------------------------------------------------------------------------------------------------
-def compare_arm(new_data, arm, distribution_params):
+def compare_arm(new_data, which_arm, sew_params, ewa_params):
     """
-    computes similarity percentage (1-100) for arm
-
-    ewa: elbow -> wrist -> avg(index/pinky)
-    sew: shoulder -> elbow -> wrist
-
-    """
-    shoulder = new_data[f"{arm}_shoulder"]
-    elbow = new_data[f"{arm}_elbow"]
-    wrist = new_data[f"{arm}_wrist"]
-    pinky = new_data[f"{arm}_pinky"]
-    index = new_data[f"{arm}_index"]
+    Computes similarity scores (0-100) for the specified arm based on the new shot's angles
+    and the provided Beta distribution parameters.
     
-    # 2 angles
+    Inputs:
+        new_data  : dict with keys "shoulder", "elbow", "wrist", "pinky", "index"
+        which_arm : string "left" or "right" (for identification)
+        sew_params: dict for Shoulder-Elbow-Wrist angle in the form 
+                    {"mean": mean_val, "std": std_val, "alpha": alpha_val, "beta": beta_val}
+        ewa_params: dict for Elbow-Wrist-Average(Pinky,Index) angle, same format as sew_params.
+    
+    Process:
+        - Computes the shoulder–elbow–wrist (sew) angle and the elbow–wrist–average(Pinky, Index) (ewa) angle.
+        - For each angle, scales it to the [0,1] interval by dividing by 180.
+        - Evaluates the Beta PDF at the computed angle and at the mean.
+        - Computes the score as:
+              score = (BetaPDF(new_angle/180) / BetaPDF(mean/180)) * 100
+          and clamps the result between 0 and 100.
+    
+    Returns:
+        A dictionary with keys:
+          "sew_score": similarity score for the sew angle,
+          "ewa_score": similarity score for the ewa angle.
+    """
+    # Extract coordinates from new_data.
+    shoulder = new_data[f"{which_arm}_shoulder"]
+    elbow = new_data[f"{which_arm}_elbow"]
+    wrist = new_data[f"{which_arm}_wrist"]
+    pinky = new_data[f"{which_arm}_pinky"]
+    index = new_data[f"{which_arm}_index"]
+    
+    # Calculate the shoulder–elbow–wrist (sew) angle.
     angle_sew = calculate_angle(elbow, shoulder, wrist)
+    
+    # Calculate the elbow–wrist–average(Pinky,Index) (ewa) angle.
     avg_pinky_index = [(pinky[0] + index[0]) / 2, (pinky[1] + index[1]) / 2]
     angle_ewa = calculate_angle(wrist, elbow, avg_pinky_index)
     
-    # get distribution params from file
-    mean_sew = distribution_params["shoulder_elbow_wrist"]["mean"]
-    std_sew = distribution_params["shoulder_elbow_wrist"]["std"]
-    mean_ewa = distribution_params["elbow_wrist_avg_pinky_index"]["mean"]
-    std_ewa = distribution_params["elbow_wrist_avg_pinky_index"]["std"]
+    # For sew: scale angles to [0,1]
+    sew_mean = sew_params["mean"]
+    sew_alpha = sew_params["alpha"]
+    sew_beta  = sew_params["beta"]
     
-    # similarity score based on PDF 
-    score_sew = norm.pdf(angle_sew, mean_sew, std_sew) / norm.pdf(mean_sew, mean_sew, std_sew) * 100
-    score_ewa = norm.pdf(angle_ewa, mean_ewa, std_ewa) / norm.pdf(mean_ewa, mean_ewa, std_ewa) * 100
-
-    # Clamp scores between 1 and 100.
-    score_sew = max(1, min(100, score_sew))
-    score_ewa = max(1, min(100, score_ewa))
+    # Evaluate Beta PDF at computed sew angle and at the mean (scaled by 180).
+    pdf_sew_new = beta.pdf(angle_sew / 180.0, sew_alpha, sew_beta)
+    pdf_sew_mean = beta.pdf(sew_mean / 180.0, sew_alpha, sew_beta)
+    score_sew = (pdf_sew_new / pdf_sew_mean) * 100 if pdf_sew_mean != 0 else 0
+    
+    # For ewa: scale angles to [0,1]
+    ewa_mean = ewa_params["mean"]
+    ewa_alpha = ewa_params["alpha"]
+    ewa_beta  = ewa_params["beta"]
+    
+    pdf_ewa_new = beta.pdf(angle_ewa / 180.0, ewa_alpha, ewa_beta)
+    pdf_ewa_mean = beta.pdf(ewa_mean / 180.0, ewa_alpha, ewa_beta)
+    score_ewa = (pdf_ewa_new / pdf_ewa_mean) * 100 if pdf_ewa_mean != 0 else 0
+    
+    # Clamp scores between 0 and 100.
+    score_sew = max(0, min(100, score_sew))
+    score_ewa = max(0, min(100, score_ewa))
     
     return {
-        "shoulder_elbow_wrist_score": score_sew,
-        "elbow_wrist_avg_pinky_index_score": score_ewa
+        "sew_score": score_sew,
+        "ewa_score": score_ewa
     }
 
 def main():
-    # get distribution params for the lfet and right arm
-    try:
-        with open("left_arm_angle_distribution.json", "r") as f_left:
-            left_distribution = json.load(f_left)
-    except FileNotFoundError:
-        print("Error: 'left_arm_angle_distribution.json' not found. Please run the bell curve generator first.")
-        return
-
-    try:
-        with open("right_arm_angle_distribution.json", "r") as f_right:
-            right_distribution = json.load(f_right)
-    except FileNotFoundError:
-        print("Error: 'right_arm_angle_distribution.json' not found. Please run the bell curve generator first.")
-        return
-
-    # get data for shot we are trying to compare
-    try:
-        with open("new_shot_data.json", "r") as f_shot:
-            new_shot_data = json.load(f_shot)
-    except FileNotFoundError:
-        print("Error: 'new_shot_data.json' not found. Please provide the new shot data.")
-        return
-
-    # get similarity scores
-    left_arm_scores = compare_arm(new_shot_data, "left", left_distribution)
-    right_arm_scores = compare_arm(new_shot_data, "right", right_distribution)
+    # Dummy distribution parameters for the left arm.
+    left_sew_params = {"mean": 45.0, "std": 5.0, "alpha": 2.0, "beta": 3.0}
+    left_ewa_params = {"mean": 50.0, "std": 6.0, "alpha": 2.5, "beta": 3.5}
     
-    # output intoi json file
-    similarity_statistics = {
-        "left_arm": left_arm_scores,
-        "right_arm": right_arm_scores
+    # Dummy distribution parameters for the right arm.
+    right_sew_params = {"mean": 40.0, "std": 4.0, "alpha": 1.8, "beta": 2.8}
+    right_ewa_params = {"mean": 55.0, "std": 7.0, "alpha": 3.0, "beta": 4.0}
+    
+    # Combined dummy new shot data for both arms in a single dictionary.
+    new_arm_data = {
+        "left_shoulder": [100, 200],
+        "left_elbow": [110, 250],
+        "left_wrist": [120, 300],
+        "left_pinky": [125, 305],
+        "left_index": [123, 307],
+        "right_shoulder": [200, 200],
+        "right_elbow": [210, 250],
+        "right_wrist": [220, 300],
+        "right_pinky": [225, 305],
+        "right_index": [223, 307]
     }
     
-    output_filename = "shot_similarity_statistics.json"
-    with open(output_filename, "w") as f_out:
-        json.dump(similarity_statistics, f_out, indent=4)
+    # Compute similarity scores for both arms.
+    left_scores = compare_arm(new_arm_data, "left", left_sew_params, left_ewa_params)
+    right_scores = compare_arm(new_arm_data, "right", right_sew_params, right_ewa_params)
     
-    print(f"Similarity statistics saved to '{output_filename}'.")
+    print("Left arm similarity scores:")
+    print(left_scores)
+    
+    print("Right arm similarity scores:")
+    print(right_scores)
 
 if __name__ == "__main__":
     main()
