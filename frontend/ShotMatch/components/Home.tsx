@@ -16,9 +16,15 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity 
                 style={styles.button} 
-                onPress={() => console.log('Consistency: Compare With Yourself pressed')}
+                onPress={() => navigation.navigate('Consistency')}
             >
                 <Text style={styles.buttonText}>Consistency: Compare With Yourself</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+                style={styles.button} 
+                onPress={() => navigation.navigate('HistoricalGraph')}
+            >
+                <Text style={styles.buttonText}>Historical Graph</Text>
             </TouchableOpacity>
         </View>
     );
