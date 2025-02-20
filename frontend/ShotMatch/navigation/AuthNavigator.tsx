@@ -6,6 +6,8 @@ import HomeScreen from '../screens/HomeScreen';
 import CompareScreen from '@/screens/CompareScreen';
 import UploadVideosScreen from '../screens/UploadVideosScreen';
 import ProcessVideosScreen from '@/screens/ProcessVideosScreen';
+import PerformanceMetricsScreen from '@/screens/PerformanceMetricsScreen';
+import ConsistencyScreen from '@/screens/ConsistencyScreen';
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => {
@@ -17,6 +19,8 @@ const AuthNavigator = () => {
             <Stack.Screen name="Compare" component={CompareScreen} />
             <Stack.Screen name="UploadVideos" component={UploadVideosScreen} />
             <Stack.Screen name="ProcessVideos" component={ProcessVideosScreen} />
+            <Stack.Screen name="PerformanceMetrics" component={PerformanceMetricsScreen} />
+            <Stack.Screen name="Consistency" component={ConsistencyScreen} />
         </Stack.Navigator>
     );
 };
