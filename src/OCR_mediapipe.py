@@ -16,20 +16,6 @@ import math
 #         min_tracking_confidence=0.5
 #     )
 
-def calculate_angle(a, b, c):
-    AB = (a[0] - b[0], a[1] - b[1])
-    CB = (c[0] - b[0], c[1] - b[1])
-
-    dot_product = AB[0] * CB[0] + AB[1] * CB[1]
-    AB_magnitude = math.sqrt(AB[0]**2 + AB[1]**2)
-    CB_magnitude = math.sqrt(CB[0]**2 + CB[1]**2)
-
-    if AB_magnitude == 0 or CB_magnitude == 0:
-        return 0.0
-
-    cos_value = max(min(dot_product / (AB_magnitude * CB_magnitude), 1.0), -1.0)
-    return math.degrees(math.acos(cos_value))
-
 def get_landmark_xy(landmarks, index, image_width, image_height):
     VISIBILITY_THRESHOLD = 0.5
     landmark = landmarks[index]
@@ -134,6 +120,6 @@ def analyze_video(video_path):
     return output_data
 
 # example usage:
-pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
-for frame_info in pose_data:
-    print(frame_info)
+# pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
+# for frame_info in pose_data:
+#     print(frame_info)
