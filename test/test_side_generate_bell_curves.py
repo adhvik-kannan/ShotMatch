@@ -2,7 +2,7 @@ import json
 import numpy as np
 import pytest
 from pathlib import Path
-from generate_bell_curves import (
+from src.generate_side_bell_curves import (
     calculate_angle,
     process_arm_data,
     calculate_distribution_parameters,

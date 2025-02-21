@@ -1,5 +1,5 @@
 import pytest
-from generate_statistics import compare_arm
+from src.generate_side_statistics import compare_arm
 
 def test_compare_arm_with_own_dummy_data():
     # Dummy distribution parameters for the left arm.
