@@ -7,13 +7,13 @@ NUM_CLIPS = 0
 
 def calculate_angle(vertex, a, b):
     """
-    Calculate angle (in degrees) for (a -> vertex -> b)
-
+    Calculate the angle (in degrees) between three points: a -> vertex -> b.
+    
     Inputs:
-        a       = point 1 (e.g., shoulder)
-        vertex  = point 2 (e.g., elbow)
-        b       = point 3 (e.g., wrist)
-
+        a       = point 1 (e.g., hip for hse or shoulder for sew)
+        vertex  = point 2 (e.g., shoulder for hse, elbow for sew, wrist for ewp)
+        b       = point 3 (e.g., elbow for hse, wrist for sew, pinky for ewp)
+        
     Output:
         Angle in degrees between a -> vertex -> b.
     """
@@ -30,43 +30,51 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def process_arm_data(shoulder, elbow, wrist, pinky, index):
+def process_front_data(hip, shoulder, elbow, wrist, pinky):
     """
-    Processes frames of data for one arm and computes two arrays:
-      - sew: Shoulder -> Elbow -> Wrist angles (computed at the elbow)
-      - ewa: Elbow -> Wrist -> Average(Pinky, Index) angles (computed at the wrist)
+    Processes frames of front-view data and computes three arrays:
+      - hse: Hip -> Shoulder -> Elbow angles (calculated at the shoulder)
+      - sew: Shoulder -> Elbow -> Wrist angles (calculated at the elbow)
+      - ewp: Elbow -> Wrist -> Pinky angles (calculated at the wrist)
     
-    Inputs: 
-        shoulder    = list of shoulder coordinates 
-        elbow       = list of elbow coordinates
-        wrist       = list of wrist coordinates
-        pinky       = list of pinky coordinates
-        index       = list of index coordinates
-    
+    Inputs:
+        hip       = list of hip coordinates
+        shoulder  = list of shoulder coordinates
+        elbow     = list of elbow coordinates
+        wrist     = list of wrist coordinates
+        pinky     = list of pinky coordinates
+        
     Outputs:
-        angle_sew_list  = numpy array of angles for shoulder->elbow->wrist
-        angle_ewa_list  = numpy array of angles for elbow->wrist->(avg of pinky and index)
+        angle_hse  = numpy array of hip-shoulder-elbow angles
+        angle_sew  = numpy array of shoulder-elbow-wrist angles
+        angle_ewp  = numpy array of elbow-wrist-pinky angles
     """
+    angle_hse_list = []
     angle_sew_list = []
-    angle_ewa_list = []
+    angle_ewp_list = []
     
-    for i in range(len(shoulder)):
+    for i in range(len(hip)):
+        h = hip[i]
         s = shoulder[i]
         e = elbow[i]
         w = wrist[i]
         p = pinky[i]
-        idx = index[i]
         
-        # Calculate the shoulder-elbow-wrist angle.
+        # Hip-Shoulder-Elbow (hse): vertex is shoulder.
+        angle_hse = calculate_angle(s, h, e)
+        angle_hse_list.append(angle_hse)
+        
+        # Shoulder-Elbow-Wrist (sew): vertex is elbow.
         angle_sew = calculate_angle(e, s, w)
         angle_sew_list.append(angle_sew)
         
-        # Calculate the elbow-wrist angle using the average of pinky and index.
-        avg_pinky_index = [(p[0] + idx[0]) / 2, (p[1] + idx[1]) / 2]
-        angle_ewa = calculate_angle(w, e, avg_pinky_index)
-        angle_ewa_list.append(angle_ewa)
+        # Elbow-Wrist-Pinky (ewp): vertex is wrist.
+        angle_ewp = calculate_angle(w, e, p)
+        angle_ewp_list.append(angle_ewp)
     
-    return np.array(angle_sew_list), np.array(angle_ewa_list)
+    return (np.array(angle_hse_list), 
+            np.array(angle_sew_list), 
+            np.array(angle_ewp_list))
 
 def calculate_distribution_parameters(angles, max_val=180):
     """
@@ -98,77 +106,75 @@ def calculate_distribution_parameters(angles, max_val=180):
     
     return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
 
-def generate_plot(dist_params_sew, dist_params_ewa, arm_name, save_plot=True):
+def generate_front_plot(dist_params_hse, dist_params_sew, dist_params_ewp, view_name="front", save_plot=True):
     """
-    Generates and (optionally) displays/saves a plot of the weighted bell curves
-    for the given distribution parameters using a Beta distribution scaled to [0,180].
+    Generates and (optionally) saves a plot of the weighted bell curves for the front-view angles
+    using a Beta distribution scaled to [0,180] degrees.
     
     Inputs:
-        dist_params_sew  = distribution parameters for shoulder-elbow-wrist angles
-        dist_params_ewa  = distribution parameters for elbow-wrist-average angles
-        arm_name         = string indicating the arm ("left" or "right")
-        save_plot        = if True, the plot is saved to file
+        dist_params_hse = distribution parameters for Hip-Shoulder-Elbow angles.
+        dist_params_sew = distribution parameters for Shoulder-Elbow-Wrist angles.
+        dist_params_ewp = distribution parameters for Elbow-Wrist-Pinky angles.
+        view_name       = name of the view, default "front".
+        save_plot       = if True, the plot is saved to file.
     """
     x = np.linspace(0, 180, 200)
     
+    # For hse
+    alpha_hse = dist_params_hse["alpha"]
+    beta_hse = dist_params_hse["beta"]
+    y_hse = (1/180.0) * beta.pdf(x/180.0, alpha_hse, beta_hse)
+    
+    # For sew
     alpha_sew = dist_params_sew["alpha"]
     beta_sew = dist_params_sew["beta"]
-    alpha_ewa = dist_params_ewa["alpha"]
-    beta_ewa = dist_params_ewa["beta"]
-    
-    # Compute the Beta PDFs transformed to the [0,180] domain.
     y_sew = (1/180.0) * beta.pdf(x/180.0, alpha_sew, beta_sew)
-    y_ewa = (1/180.0) * beta.pdf(x/180.0, alpha_ewa, beta_ewa)
+    
+    # For ewp
+    alpha_ewp = dist_params_ewp["alpha"]
+    beta_ewp = dist_params_ewp["beta"]
+    y_ewp = (1/180.0) * beta.pdf(x/180.0, alpha_ewp, beta_ewp)
     
     plt.figure(figsize=(10, 6))
-    plt.plot(x, y_sew, label='Shoulder-Elbow-Wrist Angles', color='blue')
-    plt.plot(x, y_ewa, label='Elbow-Wrist-Average(Pinky, Index) Angles', color='red')
-    plt.title(f'Weighted Bell Curves for {arm_name.capitalize()} Arm Angles\n(Beta Distribution)')
+    plt.plot(x, y_hse, label='Hip-Shoulder-Elbow', color='green')
+    plt.plot(x, y_sew, label='Shoulder-Elbow-Wrist', color='blue')
+    plt.plot(x, y_ewp, label='Elbow-Wrist-Pinky', color='red')
+    plt.title(f'Weighted Bell Curves for {view_name.capitalize()} View Angles\n(Beta Distribution)')
     plt.xlabel('Angle (Degrees)')
     plt.ylabel('Density')
     plt.legend()
     plt.grid(True)
     
     if save_plot:
-        plot_filename = f"{arm_name}_arm_bell_curve.png"
+        plot_filename = f"{view_name}_view_bell_curve.png"
         plt.savefig(plot_filename)
-        print(f"Saved {arm_name} arm bell curve plot to '{plot_filename}'")
+        print(f"Saved {view_name} view bell curve plot to '{plot_filename}'")
     plt.close()
 
 def main():
-    # Dummy data for left arm (3 frames for demonstration; typically 20+ frames)
-    left_shoulder = [[100, 200], [101, 201], [102, 202]]
-    left_elbow = [[110, 250], [111, 251], [112, 252]]
-    left_wrist = [[120, 300], [121, 301], [122, 302]]
-    left_pinky = [[125, 305], [126, 306], [127, 307]]
-    left_index = [[123, 307], [124, 308], [125, 309]]
+    # Dummy data for front view (3 frames for demonstration; typically 20+ frames)
+    # Each list contains coordinates as [x, y] for each frame.
+    hip = [[90, 180], [91, 181], [92, 182]]
+    shoulder = [[100, 200], [101, 201], [102, 202]]
+    elbow = [[110, 250], [111, 251], [112, 252]]
+    wrist = [[120, 300], [121, 301], [122, 302]]
+    pinky = [[125, 305], [126, 306], [127, 307]]
     
-    # Dummy data for right arm (3 frames for demonstration)
-    right_shoulder = [[200, 200], [201, 201], [202, 202]]
-    right_elbow = [[210, 250], [211, 251], [212, 252]]
-    right_wrist = [[220, 300], [221, 301], [222, 302]]
-    right_pinky = [[225, 305], [226, 306], [227, 307]]
-    right_index = [[223, 307], [224, 308], [225, 309]]
+    # Process the front view data.
+    angle_hse, angle_sew, angle_ewp = process_front_data(hip, shoulder, elbow, wrist, pinky)
     
-    # returns angle arrays
-    left_angle_sew, left_angle_ewa = process_arm_data(left_shoulder, left_elbow, left_wrist, left_pinky, left_index)
-    right_angle_sew, right_angle_ewa = process_arm_data(right_shoulder, right_elbow, right_wrist, right_pinky, right_index)
+    # Calculate distribution parameters for each set of angles.
+    dist_params_hse = calculate_distribution_parameters(angle_hse)
+    dist_params_sew = calculate_distribution_parameters(angle_sew)
+    dist_params_ewp = calculate_distribution_parameters(angle_ewp)
     
-    # dist parameters 
-    left_dist_params_sew = calculate_distribution_parameters(left_angle_sew)
-    left_dist_params_ewa = calculate_distribution_parameters(left_angle_ewa)
-    right_dist_params_sew = calculate_distribution_parameters(right_angle_sew)
-    right_dist_params_ewa = calculate_distribution_parameters(right_angle_ewa)
+    # Generate the plot for front view.
+    generate_front_plot(dist_params_hse, dist_params_sew, dist_params_ewp, view_name="front")
     
-    # plots
-    generate_plot(left_dist_params_sew, left_dist_params_ewa, "left")
-    generate_plot(right_dist_params_sew, right_dist_params_ewa, "right")
-    
-    print("Left arm Shoulder-Elbow-Wrist parameters:", left_dist_params_sew)
-    print("Left arm Elbow-Wrist-Average parameters:", left_dist_params_ewa)
-    print("Right arm Shoulder-Elbow-Wrist parameters:", right_dist_params_sew)
-    print("Right arm Elbow-Wrist-Average parameters:", right_dist_params_ewa)
-    
+    # Print the computed distribution parameters for debugging.
+    print("Front view Hip-Shoulder-Elbow parameters:", dist_params_hse)
+    print("Front view Shoulder-Elbow-Wrist parameters:", dist_params_sew)
+    print("Front view Elbow-Wrist-Pinky parameters:", dist_params_ewp)
 
 if __name__ == "__main__":
     main()
