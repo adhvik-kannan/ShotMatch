@@ -16,20 +16,6 @@ import math
 #         min_tracking_confidence=0.5
 #     )
 
-def calculate_angle(a, b, c):
-    AB = (a[0] - b[0], a[1] - b[1])
-    CB = (c[0] - b[0], c[1] - b[1])
-
-    dot_product = AB[0] * CB[0] + AB[1] * CB[1]
-    AB_magnitude = math.sqrt(AB[0]**2 + AB[1]**2)
-    CB_magnitude = math.sqrt(CB[0]**2 + CB[1]**2)
-
-    if AB_magnitude == 0 or CB_magnitude == 0:
-        return 0.0
-
-    cos_value = max(min(dot_product / (AB_magnitude * CB_magnitude), 1.0), -1.0)
-    return math.degrees(math.acos(cos_value))
-
 def get_landmark_xy(landmarks, index, image_width, image_height):
     VISIBILITY_THRESHOLD = 0.5
     landmark = landmarks[index]
@@ -90,6 +76,9 @@ def analyze_video(video_path):
             left_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
             right_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
 
+            left_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
+            right_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
+
             frame_data = {
                 # "shoulder": [left_shoulder, right_shoulder],
                 # "elbow": [left_elbow, right_elbow],
@@ -100,6 +89,9 @@ def analyze_video(video_path):
                 "right_elbow": right_elbow,
                 "left_wrist": left_wrist,
                 "right_wrist": right_wrist,
+                "left_hip": left_hip,
+                "right_hip": right_hip,
+                # can take mean for waist value
                 "time": frame_index
             }
 
@@ -118,7 +110,6 @@ def analyze_video(video_path):
         # cv2.imshow('Pose Detection', annotated_image)
 
         frame_index += 1
-        # Break mechanism commented out (requires GUI)
         # if cv2.waitKey(1) & 0xFF == 27:
         #     break
 
@@ -129,7 +120,6 @@ def analyze_video(video_path):
     return output_data
 
 # example usage:
-# analyzer = PoseAnalyzer()
 # pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
 # for frame_info in pose_data:
 #     print(frame_info)
