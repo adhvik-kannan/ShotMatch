@@ -90,6 +90,9 @@ def analyze_video(video_path):
             left_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
             right_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
 
+            left_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
+            right_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
+
             frame_data = {
                 # "shoulder": [left_shoulder, right_shoulder],
                 # "elbow": [left_elbow, right_elbow],
@@ -100,6 +103,9 @@ def analyze_video(video_path):
                 "right_elbow": right_elbow,
                 "left_wrist": left_wrist,
                 "right_wrist": right_wrist,
+                "left_hip": left_hip,
+                "right_hip": right_hip,
+                # can take mean for waist value
                 "time": frame_index
             }
 
@@ -118,7 +124,6 @@ def analyze_video(video_path):
         # cv2.imshow('Pose Detection', annotated_image)
 
         frame_index += 1
-        # Break mechanism commented out (requires GUI)
         # if cv2.waitKey(1) & 0xFF == 27:
         #     break
 
@@ -129,7 +134,6 @@ def analyze_video(video_path):
     return output_data
 
 # example usage:
-# analyzer = PoseAnalyzer()
-# pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
-# for frame_info in pose_data:
-#     print(frame_info)
+pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
+for frame_info in pose_data:
+    print(frame_info)
