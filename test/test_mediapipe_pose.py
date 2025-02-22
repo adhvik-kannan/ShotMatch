@@ -2,7 +2,7 @@ import pytest
 import cv2
 import mediapipe as mp
 from unittest.mock import MagicMock, patch
-# from src.OCR_mediapipe import calculate_angle
+from src.generate_front_statistics import calculate_angle
 
 mp_pose = mp.solutions.pose
 
@@ -40,6 +40,6 @@ def test_pose_recognition(mock_process, mock_pose_landmarks):
         elbow_coord = (int(left_elbow.x * 100), int(left_elbow.y * 100))
         wrist_coord = (int(left_wrist.x * 100), int(left_wrist.y * 100))
 
-        # angle = calculate_angle(shoulder_coord, elbow_coord, wrist_coord)
-        # assert 0 <= angle <= 180, f"Angle Calculation not correct: {angle}"
+        angle = calculate_angle(shoulder_coord, elbow_coord, wrist_coord)
+        assert 0 <= angle <= 180, f"Angle Calculation not correct: {angle}"
 
