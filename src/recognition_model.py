@@ -1,30 +1,28 @@
 import cv2
 import mediapipe as mp
 from ultralytics import YOLO
+import numpy as np
 
 # VISIBILITY_THRESHOLD = 0.5  # Set to 0.5 for now
 model = YOLO('yolo11x.pt')
 
-# TODO: optimize the ball by getting the cloest coordinates to the hand
+
 def detect_ball(frame):
     results = model(frame, conf=0.25, iou=0.45, augment=True, verbose=False)
     ball = []
-
     for result in results:
         boxes = result.boxes
         for box in boxes:
+            cls_id = int(box.cls[0])
             conf = float(box.conf[0])
-            if conf < 0.25: # ignore when below confidence threshold
-                continue
-            # x1 is top left x, x2 is bottom right x
-            # y1 is top left y, y2 is bottom right y
-            x1, y1, x2, y2 = box.xyxy[0]
-            x_center = (x1 + x2) / 2
-            y_center = (y1 + y2) / 2
-            ball.append([int(x_center), int(y_center)])
+            if cls_id == 32 and conf > 0.25: # COCO classID
+                x1, y1, x2, y2 = box.xyxy[0]
+                x_center = (x1 + x2) / 2
+                y_center = (y1 + y2) / 2
+                ball.append([int(x_center), int(y_center)])
     if len(ball) == 0:
         return None
-    return ball
+    return ball[0]
 
 
 def get_landmark_xy(landmarks, index, image_width, image_height):
@@ -91,13 +89,13 @@ def analyze_video(video_path):
             left_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
             right_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
 
+            left_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
+            right_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
+
             ball = detect_ball(frame)
             
             if ball is not None:
                 frame_data = {
-                    # "shoulder": [left_shoulder, right_shoulder],
-                    # "elbow": [left_elbow, right_elbow],
-                    # "wrist": [left_wrist, right_wrist],
                     "left_shoulder": left_shoulder,
                     "right_shoulder": right_shoulder,
                     "left_elbow": left_elbow,

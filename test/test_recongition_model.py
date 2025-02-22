@@ -25,6 +25,7 @@ def test_detect_ball(sample_frame):
     with patch("src.recognition_model.model") as mock_model:
         mock_result = MagicMock()
         mock_box = MagicMock()
+        mock_box.cls = [32]
         mock_box.conf = [0.9] # my threshold for this model is 0.25 (because balls are blocked by the hand so I set it pretty low)
         mock_box.xyxy = [[100, 100, 150, 150]] # top left corner and bottom right corner of basketball
         mock_result.boxes = [mock_box]
@@ -32,8 +33,8 @@ def test_detect_ball(sample_frame):
         detected_balls = detect_ball(sample_frame)
         assert detected_balls is not None, "Ball detection should return valid results"
         assert isinstance(detected_balls, list), "Output should be a list"
-        assert len(detected_balls) > 0, "At least one ball should be detected"
-        assert all(isinstance(coord, list) and len(coord) == 2 for coord in detected_balls), "Detected ball should have [x, y] coordinates"
+        assert len(detected_balls) == 2, "Detected ball should have [x, y] coordinates"
+        assert all(isinstance(coord, int) for coord in detected_balls), "Checking integer coordinates"
 
 
 # test landmark function is correctly returning expected data
