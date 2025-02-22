@@ -31,7 +31,7 @@ def get_landmark_xy(landmarks, index, image_width, image_height):
     VISIBILITY_THRESHOLD = 0.5
     landmark = landmarks[index]
     if landmark.visibility < VISIBILITY_THRESHOLD:
-        return "NONE"
+        return "NONE" # use string to make life easier
     x_coord = int(landmark.x * image_width)
     y_coord = int((1 - landmark.y) * image_height)
     return [x_coord, y_coord]
