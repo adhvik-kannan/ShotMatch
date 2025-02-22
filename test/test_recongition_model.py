@@ -2,7 +2,7 @@ import pytest
 import cv2
 import numpy as np
 from unittest.mock import patch, MagicMock
-from src.recongition_model import detect_ball, get_landmark_xy, analyze_video
+from src.recognition_model import detect_ball, get_landmark_xy, analyze_video
 
 @pytest.fixture
 def sample_frame():
@@ -22,7 +22,7 @@ def mock_video():
 # When YOLOV11X is trying to recognize the object, it will have xyxy which will return the top left xy coordinate and bottom right xy coordinate
 def test_detect_ball(sample_frame):
     # Mock YOLO model to avoid loading the model
-    with patch("src.recongition_model.model") as mock_model:
+    with patch("src.recognition_model.model") as mock_model:
         mock_result = MagicMock()
         mock_box = MagicMock()
         mock_box.conf = [0.9] # my threshold for this model is 0.25 (because balls are blocked by the hand so I set it pretty low)
