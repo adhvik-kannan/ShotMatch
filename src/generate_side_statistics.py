@@ -18,7 +18,7 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def compare_arm(new_data, which_arm, sew_params, ewa_params):
+def compare_side(new_data, which_arm, sew_params, ewa_params):
     """
     Computes similarity scores (0-100) for the specified arm based on the new shot's angles
     and the provided Beta distribution parameters.
@@ -109,8 +109,8 @@ def main():
     }
     
     # Compute similarity scores for both arms.
-    left_scores = compare_arm(new_arm_data, "left", left_sew_params, left_ewa_params)
-    right_scores = compare_arm(new_arm_data, "right", right_sew_params, right_ewa_params)
+    left_scores = compare_side(new_arm_data, "left", left_sew_params, left_ewa_params)
+    right_scores = compare_side(new_arm_data, "right", right_sew_params, right_ewa_params)
     
     print("Left arm similarity scores:")
     print(left_scores)

@@ -8,6 +8,7 @@ import UploadVideosScreen from '../screens/UploadVideosScreen';
 import ProcessVideosScreen from '@/screens/ProcessVideosScreen';
 import PerformanceMetricsScreen from '@/screens/PerformanceMetricsScreen';
 import ConsistencyScreen from '@/screens/ConsistencyScreen';
+import ConsistencyResultsScreen from '@/screens/ConsistencyResultsScreen';
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => {
@@ -21,6 +22,7 @@ const AuthNavigator = () => {
             <Stack.Screen name="ProcessVideos" component={ProcessVideosScreen} />
             <Stack.Screen name="PerformanceMetrics" component={PerformanceMetricsScreen} />
             <Stack.Screen name="Consistency" component={ConsistencyScreen} />
+            <Stack.Screen name="ConsistencyResults" component={ConsistencyResultsScreen} />
         </Stack.Navigator>
     );
 };
