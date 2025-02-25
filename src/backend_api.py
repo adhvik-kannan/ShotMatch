@@ -5,7 +5,7 @@ import datetime
 import jwt
 from functools import wraps
 import time
-import OCR_mediapipe as ocr
+from recognition_model import analyze_video
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email
 
@@ -102,7 +102,7 @@ def process_videos():
                 f.write(base64.b64decode(base64_data))
             
             # Run OCR analysis on the temporary file
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed video {video_uri} with data: {ocr_result}")
 
             if not ocr_result:
@@ -158,7 +158,7 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed front video {video_uri} with data: {ocr_result}")
             
             if not ocr_result:
@@ -193,7 +193,7 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed side video {video_uri} with data: {ocr_result}")
             
             if not ocr_result:
