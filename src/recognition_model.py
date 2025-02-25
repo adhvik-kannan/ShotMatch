@@ -47,7 +47,8 @@ def analyze_video(video_path):
     )
     cap = cv2.VideoCapture(video_path)
     frame_index = 0
-    output_data = []
+    # output_data = []
+    output_data = {}
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -60,18 +61,7 @@ def analyze_video(video_path):
         # Convert back to BGR for consistent processing (even if not displayed)
         annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
 
-        frame_data = {
-            "left_shoulder": None,
-            "right_shoulder": None,
-            "left_elbow": None,
-            "right_elbow": None,
-            "left_wrist": None,
-            "right_wrist": None,
-            "left_hip": None,
-            "right_hip": None,
-            "ball": None,
-            "time": frame_index
-        }
+        frame_data = {}
 
         if results.pose_landmarks:
             landmarks = results.pose_landmarks.landmark
@@ -92,23 +82,48 @@ def analyze_video(video_path):
             left_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
             right_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
 
+            right_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
+            left_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
+
+            right_mouth = get_landmark_xy(landmarks, 10, w, h)
+            left_mouth = get_landmark_xy(landmarks, 9, w, h)
+
             ball = detect_ball(frame)
+
+            if right_eye != "NONE":
+                eye_level = right_eye
+            elif left_eye != "NONE":
+                eye_level = left_eye
+            else:
+                eye_level = None
+
+            if right_mouth != "NONE":
+                mouth_level = right_mouth
+            elif left_mouth != "NONE":
+                mouth_level = left_mouth
+            else:
+                mouth_level = None
             
-            if ball is not None:
-                frame_data = {
-                    "left_shoulder": left_shoulder,
-                    "right_shoulder": right_shoulder,
-                    "left_elbow": left_elbow,
-                    "right_elbow": right_elbow,
-                    "left_wrist": left_wrist,
-                    "right_wrist": right_wrist,
-                    "left_hip": left_hip,
-                    "right_hip": right_hip,
-                    # can take mean for waist value
-                    "ball": ball,
-                    "time": frame_index
-                }
-                output_data.append(frame_data)
+            if ball is not None and eye_level is not None and mouth_level is not None:
+                ball_x, ball_y = ball
+                eye_level_x, eye_level_y = eye_level
+                mouth_level_x, mouth_level_y = mouth_level
+                if ball_y < eye_level_y and ball_y > mouth_level_y:
+                    frame_data = {
+                        "left_shoulder": left_shoulder,
+                        "right_shoulder": right_shoulder,
+                        "left_elbow": left_elbow,
+                        "right_elbow": right_elbow,
+                        "left_wrist": left_wrist,
+                        "right_wrist": right_wrist,
+                        "left_hip": left_hip,
+                        "right_hip": right_hip,
+                        # can take mean for waist value
+                        "ball": ball,
+                        # "time": frame_index
+                    }
+                    # output_data.append(frame_data)
+                    output_data[frame_index] = frame_data
 
             # Landmark drawing commented out for server use it is for debugging purpose
             # mp_drawing.draw_landmarks(
@@ -134,11 +149,17 @@ def analyze_video(video_path):
     cap.release()
     # Window cleanup commented out
     # cv2.destroyAllWindows()
-    
-    return output_data
+    if len(output_data) != 0:
+        max_key = max(output_data.keys())
+        max_value = output_data[max_key]
+        # return output_data
+        return max_value
+    else:
+        return None
 
 # example usage:
 if __name__ == "__main__":
     pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
-    for frame_info in pose_data:
-        print(frame_info)
+    # for frame_info in pose_data:
+    #     print(frame_info)
+    print(pose_data)
