@@ -133,23 +133,23 @@ def process_videos():
     # processed_results[1] = {side_data}
     which_arm = ["left", "right"]
 
-    for arm in which_arm:
-        # this basically gets from database nba player params
-        front_hse_params = get_front_hse_params(arm, player)
-        front_sew_params = get_front_sew_params(arm, player)
-        front_ewp_params = get_front_ewp_params(arm, player)
-        front_ec_params = get_front_ec_params(arm, player)
+    # for arm in which_arm:
+    #     # this basically gets from database nba player params
+    #     front_hse_params = get_front_hse_params(arm, player)
+    #     front_sew_params = get_front_sew_params(arm, player)
+    #     front_ewp_params = get_front_ewp_params(arm, player)
+    #     front_ec_params = get_front_ec_params(arm, player)
 
-        side_sew_params = get_side_sew_params(arm, player)
-        side_ewa_params = get_side_ewa_params(arm, player)
+    #     side_sew_params = get_side_sew_params(arm, player)
+    #     side_ewa_params = get_side_ewa_params(arm, player)
 
-        if arm == "left":
-            front_statistics_LA = compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-            side_statistics_LA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
+    #     if arm == "left":
+    #         front_statistics_LA = compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
+    #         side_statistics_LA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
         
-        elif arm == "right": 
-            front_statistics_RA =  compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-            side_statistics_RA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
+    #     elif arm == "right": 
+    #         front_statistics_RA =  compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
+    #         side_statistics_RA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
 
     return jsonify({
         "message": "Videos processed successfully",
