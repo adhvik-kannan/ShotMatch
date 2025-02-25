@@ -1,5 +1,5 @@
 import pytest
-from src.generate_side_statistics import compare_arm
+from src.generate_side_statistics import compare_side
 
 def test_compare_arm_with_own_dummy_data():
     # Dummy distribution parameters for the left arm.
@@ -25,9 +25,9 @@ def test_compare_arm_with_own_dummy_data():
     }
     
     # Compute similarity scores for left arm.
-    left_result = compare_arm(new_arm_data, "left", left_sew_params, left_ewa_params)
+    left_result = compare_side(new_arm_data, "left", left_sew_params, left_ewa_params)
     # Compute similarity scores for right arm.
-    right_result = compare_arm(new_arm_data, "right", right_sew_params, right_ewa_params)
+    right_result = compare_side(new_arm_data, "right", right_sew_params, right_ewa_params)
     
     # Verify that each result dictionary contains the expected keys.
     for result, arm in [(left_result, "left"), (right_result, "right")]:

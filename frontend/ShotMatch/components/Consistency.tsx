@@ -125,15 +125,18 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+      
       if (response.ok) {
         Alert.alert('Success', 'Consistency videos processed successfully!');
+        navigation.navigate('ConsistencyResults');
       } else {
         Alert.alert('Error', 'Failed to process consistency videos.');
+        navigation.navigate('Consistency');
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while uploading videos.');
+      navigation.navigate('Consistency');
     } finally {
       setUploading(false);
     }

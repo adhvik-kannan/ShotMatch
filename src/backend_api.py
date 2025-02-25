@@ -5,7 +5,9 @@ import datetime
 import jwt
 from functools import wraps
 import time
-import OCR_mediapipe as ocr
+from recognition_model import analyze_video
+from generate_front_statistics import compare_front
+from generate_side_statistics import compare_side
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email
 
@@ -85,7 +87,7 @@ def process_videos():
     if not videos or not isinstance(videos, list):
         return jsonify({"message": "No videos provided or invalid format"}), 400
 
-    processed_results = []  # List to hold each video's OCR output
+    processed_results = []  # List to hold each video's OCR output (list will be 2 dictionaries)
     processed_count = len(videos)
 
     for video in videos:
@@ -102,7 +104,7 @@ def process_videos():
                 f.write(base64.b64decode(base64_data))
             
             # Run OCR analysis on the temporary file
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed video {video_uri} with data: {ocr_result}")
 
             if not ocr_result:
@@ -124,6 +126,30 @@ def process_videos():
             # Clean up the temporary file if it exists
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
+    
+    # generate statistics for the videos
+    # format is 
+    # processed_results[0] = {front_data}
+    # processed_results[1] = {side_data}
+    which_arm = ["left", "right"]
+
+    # for arm in which_arm:
+    #     # this basically gets from database nba player params
+    #     front_hse_params = get_front_hse_params(arm, player)
+    #     front_sew_params = get_front_sew_params(arm, player)
+    #     front_ewp_params = get_front_ewp_params(arm, player)
+    #     front_ec_params = get_front_ec_params(arm, player)
+
+    #     side_sew_params = get_side_sew_params(arm, player)
+    #     side_ewa_params = get_side_ewa_params(arm, player)
+
+    #     if arm == "left":
+    #         front_statistics_LA = compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
+    #         side_statistics_LA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
+        
+    #     elif arm == "right": 
+    #         front_statistics_RA =  compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
+    #         side_statistics_RA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
 
     return jsonify({
         "message": "Videos processed successfully",
@@ -158,7 +184,7 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed front video {video_uri} with data: {ocr_result}")
             
             if not ocr_result:
@@ -193,7 +219,7 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = ocr.analyze_video(temp_file_path)
+            ocr_result = analyze_video(temp_file_path)
             print(f"Processed side video {video_uri} with data: {ocr_result}")
             
             if not ocr_result:
