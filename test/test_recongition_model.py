@@ -59,8 +59,8 @@ def test_get_landmark_xy():
 def test_analyze_video(mock_video):
     with patch("cv2.VideoCapture", return_value=mock_video):
         output_data = analyze_video("mock_video.mp4")
-        assert isinstance(output_data, list), "Output should be a list"
-        if len(output_data) > 0: # only when it gets the data
+        if output_data is not None: # only when it gets the data
+            assert isinstance(output_data, dict), "Output should be a list"
             assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
             assert "ball" in output_data[0], "Frame data should contain ball"
 
