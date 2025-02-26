@@ -4,10 +4,11 @@ from ultralytics import YOLO
 import numpy as np
 
 # VISIBILITY_THRESHOLD = 0.5  # Set to 0.5 for now
-model = YOLO('yolo11x.pt')
+model = YOLO('yolo12x.pt')
 
 
 def detect_ball(frame):
+    image_height = frame.shape[0]
     results = model(frame, conf=0.25, iou=0.45, augment=True, verbose=False)
     ball = []
     for result in results:
@@ -19,7 +20,7 @@ def detect_ball(frame):
                 x1, y1, x2, y2 = box.xyxy[0]
                 x_center = (x1 + x2) / 2
                 y_center = (y1 + y2) / 2
-                ball.append([int(x_center), int(y_center)])
+                ball.append([int(x_center), int(image_height - y_center)])
     if len(ball) == 0:
         return None
     return ball[0]
@@ -84,6 +85,9 @@ def analyze_video(video_path):
 
             right_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
             left_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
+            
+            right_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
+            left_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
 
             right_mouth = get_landmark_xy(landmarks, 10, w, h)
             left_mouth = get_landmark_xy(landmarks, 9, w, h)
@@ -94,6 +98,10 @@ def analyze_video(video_path):
                 eye_level = right_eye
             elif left_eye != "NONE":
                 eye_level = left_eye
+            # elif right_ear != "NONE":
+            #     eye_level = right_ear
+            # elif left_ear != "NONE":
+            #     eye_level = left_ear
             else:
                 eye_level = None
 
@@ -106,8 +114,11 @@ def analyze_video(video_path):
             
             if ball is not None and eye_level is not None and mouth_level is not None:
                 ball_x, ball_y = ball
+                ball[1] = h - ball_y
                 eye_level_x, eye_level_y = eye_level
                 mouth_level_x, mouth_level_y = mouth_level
+                # print(ball_y, eye_level_y, mouth_level_y)
+                # if ball_y < 2 * eye_level_y - mouth_level_y and ball_y > 2 * mouth_level_y - eye_level_y:
                 if ball_y < eye_level_y and ball_y > mouth_level_y:
                     frame_data = {
                         "left_shoulder": left_shoulder,
@@ -120,35 +131,35 @@ def analyze_video(video_path):
                         "right_hip": right_hip,
                         # can take mean for waist value
                         "ball": ball,
-                        # "time": frame_index
+                        # "eye_level": eye_level,
+                        # "mouth_level": mouth_level,
+                        "frame": frame_index
                     }
                     # output_data.append(frame_data)
                     output_data[frame_index] = frame_data
 
-            # Landmark drawing commented out for server use it is for debugging purpose
-            # mp_drawing.draw_landmarks(
-            #     annotated_image,
-            #     results.pose_landmarks,
-            #     mp_pose.POSE_CONNECTIONS,
-            #     mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4),
-            #     mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
-            # )
-            # if ball_boxes is not None:
-            #     for b in ball_boxes:
-            #         center = b['center']
-            #         cv2.circle(annotated_image, center, 5, (0, 255, 255), -1)
-
-        # Display commented out for server use
+        #===================================== start of comment ===============================
+        #     mp_drawing.draw_landmarks(
+        #         annotated_image,
+        #         results.pose_landmarks,
+        #         mp_pose.POSE_CONNECTIONS,
+        #         mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4),
+        #         mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
+        #     )
+        #     if ball is not None:
+        #         # for b in ball_boxes:
+        #         #     center = b['center']
+        #         cv2.circle(annotated_image, ball, 5, (0, 255, 255), -1)
         # cv2.imshow('Pose Detection', annotated_image)
-
-        frame_index += 1
-        # Break key commented out for server use
         # if cv2.waitKey(1) & 0xFF == 27:
         #     break
+        #===================================== end of comment ==================================
 
+        frame_index += 1
     cap.release()
-    # Window cleanup commented out
+    #===================================== start of comment ===============================
     # cv2.destroyAllWindows()
+    #===================================== end of comment =================================
     if len(output_data) != 0:
         max_key = max(output_data.keys())
         max_value = output_data[max_key]
@@ -159,7 +170,7 @@ def analyze_video(video_path):
 
 # example usage:
 if __name__ == "__main__":
-    pose_data = analyze_video("nba_test.mp4")  # Replace with your video path
+    pose_data = analyze_video("test_video.mp4")  # Replace with your video path
     # for frame_info in pose_data:
     #     print(frame_info)
     print(pose_data)
