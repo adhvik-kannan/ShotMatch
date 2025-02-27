@@ -26,125 +26,107 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def calculate_elbow(new_data):
-    """
-    Calculates the elbow comparison metric from front-view data.
+def get_elbow(data):
+    if (data["right_wrist"][0] != "NONE" and data["right_elbow"][0] != "NONE"):
+        arm_length = math.sqrt((data["right_wrist"][0][0] - data["right_elbow"][0][0])**2 + (data["right_wrist"][0][1] - data["right_elbow"][0][1])**2)
+    elif (data["left_wrist"][0] != "NONE" and data["left_elbow"][0] != "NONE"):
+        arm_length = math.sqrt((data["left_wrist"][0][0] - data["left_elbow"][0][0])**2 + (data["left_wrist"][0][1] - data["left_elbow"][0][1])**2)
+    else: 
+        print("ERROR: elbow/wrist joints cannot be detected")
+        return -1
     
-    This metric is computed as:
-         EC = |left_elbow_y - right_elbow_y| / (distance between left_wrist and left_elbow)
-    
-    Inputs:
-        new_data: dictionary containing keys "left_elbow", "right_elbow", and "left_wrist"
-                  with values as [x, y] coordinates.
-                  
-    Returns:
-        The elbow comparison ratio (a float between 0 and 1, ideally).
-    """
-    left_elbow = new_data["left_elbow"]
-    right_elbow = new_data["right_elbow"]
-    left_wrist = new_data["wrist"]  # Note: for front view, we assume left wrist is used for length.
-    
-    diff_y = abs(left_elbow[1] - right_elbow[1])
-    length_left_arm = math.sqrt((left_wrist[0] - left_elbow[0])**2 + (left_wrist[1] - left_elbow[1])**2)
-    if length_left_arm == 0:
-        return 0.0
-    return diff_y / length_left_arm
+    if (data["left_elbow"] != "NONE") and (data["right_elbow"] != "NONE"):
+        left_entry = data["left_elbow"]
+        right_entry = data["right_elbow"]
+        return (abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
-def compare_front(new_data, hse_params, sew_params, ewp_params, ec_params):
-    """
-    Computes similarity scores (0-100) for front-view metrics based on new data and 
-    the provided Beta distribution parameters. The metrics include:
-      - hse: Hip -> Shoulder -> Left Elbow angle (vertex = shoulder)
-      - sew: Shoulder -> Left Elbow -> Wrist angle (vertex = left elbow)
-      - ewp: Left Elbow -> Wrist -> Pinky angle (vertex = wrist)
-      - ec : Elbow Comparison metric (computed using calculate_elbow)
+def compare_front(data, hse_ra_params, hse_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params):
+    # hip-shoulder-elbow right arm
+    if ((data["right_hip"] != "NONE") and (data["right_shoulder"] != "NONE") and (data["right_elbow"] != "NONE")):
+        angle_hse_ra = calculate_angle(data["right_shoulder"], data["right_hip"], data["right_elbow"])
     
-    For each metric, the new value is scaled to the [0,1] interval (by dividing by 180 for angles;
-    for ec, values are already in [0,1]), then the Beta PDF is evaluated at the new value and the 
-    stored mean. The similarity score is computed as:
-          score = (BetaPDF(new_value) / BetaPDF(mean)) * 100
-    and clamped between 0 and 100.
+    # hip-shoulder-elbow left arm
+    if ((data["left_hip"] != "NONE") and (data["left_shoulder"] != "NONE") and (data["left_elbow"] != "NONE")):
+        angle_hse_la = calculate_angle(data["left_shoulder"], data["left_hip"], data["left_elbow"])
+
+    # shoulder-elbow-wrist right arm
+    if ((data["right_shoulder"] != "NONE") and (data["right_elbow"] != "NONE") and (data["right_wrist"] != "NONE")):
+        angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
     
-    Inputs:
-        new_data : dict with keys "hip", "shoulder", "left_elbow", "right_elbow", "wrist", "pinky"
-        hse_params: Beta distribution parameters for Hip-Shoulder-Elbow angle
-        sew_params: Beta distribution parameters for Shoulder-Elbow-Wrist angle
-        ewp_params: Beta distribution parameters for Elbow-Wrist-Pinky angle
-        ec_params : Beta distribution parameters for Elbow Comparison metric (values in [0,1])
+    # shoulder-elbow-wrist left arm
+    if ((data["left_shoulder"] != "NONE") and (data["left_elbow"] != "NONE") and (data["left_wrist"] != "NONE")):
+        angle_sew_la = calculate_angle(data["left_elbow"], data["left_shoulder"], data["left_wrist"])
     
-    Returns:
-        A dictionary with keys:
-          "hse_score", "sew_score", "ewp_score", "ec_score"
-    """
-    # Extract coordinates.
-    hip = new_data["hip"]
-    shoulder = new_data["shoulder"]
-    left_elbow = new_data["left_elbow"]
-    # right_elbow is used only for the elbow comparison metric.
-    right_elbow = new_data["right_elbow"]
-    wrist = new_data["wrist"]
-    pinky = new_data["pinky"]
+    # elbow-wrist-average right arm (avg = thumb and pinky)
+    if ((data["right_elbow"] != "NONE") and (data["right_wrist"] != "NONE")):
+        if (data["right_pinky"] != "NONE" and data["right_thumb"] != "NONE"):
+            x = (data["right_pinky"][0] + data["right_thumb"][0]) / 2
+            y = (data["right_pinky"][1] + data["right_thumb"][1]) / 2
+            coord = [x, y]
+            angle_ewa_ra = calculate_angle(data["right_wrist"], data["right_elbow"], coord)
+
+    # elbow-wrist-pinky left arm
+    if ((data["left_elbow"] != "NONE") and (data["left_wrist"] != "NONE") and (data["left_pinky"] != "NONE")):
+        angle_ewp_la = calculate_angle(data["left_wrist"], data["left_elbow"], data["left_pinky"])
     
     # hse: Angle at shoulder using points: hip, shoulder, left_elbow.
-    angle_hse = calculate_angle(shoulder, hip, left_elbow)
-    pdf_hse_new = beta.pdf(angle_hse/180.0, hse_params["alpha"], hse_params["beta"])
-    pdf_hse_mean = beta.pdf(hse_params["mean"]/180.0, hse_params["alpha"], hse_params["beta"])
-    score_hse = (pdf_hse_new / pdf_hse_mean) * 100 if pdf_hse_mean != 0 else 0
-    score_hse = max(0, min(100, score_hse))
+    pdf_hse_ra_new = beta.pdf(angle_hse_ra/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
+    pdf_hse_la_new = beta.pdf(angle_hse_la/180.0, hse_la_params["alpha"], hse_la_params["beta"])
+    pdf_hse_ra_mean = beta.pdf(hse_ra_params["mean"]/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
+    pdf_hse_la_mean = beta.pdf(hse_la_params["mean"]/180.0, hse_la_params["alpha"], hse_la_params["beta"])
+    score_hse_ra = (pdf_hse_ra_new / pdf_hse_ra_mean) * 100 if pdf_hse_ra_mean != 0 else 0
+    score_hse_la = (pdf_hse_la_new / pdf_hse_la_mean) * 100 if pdf_hse_la_mean != 0 else 0
+    score_hse_ra = max(0, min(100, score_hse_ra))
+    score_hse_la = max(0, min(100, score_hse_la))
     
     # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
-    angle_sew = calculate_angle(left_elbow, shoulder, wrist)
-    pdf_sew_new = beta.pdf(angle_sew/180.0, sew_params["alpha"], sew_params["beta"])
-    pdf_sew_mean = beta.pdf(sew_params["mean"]/180.0, sew_params["alpha"], sew_params["beta"])
-    score_sew = (pdf_sew_new / pdf_sew_mean) * 100 if pdf_sew_mean != 0 else 0
-    score_sew = max(0, min(100, score_sew))
+    pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
+    score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
+    score_sew_ra = max(0, min(100, score_sew_ra))
+    score_sew_la = max(0, min(100, score_sew_la))
     
+    # ewa: Angle at wrist using points: right elbow, wrist, average between thumb and pinky
+    pdf_ewa_ra_new = beta.pdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    pdf_ewa_ra_mean = beta.pdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    score_ewa_ra = (pdf_ewa_ra_new / pdf_ewa_ra_mean) * 100 if pdf_ewa_ra_mean != 0 else 0
+    score_ewa_ra = max(0, min(100, score_ewa_ra))
+
     # ewp: Angle at wrist using points: left_elbow, wrist, pinky.
-    angle_ewp = calculate_angle(wrist, left_elbow, pinky)
-    pdf_ewp_new = beta.pdf(angle_ewp/180.0, ewp_params["alpha"], ewp_params["beta"])
-    pdf_ewp_mean = beta.pdf(ewp_params["mean"]/180.0, ewp_params["alpha"], ewp_params["beta"])
-    score_ewp = (pdf_ewp_new / pdf_ewp_mean) * 100 if pdf_ewp_mean != 0 else 0
-    score_ewp = max(0, min(100, score_ewp))
+    pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    score_ewp_la = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100 if pdf_ewp_la_mean != 0 else 0
+    score_ewp_la = max(0, min(100, score_ewp_la))
     
     # ec: Use the calculate_elbow function.
-    ec_value = calculate_elbow(new_data)
+    ec_value = get_elbow(data)
+
     # For ec, values are already in [0,1], so no scaling is needed.
-    pdf_ec_new = beta.pdf(ec_value, ec_params["alpha"], ec_params["beta"])
-    pdf_ec_mean = beta.pdf(ec_params["mean"], ec_params["alpha"], ec_params["beta"])
+    pdf_ec_new = beta.pdf(ec_value, elbow_params["alpha"], elbow_params["beta"])
+    pdf_ec_mean = beta.pdf(elbow_params["mean"], elbow_params["alpha"], elbow_params["beta"])
     score_ec = (pdf_ec_new / pdf_ec_mean) * 100 if pdf_ec_mean != 0 else 0
     score_ec = max(0, min(100, score_ec))
     
     return {
-        "hse_score": score_hse,
-        "sew_score": score_sew,
-        "ewp_score": score_ewp,
+        "hse_ra_score": score_hse_ra,
+        "hse_la_score": score_hse_la,
+        "sew_ra_score": score_sew_ra,
+        "sew_la_score": score_sew_la,
+        "ewa_ra_score": score_ewa_ra,
+        "ewp_la_score": score_ewp_la,
         "ec_score": score_ec
     }
 
 def main():
-    # Dummy distribution parameters for front view angles.
-    hse_params = {"mean": 30.0, "std": 4.0, "alpha": 1.5, "beta": 2.0}
-    sew_params = {"mean": 45.0, "std": 5.0, "alpha": 2.0, "beta": 3.0}
-    ewp_params = {"mean": 60.0, "std": 6.0, "alpha": 2.5, "beta": 3.5}
-    # Dummy distribution parameters for elbow comparison metric (ec), values in [0,1].
-    ec_params = {"mean": 0.1, "std": 0.05, "alpha": 2.0, "beta": 8.0}
-    
-    # Dummy new front view data.
-    # For simplicity, we assume each key holds a single [x, y] coordinate.
-    new_front_data = {
-        "hip": [90, 180],
-        "shoulder": [100, 200],
-        "left_elbow": [110, 250],
-        "right_elbow": [115, 255],
-        "wrist": [120, 300],
-        "pinky": [125, 305]
-    }
-    
     # Compute similarity scores for front view.
-    front_scores = compare_front(new_front_data, hse_params, sew_params, ewp_params, ec_params)
+    # front_scores = compare_front(new_front_data, hse_params, sew_params, ewp_params, elbow_params)
     
-    print("Front view similarity scores:")
-    print(front_scores)
+    # print("Front view similarity scores:")
+    # print(front_scores)
+    print("temp")
 
 if __name__ == "__main__":
     main()
