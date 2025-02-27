@@ -18,105 +18,59 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def compare_side(new_data, which_arm, sew_params, ewa_params):
-    """
-    Computes similarity scores (0-100) for the specified arm based on the new shot's angles
-    and the provided Beta distribution parameters.
+def compare_side(data, sew_ra_params, sew_la_params, ewp_ra_params, ewa_la_params):
+    # shoulder-elbow-wrist right arm
+    if ((data["right_shoulder"] != "NONE") and (data["right_elbow"] != "NONE") and (data["right_wrist"] != "NONE")):
+        angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
     
-    Inputs:
-        new_data  : dict with keys "shoulder", "elbow", "wrist", "pinky", "index"
-        which_arm : string "left" or "right" (for identification)
-        sew_params: dict for Shoulder-Elbow-Wrist angle in the form 
-                    {"mean": mean_val, "std": std_val, "alpha": alpha_val, "beta": beta_val}
-        ewa_params: dict for Elbow-Wrist-Average(Pinky,Index) angle, same format as sew_params.
+    # shoulder-elbow-wrist left arm
+    if ((data["left_shoulder"] != "NONE") and (data["left_elbow"] != "NONE") and (data["left_wrist"] != "NONE")):
+        angle_sew_la = calculate_angle(data["left_elbow"], data["left_shoulder"], data["left_wrist"])
     
-    Process:
-        - Computes the shoulder–elbow–wrist (sew) angle and the elbow–wrist–average(Pinky, Index) (ewa) angle.
-        - For each angle, scales it to the [0,1] interval by dividing by 180.
-        - Evaluates the Beta PDF at the computed angle and at the mean.
-        - Computes the score as:
-              score = (BetaPDF(new_angle/180) / BetaPDF(mean/180)) * 100
-          and clamps the result between 0 and 100.
+    # elbow-wrist-pinky right arm
+    if ((data["right_elbow"] != "NONE") and (data["right_wrist"] != "NONE") and (data["right_pinky"] != "NONE")):
+        angle_ewa_la = calculate_angle(data["right_wrist"], data["right_elbow"], data["right_pinky"])
+        
+    # elbow-wrist-average left arm (avg = thumb and pinky)
+    if ((data["left_elbow"] != "NONE") and (data["left_wrist"] != "NONE")):
+        if (data["left_pinky"] != "NONE" and data["left_thumb"] != "NONE"):
+            x = (data["left_pinky"][0] + data["left_thumb"][0]) / 2
+            y = (data["left_pinky"][1] + data["left_thumb"][1]) / 2
+            coord = [x, y]
+            angle_ewp_ra = calculate_angle(data["left_wrist"], data["left_elbow"], coord)
+
     
-    Returns:
-        A dictionary with keys:
-          "sew_score": similarity score for the sew angle,
-          "ewa_score": similarity score for the ewa angle.
-    """
-    # Extract coordinates from new_data.
-    shoulder = new_data[f"{which_arm}_shoulder"]
-    elbow = new_data[f"{which_arm}_elbow"]
-    wrist = new_data[f"{which_arm}_wrist"]
-    pinky = new_data[f"{which_arm}_pinky"]
-    index = new_data[f"{which_arm}_index"]
+    # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
+    pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
+    score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
+    score_sew_ra = max(0, min(100, score_sew_ra))
+    score_sew_la = max(0, min(100, score_sew_la))
     
-    # Calculate the shoulder–elbow–wrist (sew) angle.
-    angle_sew = calculate_angle(elbow, shoulder, wrist)
-    
-    # Calculate the elbow–wrist–average(Pinky,Index) (ewa) angle.
-    avg_pinky_index = [(pinky[0] + index[0]) / 2, (pinky[1] + index[1]) / 2]
-    angle_ewa = calculate_angle(wrist, elbow, avg_pinky_index)
-    
-    # For sew: scale angles to [0,1]
-    sew_mean = sew_params["mean"]
-    sew_alpha = sew_params["alpha"]
-    sew_beta  = sew_params["beta"]
-    
-    # Evaluate Beta PDF at computed sew angle and at the mean (scaled by 180).
-    pdf_sew_new = beta.pdf(angle_sew / 180.0, sew_alpha, sew_beta)
-    pdf_sew_mean = beta.pdf(sew_mean / 180.0, sew_alpha, sew_beta)
-    score_sew = (pdf_sew_new / pdf_sew_mean) * 100 if pdf_sew_mean != 0 else 0
-    
-    # For ewa: scale angles to [0,1]
-    ewa_mean = ewa_params["mean"]
-    ewa_alpha = ewa_params["alpha"]
-    ewa_beta  = ewa_params["beta"]
-    
-    pdf_ewa_new = beta.pdf(angle_ewa / 180.0, ewa_alpha, ewa_beta)
-    pdf_ewa_mean = beta.pdf(ewa_mean / 180.0, ewa_alpha, ewa_beta)
-    score_ewa = (pdf_ewa_new / pdf_ewa_mean) * 100 if pdf_ewa_mean != 0 else 0
-    
-    # Clamp scores between 0 and 100.
-    score_sew = max(0, min(100, score_sew))
-    score_ewa = max(0, min(100, score_ewa))
+    # ewp: Angle at wrist using points: right_elbow, wrist, pinky.
+    pdf_ewp_ra_new = beta.pdf(angle_ewp_ra/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
+    pdf_ewp_ra_mean = beta.pdf(ewp_ra_params["mean"]/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
+    score_ewp_ra = (pdf_ewp_ra_new / pdf_ewp_ra_mean) * 100 if pdf_ewp_ra_mean != 0 else 0
+    score_ewp_ra = max(0, min(100, score_ewp_ra))
+
+    # ewa: Angle at wrist using points: left elbow, wrist, average between thumb and pinky
+    pdf_ewa_la_new = beta.pdf(angle_ewa_la/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
+    pdf_ewa_la_mean = beta.pdf(ewa_la_params["mean"]/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
+    score_ewa_la = (pdf_ewa_la_new / pdf_ewa_la_mean) * 100 if pdf_ewa_la_mean != 0 else 0
+    score_ewa_la = max(0, min(100, score_ewa_la))
     
     return {
-        "sew_score": score_sew,
-        "ewa_score": score_ewa
+        "sew_ra_score": score_sew_ra,
+        "sew_la_score": score_sew_la,
+        "ewp_ra_score": score_ewp_ra,
+        "ewa_la_score": score_ewa_la
     }
 
 def main():
-    # Dummy distribution parameters for the left arm.
-    left_sew_params = {"mean": 45.0, "std": 5.0, "alpha": 2.0, "beta": 3.0}
-    left_ewa_params = {"mean": 50.0, "std": 6.0, "alpha": 2.5, "beta": 3.5}
-    
-    # Dummy distribution parameters for the right arm.
-    right_sew_params = {"mean": 40.0, "std": 4.0, "alpha": 1.8, "beta": 2.8}
-    right_ewa_params = {"mean": 55.0, "std": 7.0, "alpha": 3.0, "beta": 4.0}
-    
-    # Combined dummy new shot data for both arms in a single dictionary.
-    new_arm_data = {
-        "left_shoulder": [100, 200],
-        "left_elbow": [110, 250],
-        "left_wrist": [120, 300],
-        "left_pinky": [125, 305],
-        "left_index": [123, 307],
-        "right_shoulder": [200, 200],
-        "right_elbow": [210, 250],
-        "right_wrist": [220, 300],
-        "right_pinky": [225, 305],
-        "right_index": [223, 307]
-    }
-    
-    # Compute similarity scores for both arms.
-    left_scores = compare_side(new_arm_data, "left", left_sew_params, left_ewa_params)
-    right_scores = compare_side(new_arm_data, "right", right_sew_params, right_ewa_params)
-    
-    print("Left arm similarity scores:")
-    print(left_scores)
-    
-    print("Right arm similarity scores:")
-    print(right_scores)
+    print("temp")
 
 if __name__ == "__main__":
     main()
