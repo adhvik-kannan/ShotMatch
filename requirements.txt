@@ -35,3 +35,5 @@ sounddevice==0.5.1
 pygments==2.10.0
 jinja2==3.0.1
 ultralytics==8.3.78
+torch==2.0.1
+torchvision==0.15.2
