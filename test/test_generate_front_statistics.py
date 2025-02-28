@@ -2,7 +2,7 @@ import pytest
 import math
 import numpy as np
 from scipy.stats import beta
-from generate_front_statistics import calculate_angle, get_elbow, compare_front
+from src.generate_front_statistics import calculate_angle, get_elbow, compare_front
 
 @pytest.fixture
 def dummy_data():

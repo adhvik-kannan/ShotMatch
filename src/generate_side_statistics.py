@@ -75,6 +75,9 @@ def compare_side_la(data, sew_la_params, ewa_la_params):
         "ewa_la_score": score_ewa_la
     }
 
+def get_klay_data():
+    return {'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [886, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52}
+
 def main():
     print("temp")
 

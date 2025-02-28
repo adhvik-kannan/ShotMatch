@@ -1,7 +1,7 @@
 import pytest
 import math
 from scipy.stats import beta
-from generate_side_statistics import calculate_angle, compare_side_ra, compare_side_la
+from src.generate_side_statistics import calculate_angle, compare_side_ra, compare_side_la
 
 @pytest.fixture
 def dummy_data():

@@ -146,7 +146,7 @@ def generate_elbow_parameters(data):
             elbows_list.append(abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
     elbows = np.array(elbows_list)
-    # print(f"elbow diff list: {elbows_list}")
+    # print(f"elbow diff list = {elbows_list}")
     if len(elbows > 0):
         mean_val = float(np.mean(elbows))
         std_val = float(np.std(elbows))
@@ -192,14 +192,14 @@ def plot_beta_distribution(params):
     plt.show()
 
 def get_steph_curry_front_data():
-    nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'ball': None, 'Side': 'FRONT', 'frame': 63}
-    nba_19 = {'left_shoulder': [436, 656], 'right_shoulder': [362, 662], 'left_elbow': [474, 618], 'right_elbow': [352, 633], 'left_wrist': [460, 636], 'right_wrist': [380, 695], 'left_hip': [425, 521], 'right_hip': [382, 525], 'ball': None, 'Side': 'FRONT', 'frame': 45}
-    nba_20 = {'left_shoulder': [168, 533], 'right_shoulder': [101, 538], 'left_elbow': [196, 528], 'right_elbow': [108, 517], 'left_wrist': [184, 592], 'right_wrist': [127, 575], 'left_hip': [156, 391], 'right_hip': [113, 393], 'ball': None, 'Side': 'FRONT', 'frame': 15}
-    nba_22 = {'left_shoulder': [271, 508], 'right_shoulder': [207, 510], 'left_elbow': [313, 511], 'right_elbow': [218, 529], 'left_wrist': [277, 567], 'right_wrist': [227, 589], 'left_hip': [271, 363], 'right_hip': [228, 367], 'ball': None, 'Side': 'FRONT', 'frame': 37}
-    nba_23 = {'left_shoulder': [241, 610], 'right_shoulder': [173, 615], 'left_elbow': [271, 615], 'right_elbow': [176, 595], 'left_wrist': [254, 676], 'right_wrist': [196, 662], 'left_hip': [224, 469], 'right_hip': [182, 473], 'ball': None, 'Side': 'FRONT', 'frame': 19}
-    nba_24 = {'left_shoulder': [132, 747], 'right_shoulder': [63, 747], 'left_elbow': [161, 745], 'right_elbow': [73, 736], 'left_wrist': [145, 810], 'right_wrist': [88, 800], 'left_hip': [118, 603], 'right_hip': [74, 605], 'ball': None, 'Side': 'FRONT', 'frame': 11}
-    nba_26 = {'left_shoulder': [256, 666], 'right_shoulder': [186, 675], 'left_elbow': [294, 669], 'right_elbow': [201, 666], 'left_wrist': [277, 731], 'right_wrist': [214, 732], 'left_hip': [242, 513], 'right_hip': [195, 516], 'ball': None, 'Side': 'FRONT', 'frame': 21}
-    nba_27 = {'left_shoulder': [263, 723], 'right_shoulder': [192, 728], 'left_elbow': [290, 729], 'right_elbow': [198, 714], 'left_wrist': [277, 796], 'right_wrist': [216, 787], 'left_hip': [245, 570], 'right_hip': [199, 574], 'ball': None, 'Side': 'FRONT', 'frame': 10}
+    nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'left_pinky': [198, 549], 'right_pinky': [159, 543], 'left_thumb': [197, 543], 'right_thumb': [156, 538], 'ball': None, 'Side': 'FRONT', 'frame': 63}
+    nba_19 = {'left_shoulder': [436, 656], 'right_shoulder': [362, 662], 'left_elbow': [474, 618], 'right_elbow': [352, 633], 'left_wrist': [460, 636], 'right_wrist': [380, 695], 'left_hip': [425, 521], 'right_hip': [382, 525], 'left_pinky': [454, 638], 'right_pinky': [389, 711], 'left_thumb': [446, 643], 'right_thumb': [387, 708], 'ball': None, 'Side': 'FRONT', 'frame': 45}
+    nba_20 = {'left_shoulder': [168, 533], 'right_shoulder': [101, 538], 'left_elbow': [196, 528], 'right_elbow': [108, 517], 'left_wrist': [184, 592], 'right_wrist': [127, 575], 'left_hip': [156, 391], 'right_hip': [113, 393], 'left_pinky': [179, 609], 'right_pinky': [132, 595], 'left_thumb': [177, 606], 'right_thumb': [130, 595], 'ball': None, 'Side': 'FRONT', 'frame': 15}
+    nba_22 = {'left_shoulder': [271, 508], 'right_shoulder': [207, 510], 'left_elbow': [313, 511], 'right_elbow': [218, 529], 'left_wrist': [277, 567], 'right_wrist': [227, 589], 'left_hip': [271, 363], 'right_hip': [228, 367], 'left_pinky': [270, 583], 'right_pinky': [232, 606], 'left_thumb': [266, 578], 'right_thumb': [231, 597], 'ball': None, 'Side': 'FRONT', 'frame': 37}
+    nba_23 = {'left_shoulder': [241, 610], 'right_shoulder': [173, 615], 'left_elbow': [271, 615], 'right_elbow': [176, 595], 'left_wrist': [254, 676], 'right_wrist': [196, 662], 'left_hip': [224, 469], 'right_hip': [182, 473], 'left_pinky': [250, 691], 'right_pinky': [200, 684], 'left_thumb': [246, 688], 'right_thumb': [194, 678], 'ball': None, 'Side': 'FRONT', 'frame': 19}
+    nba_24 = {'left_shoulder': [132, 747], 'right_shoulder': [63, 747], 'left_elbow': [161, 745], 'right_elbow': [73, 736], 'left_wrist': [145, 810], 'right_wrist': [88, 800], 'left_hip': [118, 603], 'right_hip': [74, 605], 'left_pinky': [136, 826], 'right_pinky': [96, 816], 'left_thumb': [134, 823], 'right_thumb': [90, 811], 'ball': None, 'Side': 'FRONT', 'frame': 11}
+    nba_26 = {'left_shoulder': [256, 666], 'right_shoulder': [186, 675], 'left_elbow': [294, 669], 'right_elbow': [201, 666], 'left_wrist': [277, 731], 'right_wrist': [214, 732], 'left_hip': [242, 513], 'right_hip': [195, 516], 'left_pinky': [269, 749], 'right_pinky': [217, 750], 'left_thumb': [266, 744], 'right_thumb': [213, 744], 'ball': None, 'Side': 'FRONT', 'frame': 21}
+    nba_27 = {'left_shoulder': [263, 723], 'right_shoulder': [192, 728], 'left_elbow': [290, 729], 'right_elbow': [198, 714], 'left_wrist': [277, 796], 'right_wrist': [216, 787], 'left_hip': [245, 570], 'right_hip': [199, 574], 'left_pinky': [267, 815], 'right_pinky': [217, 805], 'left_thumb': [267, 809], 'right_thumb': [217, 802], 'ball': None, 'Side': 'FRONT', 'frame': 10}
 
     merged_dict = {}
 

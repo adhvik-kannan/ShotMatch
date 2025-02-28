@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from generate_side_bell_curves import calculate_angle, generate_side_la_parameters, generate_side_ra_parameters, get_parameters
+from src.generate_side_bell_curves import calculate_angle, generate_side_la_parameters, generate_side_ra_parameters, get_parameters
 
 @pytest.fixture
 def dummy_data():

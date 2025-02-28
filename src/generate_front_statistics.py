@@ -120,13 +120,27 @@ def compare_front(data, hse_ra_params, hse_la_params, sew_ra_params, sew_la_para
         "ec_score": score_ec
     }
 
+def get_klay_data():
+    return {'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [886, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52}
+
+def get_params():
+    hse_ra_params = {'mean': 43.298923816434325, 'std': 40.25967787806732, 'alpha': 0.6378923208507256, 'beta': 2.0139199560527907}
+    hse_la_params = {'mean': 92.8862314104217, 'std': 18.213527582489963, 'alpha': 12.071157105814251, 'beta': 11.32098881348697}
+    sew_ra_params = {'mean': 56.513779392939966, 'std': 43.3325881553567, 'alpha': 0.8529125252622869, 'beta': 1.8636683899824433}
+    sew_la_params = {'mean': 69.94910046694802, 'std': 25.983045238195032, 'alpha': 4.0424297033764995, 'beta': 6.359953483117646}
+    ewa_ra_params = {'mean': 171.2429226074844, 'std': 2.700463421634448, 'alpha': 194.67860198702382, 'beta': 9.955538940285523}
+    ewp_la_params = {'mean': 166.53889329592488, 'std': 9.400764569916712, 'alpha': 22.544792995353788, 'beta': 1.8222642058302212}
+    elbow_params = {'mean': 0.1860944586520072, 'std': 0.07193177550894218, 'alpha': 5.261431738885052, 'beta': 23.011477497621666}
+
+    return hse_ra_params, hse_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params
 def main():
     # Compute similarity scores for front view.
-    # front_scores = compare_front(new_front_data, hse_params, sew_params, ewp_params, elbow_params)
+    new_front_data = get_klay_data()
+    hse_ra_params, hse_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params = get_params()
+    front_scores = compare_front(new_front_data, hse_ra_params, hse_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params)
     
-    # print("Front view similarity scores:")
-    # print(front_scores)
-    print("temp")
+    print("Front view similarity scores:")
+    print(front_scores)
 
 if __name__ == "__main__":
     main()
