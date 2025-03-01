@@ -36,13 +36,13 @@ def generate_side_la_parameters(data):
 
     for i in range(len(data["ball"])):
         # shoulder-elbow-wrist left arm
-        if ((data["left_shoulder"][i] != "NONE") and (data["left_elbow"][i] != "NONE") and (data["left_wrist"][i] != "NONE")):
+        if ((data["left_shoulder"][i] != None) and (data["left_elbow"][i] != None) and (data["left_wrist"][i] != None)):
             angle = calculate_angle(data["left_elbow"][i], data["left_shoulder"][i], data["left_wrist"][i])
             sew_la_list.append(angle)
         
         # elbow-wrist-average left arm (avg = thumb and pinky)
-        if ((data["left_elbow"][i] != "NONE") and (data["left_wrist"][i] != "NONE")):
-            if (data["left_pinky"][i] != "NONE" and data["left_thumb"][i] != "NONE"):
+        if ((data["left_elbow"][i] != None) and (data["left_wrist"][i] != None)):
+            if (data["left_pinky"][i] != None and data["left_thumb"][i] != None):
                 x = (data["left_pinky"][i][0] + data["left_thumb"][i][0]) / 2
                 y = (data["left_pinky"][i][1] + data["left_thumb"][i][1]) / 2
                 coord = [x, y]
@@ -60,12 +60,12 @@ def generate_side_ra_parameters(data):
     
     for i in range(len(data["ball"])):
         # shoulder-elbow-wrist right arm
-        if ((data["right_shoulder"][i] != "NONE") and (data["right_elbow"][i] != "NONE") and (data["right_wrist"][i] != "NONE")):
+        if ((data["right_shoulder"][i] != None) and (data["right_elbow"][i] != None) and (data["right_wrist"][i] != None)):
             angle = calculate_angle(data["right_elbow"][i], data["right_shoulder"][i], data["right_wrist"][i])
             sew_ra_list.append(angle)
         
         # elbow-wrist-pinky right arm
-        if ((data["right_elbow"][i] != "NONE") and (data["right_wrist"][i] != "NONE") and (data["right_pinky"][i] != "NONE")):
+        if ((data["right_elbow"][i] != None) and (data["right_wrist"][i] != None) and (data["right_pinky"][i] != None)):
             angle = calculate_angle(data["right_wrist"][i], data["right_elbow"][i], data["right_pinky"][i])
             ewp_ra_list.append(angle)
     
