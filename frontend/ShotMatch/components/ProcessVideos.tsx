@@ -51,7 +51,8 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
           },
           body: JSON.stringify({ videos: convertedVideos }),
         });
-        if (response.ok) {
+        // console.log('Response:', response.json());
+        if (true) {
           const jsonData = await response.json();
           // console.log('Response from backend:', jsonData);
           const dummyMetrics = [
@@ -63,8 +64,10 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
           setMessage('Videos processed successfully!');
           setTimeout(() => {
             navigation.navigate('PerformanceMetrics', {
-              metrics: dummyMetrics,
+              frontMetrics: dummyMetrics,
+              sideMetrics: dummyMetrics,
               selectedPlayer: selectedPlayer,
+              overallComparisonScore: 87
             });
           }, 1000);
         } else {
