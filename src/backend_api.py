@@ -20,10 +20,11 @@ app = Flask(__name__)
 
 # Connect to MongoDB
 success, db = connect_to_mongodb(DB_NAME)
-if not success:
+success2, db2 = connect_to_mongodb("nba_players")
+if not success or not success2:
     raise Exception("Failed to connect to MongoDB")
 users_collection = db["users"]
-
+nba_players_collection = db2["stephen_curry"]
 # Helper Functions
 def create_jwt_token(username):
     expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=2)
