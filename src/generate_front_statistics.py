@@ -109,85 +109,104 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
         angle_ewp_la = calculate_angle(data["left_wrist"], data["left_elbow"], data["left_pinky"])
     
     # hew: Angle at shoulder using points: hip, shoulder, left_elbow.
-    score_hew_ra = beta.cdf(angle_hew_ra/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
-    score_hew_la = beta.cdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    hew_ra_mean = beta.cdf(hew_ra_params["mean"]/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
-    hew_la_mean = beta.cdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    if (score_hew_ra > hew_ra_mean):
-        score_hew_ra = 1 - score_hew_ra
-        score_hew_ra /= (1 - hew_ra_mean)
-    else: score_hew_ra /= hew_ra_mean
-    if (score_hew_la > hew_la_mean):
-        score_hew_la = 1 - score_hew_la
-        score_hew_la /= (1 - hew_la_mean)
-    else: score_hew_la /= hew_la_mean
-
-    score_hew_ra *= 100
-    score_hew_la *= 100
-
-    temp_hewla = beta.pdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    temp_hewla_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    print("hew cdf val: ", score_hew_la)
-    print("hew pdf val: ", temp_hewla/temp_hewla_mean)
+    pdf_hew_ra_new = beta.pdf(angle_hew_ra/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    pdf_hew_ra_mean = beta.pdf(hew_ra_params["mean"]/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    score_hew_ra = (pdf_hew_ra_new / pdf_hew_ra_mean) * 100 if pdf_hew_ra_mean != 0 else 0
+    score_hew_ra = math.ceil(max(0, min(100, score_hew_ra)))
+    # print("hew score pdf/pdf: ", score_hew_ra)
 
     pdf_hew_la_new = beta.pdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
     pdf_hew_la_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    score_hew = (pdf_hew_la_new / pdf_hew_la_mean) * 100 if pdf_hew_la_mean != 0 else 0
-    score_hew = max(0, min(100, score_hew))
-    print("hew score pdf/pdf: ", score_hew)
+    score_hew_la = (pdf_hew_la_new / pdf_hew_la_mean) * 100 if pdf_hew_la_mean != 0 else 0
+    score_hew_la = math.ceil(max(0, min(100, score_hew_la)))
+    # print("hew score pdf/pdf: ", score_hew)
+    # score_hew_ra = beta.cdf(angle_hew_ra/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    # score_hew_la = beta.cdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
+    # hew_ra_mean = beta.cdf(hew_ra_params["mean"]/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    # hew_la_mean = beta.cdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
+    # if (score_hew_ra > hew_ra_mean):
+    #     score_hew_ra = 1 - score_hew_ra
+    #     score_hew_ra /= (1 - hew_ra_mean)
+    # else: score_hew_ra /= hew_ra_mean
+    # if (score_hew_la > hew_la_mean):
+    #     score_hew_la = 1 - score_hew_la
+    #     score_hew_la /= (1 - hew_la_mean)
+    # else: score_hew_la /= hew_la_mean
 
-    # print("cdf hew ra: ", score_hew_ra)
-    # print("cdf hew la: ", score_hew_la)
-    
+    # score_hew_ra *= 100
+    # score_hew_la *= 100
+
+    # temp_hewla = beta.pdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
+    # temp_hewla_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
+    # print("hew cdf val: ", score_hew_la)
+    # print("hew pdf val: ", temp_hewla/temp_hewla_mean)
+
+
+
+
     # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
-    score_sew_ra = beta.cdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    score_sew_la = beta.cdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    sew_ra_mean = beta.cdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    sew_la_mean = beta.cdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    if (score_sew_ra > sew_ra_mean):
-        score_sew_ra = 1 - score_sew_ra
-        score_sew_ra /= (1 - sew_ra_mean)
-    else: score_sew_ra /= sew_ra_mean
-    if (score_sew_la > sew_la_mean):
-        score_sew_la = 1 - score_sew_la
-        score_sew_la /= (1 - sew_la_mean)
-    else: score_sew_la /= sew_la_mean
-
-    score_sew_ra *= 100
-    score_sew_la *= 100
+    pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
+    score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
+    score_sew_ra = math.ceil(max(0, min(100, score_sew_ra)))
+    score_sew_la = math.ceil(max(0, min(100, score_sew_la)))
+    # score_sew_ra = beta.cdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    # score_sew_la = beta.cdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    # sew_ra_mean = beta.cdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    # sew_la_mean = beta.cdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    # if (score_sew_ra > sew_ra_mean):
+    #     score_sew_ra = 1 - score_sew_ra
+    #     score_sew_ra /= (1 - sew_ra_mean)
+    # else: score_sew_ra /= sew_ra_mean
+    # if (score_sew_la > sew_la_mean):
+    #     score_sew_la = 1 - score_sew_la
+    #     score_sew_la /= (1 - sew_la_mean)
+    # else: score_sew_la /= sew_la_mean
+    # score_sew_ra *= 100
+    # score_sew_la *= 100
     
     # ewa: Angle at wrist using points: right elbow, wrist, average between thumb and pinky
-    score_ewa_ra = beta.cdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
-    ewa_ra_mean = beta.cdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
-    if (score_ewa_ra > ewa_ra_mean):
-        score_ewa_ra = 1 - score_ewa_ra
-        score_ewa_ra /= (1 - ewa_ra_mean)
-    else: score_ewa_ra /= ewa_ra_mean
-
-    score_ewa_ra *= 100
+    pdf_ewa_ra_new = beta.pdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    pdf_ewa_ra_mean = beta.pdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    score_ewa_ra = (pdf_ewa_ra_new / pdf_ewa_ra_mean) * 100 if pdf_ewa_ra_mean != 0 else 0
+    score_ewa_ra = math.ceil(max(0, min(100, score_ewa_ra)))
+    # score_ewa_ra = beta.cdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    # ewa_ra_mean = beta.cdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    # if (score_ewa_ra > ewa_ra_mean):
+    #     score_ewa_ra = 1 - score_ewa_ra
+    #     score_ewa_ra /= (1 - ewa_ra_mean)
+    # else: score_ewa_ra /= ewa_ra_mean
+    # score_ewa_ra *= 100
 
     # ewp: Angle at wrist using points: left_elbow, wrist, pinky.
-    score_ewp_la = beta.cdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-
-    print("cdf val ewp: ", score_ewp_la)
-
-    ewp_la_mean = beta.cdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    if (score_ewp_la > ewp_la_mean):
-        score_ewp_la = 1 - score_ewp_la
-        score_ewp_la /= (1 - ewp_la_mean)
-    else: score_ewp_la /= ewp_la_mean
-    score_ewp_la *= 100
-
-    temp_ewp = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    temp_ewp_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    print("pdf val: ", temp_ewp/temp_ewp_mean)
-
     pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
     pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    print("pdf / pdf: ", (pdf_ewp_la_new / pdf_ewp_la_mean))
-    score_ewp = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100
-    score_ewp = min(100, score_ewp)
-    print("ewp score pdf/pdf: ", score_ewp)
+    score_ewp_la = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100 if pdf_ewp_la_mean != 0 else 0
+    score_ewp_la = math.ceil(max(0, min(100, score_ewp_la)))
+    # score_ewp_la = beta.cdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+
+    # print("cdf val ewp: ", score_ewp_la)
+
+    # ewp_la_mean = beta.cdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    # if (score_ewp_la > ewp_la_mean):
+    #     score_ewp_la = 1 - score_ewp_la
+    #     score_ewp_la /= (1 - ewp_la_mean)
+    # else: score_ewp_la /= ewp_la_mean
+    # score_ewp_la *= 100
+
+    # temp_ewp = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    # temp_ewp_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    # print("pdf val: ", temp_ewp/temp_ewp_mean)
+
+    # pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    # pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    # print("pdf / pdf: ", (pdf_ewp_la_new / pdf_ewp_la_mean))
+    # score_ewp = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100
+    # score_ewp = min(100, score_ewp)
+    # print("ewp score pdf/pdf: ", score_ewp)
 
     # ec: Use the calculate_elbow function.
     ec_value = get_elbow(data)
@@ -196,25 +215,25 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     pdf_ec_new = beta.pdf(ec_value, elbow_params["alpha"], elbow_params["beta"])
     pdf_ec_mean = beta.pdf(elbow_params["mean"], elbow_params["alpha"], elbow_params["beta"])
     score_ec = (pdf_ec_new / pdf_ec_mean) * 100 if pdf_ec_mean != 0 else 0
-    score_ec = max(0, min(100, score_ec))
+    score_ec = math.ceil(max(0, min(100, score_ec)))
 
-    score_elbow = beta.cdf(ec_value, elbow_params["alpha"], elbow_params["beta"])
-    elbow_mean = beta.cdf(elbow_params["mean"], elbow_params["alpha"], elbow_params["beta"])
-    if (score_elbow > elbow_mean):
-        score_elbow = 1 - score_elbow
-        score_elbow /= (1 - elbow_mean)
-    else: score_elbow /= elbow_mean
+    # score_elbow = beta.cdf(ec_value, elbow_params["alpha"], elbow_params["beta"])
+    # elbow_mean = beta.cdf(elbow_params["mean"], elbow_params["alpha"], elbow_params["beta"])
+    # if (score_elbow > elbow_mean):
+    #     score_elbow = 1 - score_elbow
+    #     score_elbow /= (1 - elbow_mean)
+    # else: score_elbow /= elbow_mean
 
-    score_elbow *= 100
+    # score_elbow *= 100
 
     
-    # plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
+    plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
     plot_beta_with_point(angle_hew_la, hew_la_params, label="HEW_LA")
-    # plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
-    # plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
-    # plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
+    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
+    plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
+    plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
     plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
-
+    
     return {
         "hew_ra_score": score_hew_ra,
         "hew_la_score": score_hew_la,
