@@ -70,13 +70,13 @@ def compare_side_ra(data, sew_ra_params, ewp_ra_params):
     pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
     pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
     score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
-    score_sew_ra = max(0, min(100, score_sew_ra))
+    score_sew_ra = math.ceil(max(0, min(100, score_sew_ra)))
     
     # ewp: Angle at wrist using points: right_elbow, wrist, pinky.
     pdf_ewp_ra_new = beta.pdf(angle_ewp_ra/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
     pdf_ewp_ra_mean = beta.pdf(ewp_ra_params["mean"]/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
     score_ewp_ra = (pdf_ewp_ra_new / pdf_ewp_ra_mean) * 100 if pdf_ewp_ra_mean != 0 else 0
-    score_ewp_ra = max(0, min(100, score_ewp_ra))
+    score_ewp_ra = math.ceil(max(0, min(100, score_ewp_ra)))
 
     plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
     plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
@@ -104,13 +104,13 @@ def compare_side_la(data, sew_la_params, ewa_la_params):
     pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
     pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
     score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
-    score_sew_la = max(0, min(100, score_sew_la))
+    score_sew_la = math.ceil(max(0, min(100, score_sew_la)))
     
     # ewa: Angle at wrist using points: left elbow, wrist, average between thumb and pinky
     pdf_ewa_la_new = beta.pdf(angle_ewa_la/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
     pdf_ewa_la_mean = beta.pdf(ewa_la_params["mean"]/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
     score_ewa_la = (pdf_ewa_la_new / pdf_ewa_la_mean) * 100 if pdf_ewa_la_mean != 0 else 0
-    score_ewa_la = max(0, min(100, score_ewa_la))
+    score_ewa_la = math.ceil(max(0, min(100, score_ewa_la)))
     
     return {
         "sew_la_score": score_sew_la,
