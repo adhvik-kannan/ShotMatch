@@ -134,23 +134,29 @@ def process_videos():
     # processed_results[1] = {side_data}
     which_arm = ["left", "right"]
 
-    # for arm in which_arm:
-    #     # this basically gets from database nba player params
-    #     front_hse_params = get_front_hse_params(arm, player)
-    #     front_sew_params = get_front_sew_params(arm, player)
-    #     front_ewp_params = get_front_ewp_params(arm, player)
-    #     front_ec_params = get_front_ec_params(arm, player)
+    # this is what compare_front() returns
+    # the params you just get from database, hew_ra_params will be HEW_F_RA in mongo (F means front)
+    #
+    # def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params)
+    # return {
+    #     "hew_ra_score": score_hew_ra,
+    #     "hew_la_score": score_hew_la,
+    #     "sew_ra_score": score_sew_ra,
+    #     "sew_la_score": score_sew_la,
+    #     "ewa_ra_score": score_ewa_ra,
+    #     "ewp_la_score": score_ewp_la,
+    #     "ec_score": score_ec
+    # }
 
-    #     side_sew_params = get_side_sew_params(arm, player)
-    #     side_ewa_params = get_side_ewa_params(arm, player)
+    # same for compare_side_ra()
+    # compare_side_la() (for left arm) doesnt work rn cause we didnt get left arm data
+    #
+    # def compare_side_ra(data, sew_ra_params, ewp_ra_params)
+    # return {
+    #     "sew_ra_score": score_sew_ra,
+    #     "ewp_ra_score": score_ewp_ra,
+    # }
 
-    #     if arm == "left":
-    #         front_statistics_LA = compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-    #         side_statistics_LA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
-        
-    #     elif arm == "right": 
-    #         front_statistics_RA =  compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-    #         side_statistics_RA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
 
     return jsonify({
         "message": "Videos processed successfully",
