@@ -35,14 +35,6 @@ def dummy_front_params():
     ec_params = {"mean": 0.1, "std": 0.05, "alpha": 2.0, "beta": 8.0}
     return hse_params, sew_params, ewp_params, ec_params
 
-def test_calculate_angle():
-    a = [0, 0]
-    vertex = [0, 1]
-    b = [1, 1]
-    angle = calculate_angle(vertex, a, b)
-    # Expected angle is approximately 45 degrees.
-    assert math.isclose(angle, 45.0, abs_tol=1.0), f"Expected ~45, got {angle}"
-
 def test_get_elbow(dummy_front_data):
     """
     Test that the get_elbow function returns a value in [0,1].

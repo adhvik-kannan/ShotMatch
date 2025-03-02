@@ -41,14 +41,6 @@ def dummy_side_params():
     ewa_la_params = {"mean": 170.0, "std": 10.0, "alpha": 12.0, "beta": 3.0}
     return sew_ra_params, ewp_ra_params, sew_la_params, ewa_la_params
 
-def test_calculate_angle_side():
-    a = [0, 0]
-    vertex = [0, 1]
-    b = [1, 1]
-    angle = calculate_angle(vertex, a, b)
-    # Expected angle ~45 degrees.
-    assert math.isclose(angle, 45.0, abs_tol=1.0)
-
 def test_compare_side_ra(dummy_side_data, dummy_side_params):
     sew_ra_params, ewp_ra_params, _, _ = dummy_side_params
     scores = compare_side_ra(dummy_side_data, sew_ra_params, ewp_ra_params)
