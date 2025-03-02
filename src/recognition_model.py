@@ -30,7 +30,7 @@ def get_landmark_xy(landmarks, index, image_width, image_height):
     VISIBILITY_THRESHOLD = 0.5
     landmark = landmarks[index]
     if landmark.visibility < VISIBILITY_THRESHOLD:
-        return "NONE" # use string to make life easier
+        return None # use string to make life easier
     x_coord = int(landmark.x * image_width)
     y_coord = int((1 - landmark.y) * image_height)
     return [x_coord, y_coord]
@@ -89,14 +89,17 @@ def analyze_video(video_path):
             right_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
             left_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
 
+            right_thumb = get_landmark_xy(landmarks, 22, w, h)
+            left_thumb = get_landmark_xy(landmarks, 21, w, h)
+
             right_mouth = get_landmark_xy(landmarks, 10, w, h)
             left_mouth = get_landmark_xy(landmarks, 9, w, h)
 
             ball = detect_ball(frame)
 
-            if right_eye != "NONE":
+            if right_eye != None:
                 eye_level = right_eye
-            elif left_eye != "NONE":
+            elif left_eye != None:
                 eye_level = left_eye
             # elif right_ear != "NONE":
             #     eye_level = right_ear
@@ -105,12 +108,36 @@ def analyze_video(video_path):
             else:
                 eye_level = None
 
-            if right_mouth != "NONE":
+            if right_mouth != None:
                 mouth_level = right_mouth
-            elif left_mouth != "NONE":
+            elif left_mouth != None:
                 mouth_level = left_mouth
             else:
                 mouth_level = None
+
+            if right_wrist != None:
+                wrist = right_wrist
+            elif left_wrist != None:
+                wrist = left_wrist
+            else:
+                wrist = None
+            
+            if right_pinky != None:
+                pinky = right_pinky
+            elif left_pinky != None:
+                pinky = left_pinky
+            else:
+                pinky = None
+
+            side = None
+            if right_shoulder == None or right_elbow == None or right_wrist == None:
+                if left_shoulder != None and left_elbow != None and left_wrist != None:
+                    side = "LEFT"
+            elif left_shoulder == None or left_elbow == None or left_wrist == None:
+                if right_shoulder != None and right_elbow != None and right_wrist != None:
+                    side = "RIGHT"
+            else:
+                side = "FRONT"
             
             if ball is not None and eye_level is not None and mouth_level is not None:
                 ball_x, ball_y = ball
@@ -118,8 +145,8 @@ def analyze_video(video_path):
                 eye_level_x, eye_level_y = eye_level
                 mouth_level_x, mouth_level_y = mouth_level
                 # print(ball_y, eye_level_y, mouth_level_y)
-                # if ball_y < 2 * eye_level_y - mouth_level_y and ball_y > 2 * mouth_level_y - eye_level_y:
-                if ball_y < eye_level_y and ball_y > mouth_level_y:
+                if ball_y < 2 * eye_level_y - mouth_level_y and ball_y > 2 * mouth_level_y - eye_level_y:
+                # if ball_y < eye_level_y and ball_y > mouth_level_y:
                     frame_data = {
                         "left_shoulder": left_shoulder,
                         "right_shoulder": right_shoulder,
@@ -129,14 +156,42 @@ def analyze_video(video_path):
                         "right_wrist": right_wrist,
                         "left_hip": left_hip,
                         "right_hip": right_hip,
-                        # can take mean for waist value
+                        "left_pinky": left_pinky,
+                        "right_pinky": right_pinky,
+                        "left_thumb": left_thumb,
+                        "right_thumb": right_thumb,
                         "ball": ball,
-                        # "eye_level": eye_level,
-                        # "mouth_level": mouth_level,
+                        "Side": side,
                         "frame": frame_index
                     }
-                    # output_data.append(frame_data)
                     output_data[frame_index] = frame_data
+            elif wrist is not None and eye_level is not None and mouth_level is not None:
+                wrist_x, wrist_y = wrist
+                eye_level_x, eye_level_y = eye_level
+                mouth_level_x, mouth_level_y = mouth_level
+                # print(wrist_y, eye_level_y, mouth_level_y)
+                if wrist_y < 2 * eye_level_y - mouth_level_y and wrist_y > 2 * mouth_level_y - eye_level_y:
+                    frame_data = {
+                        "left_shoulder": left_shoulder,
+                        "right_shoulder": right_shoulder,
+                        "left_elbow": left_elbow,
+                        "right_elbow": right_elbow,
+                        "left_wrist": left_wrist,
+                        "right_wrist": right_wrist,
+                        "left_hip": left_hip,
+                        "right_hip": right_hip,
+                        "left_pinky": left_pinky,
+                        "right_pinky": right_pinky,
+                        "left_thumb": left_thumb,
+                        "right_thumb": right_thumb,
+                        "ball": ball,
+                        "Side": side,
+                        "frame": frame_index
+                    }
+                    output_data[frame_index] = frame_data
+            # print(f"Output Data:{output_data}")
+                    
+            
 
         #===================================== start of comment ===============================
         #     mp_drawing.draw_landmarks(
@@ -170,7 +225,59 @@ def analyze_video(video_path):
 
 # example usage:
 if __name__ == "__main__":
-    pose_data = analyze_video("test_video.mp4")  # Replace with your video path
-    # for frame_info in pose_data:
-    #     print(frame_info)
-    print(pose_data)
+    # pose_data = analyze_video("nba_1.mp4")  
+    # print(f"nba_1: {pose_data}")
+    # pose_data = analyze_video("nba_2.mp4")
+    # print(f"nba_2: {pose_data}")
+    # pose_data = analyze_video("nba_3.mp4")
+    # print(f"nba_3: {pose_data}")
+    # pose_data = analyze_video("nba_4.mp4")
+    # print(f"nba_4: {pose_data}")
+    # pose_data = analyze_video("nba_5.mp4")
+    # print(f"nba_5: {pose_data}")
+    # pose_data = analyze_video("nba_6.mp4")
+    # print(f"nba_6: {pose_data}")
+    # pose_data = analyze_video("nba_7.mp4")
+    # print(f"nba_7: {pose_data}")
+    # pose_data = analyze_video("nba_8.mp4")
+    # print(f"nba_8: {pose_data}")
+    # pose_data = analyze_video("nba_9.mp4")
+    # print(f"nba_9: {pose_data}")
+    # pose_data = analyze_video("nba_10.mp4")
+    # print(f"nba_10: {pose_data}")
+    # pose_data = analyze_video("nba_11.mp4")
+    # print(f"nba_11: {pose_data}")
+    # pose_data = analyze_video("nba_12.mp4")
+    # print(f"nba_12: {pose_data}")
+    # pose_data = analyze_video("nba_13.mp4")
+    # print(f"nba_13: {pose_data}")
+    # pose_data = analyze_video("nba_14.mp4")
+    # print(f"nba_14: {pose_data}")
+    # pose_data = analyze_video("nba_15.mp4")
+    # print(f"nba_15: {pose_data}")
+    # pose_data = analyze_video("nba_16.mp4")
+    # print(f"nba_16: {pose_data}")
+    # pose_data = analyze_video("nba_17.mp4")
+    # print(f"nba_17: {pose_data}")
+    # pose_data = analyze_video("nba_18.mp4")
+    # print(f"nba_18: {pose_data}")
+    pose_data = analyze_video("nba_19.mp4")
+    print(f"nba_19: {pose_data}")
+    # pose_data = analyze_video("nba_20.mp4")
+    # print(f"nba_20: {pose_data}")
+    # pose_data = analyze_video("nba_21.mp4")
+    # print(f"nba_21: {pose_data}")
+    pose_data = analyze_video("nba_22.mp4")
+    print(f"nba_22: {pose_data}")
+    # pose_data = analyze_video("nba_23.mp4")
+    # print(f"nba_23: {pose_data}")
+    # pose_data = analyze_video("nba_24.mp4")
+    # print(f"nba_24: {pose_data}")
+    # pose_data = analyze_video("nba_25.mp4")
+    # print(f"nba_25: {pose_data}")
+    # pose_data = analyze_video("nba_26.mp4")
+    # print(f"nba_26: {pose_data}")
+    # pose_data = analyze_video("nba_27.mp4")
+    # print(f"nba_27: {pose_data}")
+    # pose_data = analyze_video("nba_29.mp4")
+    # print(f"klay: {pose_data}")

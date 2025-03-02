@@ -52,17 +52,23 @@ def test_get_landmark_xy():
     hidden_landmark = get_landmark_xy(mock_landmarks, 1, image_width, image_height)
     assert visible_landmark != "NONE", "Visible landmark should return coordinates"
     assert isinstance(visible_landmark, list) and len(visible_landmark) == 2, "Returned value should be a list of [x_coordinate, y_coordinate]"
-    assert hidden_landmark == "NONE", "Non-visible landmark should return string 'NONE'"
+    assert hidden_landmark == None, "Non-visible landmark should return string 'NONE'"
 
 
 # Test on analyze the mock video
 def test_analyze_video(mock_video):
     with patch("cv2.VideoCapture", return_value=mock_video):
         output_data = analyze_video("mock_video.mp4")
-        if output_data is not None: # only when it gets the data
-            assert isinstance(output_data, dict), "Output should be a list"
+        if output_data is not None:
+            assert isinstance(output_data, dict), "Output should be a dict"
             assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
             assert "ball" in output_data[0], "Frame data should contain ball"
+        # output_data = analyze_video("nba_test.mp4")
+        # if output_data is not None:
+        #     assert isinstance(output_data, dict), "Output should be a dict"
+        #     assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
+        #     assert "ball" in output_data[0], "Frame data should contain ball"
+
 
 if __name__ == "__main__":
     pytest.main()
