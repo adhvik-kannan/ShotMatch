@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+import Constants from 'expo-constants';
 
 interface Props {
     navigation: NavigationProp<any>;
@@ -12,7 +13,11 @@ const Login: React.FC<Props> = ({ navigation }) => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://128.46.4.97:5000/login', {
+            const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
+            const backendPort: string = Constants.expoConfig?.extra?.backendPort;
+            console.log('Backend URL:', backendUrl);
+            console.log('Backend Port:', backendPort);
+            const response = await fetch(`http://${backendUrl}:${backendPort}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -23,7 +28,7 @@ const Login: React.FC<Props> = ({ navigation }) => {
             console.log(data);
             if(response.ok) {
                 Alert.alert('Success', 'Logged in successfully');
-                navigation.navigate('Home');   
+                navigation.navigate('Home', { user: email });   
             } else {
                 Alert.alert('Error', data.message || 'Login failed');
             }

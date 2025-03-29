@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
-      "backendUrl": "128.46.4.97"
+      "backendUrl": "128.46.4.97",
+      "backendPort": "8080"
     },
     "ios": {
       "supportsTablet": true

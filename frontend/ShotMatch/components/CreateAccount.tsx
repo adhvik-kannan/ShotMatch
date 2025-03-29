@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+import Constants from 'expo-constants';
 
 interface Props {
     navigation: NavigationProp<any>;
@@ -12,7 +13,9 @@ const CreateAccount: React.FC<Props> = ({ navigation }) => {
 
     const handleCreateAccount = async () => {
         try {
-            const response = await fetch('http://128.46.4.97:5000/signup', {
+            const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
+            const backendPort: string = Constants.expoConfig?.extra?.backendPort;
+            const response = await fetch(`http://${backendUrl}:${backendPort}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

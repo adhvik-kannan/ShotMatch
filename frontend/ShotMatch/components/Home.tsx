@@ -1,28 +1,42 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 
 interface HomeProps {
     navigation: any;
 }
 
+// type UserData = {
+//   email: string;
+// };
+
+type RootStackParamList = {
+    User: { user: string };
+};
+
+type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'User'>;
+
 const Home: React.FC<HomeProps> = ({ navigation }) => {
+    const route = useRoute<ProcessVideosRouteProp>();
+    const { user } = route.params;
+
     return (
         <View style={styles.container}>
             <TouchableOpacity 
                 style={styles.button} 
-                onPress={() => navigation.navigate('Compare')}
+                onPress={() => navigation.navigate('Compare', { user: user })}
             >
                 <Text style={styles.buttonText}>Compare With an NBA Player</Text>
             </TouchableOpacity>
             <TouchableOpacity 
                 style={styles.button} 
-                onPress={() => navigation.navigate('Consistency')}
+                onPress={() => navigation.navigate('Consistency', { user: user })}
             >
                 <Text style={styles.buttonText}>Consistency: Compare With Yourself</Text>
             </TouchableOpacity>
             <TouchableOpacity 
                 style={styles.button} 
-                onPress={() => navigation.navigate('HistoricalGraph')}
+                onPress={() => navigation.navigate('HistoricalGraph', { user: user })}
             >
                 <Text style={styles.buttonText}>Historical Graph</Text>
             </TouchableOpacity>

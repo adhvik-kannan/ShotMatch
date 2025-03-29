@@ -1,3 +1,147 @@
+// // import React from 'react';
+// // import { View, Text, ScrollView, StyleSheet, Button } from 'react-native';
+// // import { RouteProp, useRoute } from '@react-navigation/native';
+// // import Svg, { Circle, Text as SvgText } from 'react-native-svg';
+
+// // type Metric = {
+// //   metric: string;
+// //   you: number;
+// //   player: number;
+// // };
+
+// // type RootStackParamList = {
+// //   PerformanceMetrics: { metrics: Metric[]; selectedPlayer: { name: string; image: string } };
+// // };
+
+// // type PerformanceMetricsRouteProp = RouteProp<RootStackParamList, 'PerformanceMetrics'>;
+
+// // interface HomeProps {
+// //   navigation: any;
+// // }
+
+// // const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
+// //   const route = useRoute<PerformanceMetricsRouteProp>();
+// //   const { metrics, selectedPlayer } = route.params;
+
+// //   // For demonstration, use a dummy similarity score. Replace with your computed value if needed.
+// //   const similarityScore = 50;
+// //   const radius = 45;
+// //   const strokeWidth = 10;
+// //   const circumference = 2 * Math.PI * radius;
+// //   const offset = circumference * (1 - similarityScore / 100);
+
+// //   return (
+// //     <ScrollView contentContainerStyle={styles.scrollContainer} horizontal={false}>
+// //       <View style={styles.container}>
+// //         <View style={styles.similarityContainer}>
+// //           <Svg height="100" width="100" viewBox="0 0 100 100">
+// //             {/* Background Circle (red) */}
+// //             <Circle
+// //               cx="50"
+// //               cy="50"
+// //               r={radius}
+// //               stroke="red"
+// //               strokeWidth={strokeWidth}
+// //               fill="none"
+// //             />
+// //             {/* Progress Circle (green) */}
+// //             <Circle
+// //               cx="50"
+// //               cy="50"
+// //               r={radius}
+// //               stroke="green"
+// //               strokeWidth={strokeWidth}
+// //               fill="none"
+// //               strokeDasharray={circumference}
+// //               strokeDashoffset={offset}
+// //               strokeLinecap="round"
+// //               rotation="-90"
+// //               origin="50,50"
+// //             />
+// //             {/* Similarity Score as Text */}
+// //             <SvgText x="50" y="55" fontSize="18" fill="black" textAnchor="middle">
+// //               {`${similarityScore}%`}
+// //             </SvgText>
+// //           </Svg>
+// //         </View>
+// //         <View style={styles.table}>
+// //           <View style={styles.headerRow}>
+// //             <Text style={[styles.headerCell, styles.youColumn]}>Your Metrics</Text>
+// //             <Text style={[styles.headerCell, styles.metricColumn]}>Metric</Text>
+// //             <Text style={[styles.headerCell, styles.playerColumn]}>{selectedPlayer.name}</Text>
+// //           </View>
+// //           {metrics.map((item, index) => (
+// //             <View key={index} style={styles.row}>
+// //               <Text style={[styles.cell, styles.youColumn]}>{item.you}</Text>
+// //               <Text style={[styles.cell, styles.metricColumn]}>{item.metric}</Text>
+// //               <Text style={[styles.cell, styles.playerColumn]}>{item.player}</Text>
+// //             </View>
+// //           ))}
+// //         </View>
+// //         {/* Buttons at the bottom */}
+// //         <View style={styles.buttonContainer}>
+// //           <Button title="Home" onPress={() => navigation.navigate('Home')} />
+// //           <Button title="Switch Players" onPress={() => navigation.navigate('Compare')} />
+// //           <Button title="Upload More Videos" onPress={() => navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer })} />
+// //         </View>
+// //       </View>
+// //     </ScrollView>
+// //   );
+// // };
+
+// // const styles = StyleSheet.create({
+// //   scrollContainer: {
+// //     padding: 20,
+// //   },
+// //   container: {
+// //     flexDirection: 'column',
+// //     minWidth: 400,
+// //   },
+// //   similarityContainer: {
+// //     alignItems: 'center',
+// //     marginBottom: 20,
+// //   },
+// //   table: {
+// //     flexDirection: 'column',
+// //     marginBottom: 20,
+// //   },
+// //   headerRow: {
+// //     flexDirection: 'row',
+// //     backgroundColor: '#EEE',
+// //     paddingVertical: 10,
+// //   },
+// //   row: {
+// //     flexDirection: 'row',
+// //     paddingVertical: 15,
+// //     borderBottomWidth: 1,
+// //     borderBottomColor: '#CCC',
+// //   },
+// //   headerCell: {
+// //     fontWeight: 'bold',
+// //     textAlign: 'center',
+// //     flex: 1,
+// //   },
+// //   cell: {
+// //     textAlign: 'center',
+// //     flex: 1,
+// //   },
+// //   youColumn: {
+// //     flex: 1,
+// //   },
+// //   metricColumn: {
+// //     flex: 1,
+// //   },
+// //   playerColumn: {
+// //     flex: 1,
+// //   },
+// //   buttonContainer: {
+// //     flexDirection: 'row',
+// //     justifyContent: 'space-around',
+// //     marginTop: 20,
+// //   },
+// // });
+
+// // export default PerformanceMetrics;
 // import React from 'react';
 // import { View, Text, ScrollView, StyleSheet, Button } from 'react-native';
 // import { RouteProp, useRoute } from '@react-navigation/native';
@@ -10,7 +154,12 @@
 // };
 
 // type RootStackParamList = {
-//   PerformanceMetrics: { metrics: Metric[]; selectedPlayer: { name: string; image: string } };
+//   PerformanceMetrics: { 
+//     frontMetrics: Metric[];
+//     sideMetrics: Metric[];
+//     selectedPlayer: { name: string; image: string };
+//     overallComparisonScore: number;
+//   };
 // };
 
 // type PerformanceMetricsRouteProp = RouteProp<RootStackParamList, 'PerformanceMetrics'>;
@@ -21,18 +170,19 @@
 
 // const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
 //   const route = useRoute<PerformanceMetricsRouteProp>();
-//   const { metrics, selectedPlayer } = route.params;
+//   const { frontMetrics, sideMetrics, selectedPlayer, overallComparisonScore } = route.params;
 
-//   // For demonstration, use a dummy similarity score. Replace with your computed value if needed.
-//   const similarityScore = 50;
+//   // Circle configurations
 //   const radius = 45;
 //   const strokeWidth = 10;
 //   const circumference = 2 * Math.PI * radius;
-//   const offset = circumference * (1 - similarityScore / 100);
+//   const offset = circumference * (1 - overallComparisonScore / 100);
 
 //   return (
-//     <ScrollView contentContainerStyle={styles.scrollContainer} horizontal={false}>
+//     <ScrollView contentContainerStyle={styles.scrollContainer}>
 //       <View style={styles.container}>
+//         <Text style={styles.title}>Performance Metrics</Text>
+
 //         <View style={styles.similarityContainer}>
 //           <Svg height="100" width="100" viewBox="0 0 100 100">
 //             {/* Background Circle (red) */}
@@ -58,31 +208,55 @@
 //               rotation="-90"
 //               origin="50,50"
 //             />
-//             {/* Similarity Score as Text */}
-//             <SvgText x="50" y="55" fontSize="18" fill="black" textAnchor="middle">
-//               {`${similarityScore}%`}
+//             {/* Overall Score Text */}
+//             <SvgText 
+//               x="50" 
+//               y="55" 
+//               fontSize="18" 
+//               fill="black" 
+//               textAnchor="middle"
+//             >
+//               {`${overallComparisonScore}%`}
 //             </SvgText>
 //           </Svg>
 //         </View>
+
+//         <Text style={styles.subTitle}>Front View Metrics</Text>
 //         <View style={styles.table}>
 //           <View style={styles.headerRow}>
-//             <Text style={[styles.headerCell, styles.youColumn]}>Your Metrics</Text>
-//             <Text style={[styles.headerCell, styles.metricColumn]}>Metric</Text>
-//             <Text style={[styles.headerCell, styles.playerColumn]}>{selectedPlayer.name}</Text>
+//             <Text style={styles.headerCell}>Metric</Text>
+//             <Text style={styles.headerCell}>You</Text>
+//             <Text style={styles.headerCell}>{selectedPlayer.name}</Text>
 //           </View>
-//           {metrics.map((item, index) => (
+//           {frontMetrics.map((item, index) => (
 //             <View key={index} style={styles.row}>
-//               <Text style={[styles.cell, styles.youColumn]}>{item.you}</Text>
-//               <Text style={[styles.cell, styles.metricColumn]}>{item.metric}</Text>
-//               <Text style={[styles.cell, styles.playerColumn]}>{item.player}</Text>
+//               <Text style={styles.cell}>{item.metric}</Text>
+//               <Text style={styles.cell}>{item.you}</Text>
+//               <Text style={styles.cell}>{item.player}</Text>
 //             </View>
 //           ))}
 //         </View>
-//         {/* Buttons at the bottom */}
+
+//         <Text style={styles.subTitle}>Side View Metrics</Text>
+//         <View style={styles.table}>
+//           <View style={styles.headerRow}>
+//             <Text style={styles.headerCell}>Metric</Text>
+//             <Text style={styles.headerCell}>You</Text>
+//             <Text style={styles.headerCell}>{selectedPlayer.name}</Text>
+//           </View>
+//           {sideMetrics.map((item, index) => (
+//             <View key={index} style={styles.row}>
+//               <Text style={styles.cell}>{item.metric}</Text>
+//               <Text style={styles.cell}>{item.you}</Text>
+//               <Text style={styles.cell}>{item.player}</Text>
+//             </View>
+//           ))}
+//         </View>
+
 //         <View style={styles.buttonContainer}>
 //           <Button title="Home" onPress={() => navigation.navigate('Home')} />
 //           <Button title="Switch Players" onPress={() => navigation.navigate('Compare')} />
-//           <Button title="Upload More Videos" onPress={() => navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer })} />
+//           <Button title="Upload More Videos" onPress={() => navigation.navigate('UploadVideos', { selectedPlayer })} />
 //         </View>
 //       </View>
 //     </ScrollView>
@@ -92,53 +266,56 @@
 // const styles = StyleSheet.create({
 //   scrollContainer: {
 //     padding: 20,
+//     backgroundColor: '#fff'
 //   },
 //   container: {
 //     flexDirection: 'column',
 //     minWidth: 400,
 //   },
+//   title: {
+//     fontSize: 24,
+//     fontWeight: 'bold',
+//     textAlign: 'center',
+//     marginBottom: 20
+//   },
 //   similarityContainer: {
 //     alignItems: 'center',
 //     marginBottom: 20,
 //   },
+//   subTitle: {
+//     fontSize: 20,
+//     fontWeight: 'bold',
+//     marginVertical: 10
+//   },
 //   table: {
-//     flexDirection: 'column',
 //     marginBottom: 20,
+//     borderWidth: 1,
+//     borderColor: '#ccc'
 //   },
 //   headerRow: {
 //     flexDirection: 'row',
-//     backgroundColor: '#EEE',
-//     paddingVertical: 10,
+//     backgroundColor: '#eee',
+//     padding: 10
+//   },
+//   headerCell: {
+//     flex: 1,
+//     textAlign: 'center',
+//     fontWeight: 'bold'
 //   },
 //   row: {
 //     flexDirection: 'row',
-//     paddingVertical: 15,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#CCC',
-//   },
-//   headerCell: {
-//     fontWeight: 'bold',
-//     textAlign: 'center',
-//     flex: 1,
+//     borderTopWidth: 1,
+//     borderTopColor: '#ccc',
+//     padding: 10
 //   },
 //   cell: {
-//     textAlign: 'center',
 //     flex: 1,
-//   },
-//   youColumn: {
-//     flex: 1,
-//   },
-//   metricColumn: {
-//     flex: 1,
-//   },
-//   playerColumn: {
-//     flex: 1,
+//     textAlign: 'center'
 //   },
 //   buttonContainer: {
 //     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     marginTop: 20,
-//   },
+//     justifyContent: 'space-around'
+//   }
 // });
 
 // export default PerformanceMetrics;
@@ -147,16 +324,13 @@ import { View, Text, ScrollView, StyleSheet, Button } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
-type Metric = {
-  metric: string;
-  you: number;
-  player: number;
-};
+type FrontMetrics = { [key: string]: number };
+type SideMetrics = { [key: string]: number };
 
 type RootStackParamList = {
   PerformanceMetrics: { 
-    frontMetrics: Metric[];
-    sideMetrics: Metric[];
+    frontMetrics: FrontMetrics;
+    sideMetrics: SideMetrics;
     selectedPlayer: { name: string; image: string };
     overallComparisonScore: number;
   };
@@ -177,6 +351,7 @@ const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
   const strokeWidth = 10;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - overallComparisonScore / 100);
+  const roundedOverallScore = Math.round(overallComparisonScore);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -216,7 +391,7 @@ const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
               fill="black" 
               textAnchor="middle"
             >
-              {`${overallComparisonScore}%`}
+              {`${roundedOverallScore}%`}
             </SvgText>
           </Svg>
         </View>
@@ -226,14 +401,14 @@ const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
           <View style={styles.headerRow}>
             <Text style={styles.headerCell}>Metric</Text>
             <Text style={styles.headerCell}>You</Text>
-            <Text style={styles.headerCell}>{selectedPlayer.name}</Text>
           </View>
-          {frontMetrics.map((item, index) => (
-            <View key={index} style={styles.row}>
-              <Text style={styles.cell}>{item.metric}</Text>
-              <Text style={styles.cell}>{item.you}</Text>
-              <Text style={styles.cell}>{item.player}</Text>
-            </View>
+          {Object.entries(frontMetrics)
+            .filter(([metric]) => metric !== 'sew_la_score')
+            .map(([metric, score], index) => (
+              <View key={index} style={styles.row}>
+                <Text style={styles.cell}>{metric}</Text>
+                <Text style={styles.cell}>{score}</Text>
+              </View>
           ))}
         </View>
 
@@ -242,13 +417,11 @@ const PerformanceMetrics: React.FC<HomeProps> = ({ navigation }) => {
           <View style={styles.headerRow}>
             <Text style={styles.headerCell}>Metric</Text>
             <Text style={styles.headerCell}>You</Text>
-            <Text style={styles.headerCell}>{selectedPlayer.name}</Text>
           </View>
-          {sideMetrics.map((item, index) => (
+          {Object.entries(sideMetrics).map(([metric, score], index) => (
             <View key={index} style={styles.row}>
-              <Text style={styles.cell}>{item.metric}</Text>
-              <Text style={styles.cell}>{item.you}</Text>
-              <Text style={styles.cell}>{item.player}</Text>
+              <Text style={styles.cell}>{metric}</Text>
+              <Text style={styles.cell}>{score}</Text>
             </View>
           ))}
         </View>

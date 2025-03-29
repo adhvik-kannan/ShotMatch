@@ -123,7 +123,8 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
       };
 
       const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
-      const response = await fetch(`http://${backendUrl}:5000/process_consistency_videos`, {
+      const backendPort: string = Constants.expoConfig?.extra?.backendPort;
+      const response = await fetch(`http://${backendUrl}:${backendPort}/process_consistency_videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
