@@ -6,17 +6,22 @@ import numpy as np
 # VISIBILITY_THRESHOLD = 0.5  # Set to 0.5 for now
 model = YOLO('yolo12x.pt')
 
-
 def detect_ball(frame):
+    '''
+    INPUT: 
+    frame: frame in video
+    OUTPUT:
+    ball[0] the most likely xy coordinate to be the ball
+    '''
     image_height = frame.shape[0]
     results = model(frame, conf=0.25, iou=0.45, augment=True, verbose=False)
     ball = []
     for result in results:
         boxes = result.boxes
         for box in boxes:
-            cls_id = int(box.cls[0])
-            conf = float(box.conf[0])
-            if cls_id == 32 and conf > 0.25: # COCO classID
+            class_id = int(box.cls[0])
+            confidence = float(box.conf[0])
+            if class_id == 32 and confidence > 0.25: # COCO classID
                 x1, y1, x2, y2 = box.xyxy[0]
                 x_center = (x1 + x2) / 2
                 y_center = (y1 + y2) / 2
@@ -25,12 +30,34 @@ def detect_ball(frame):
         return None
     return ball[0]
 
+def choose_valid_side(left_side, right_side):
+    ''' 
+    INPUT: 
+    left_side: left side data (as a list coordinate)
+    right_side: right side data (as a list coordinate)
+    OUTPUT:
+    side: the value chosen, the right side will be prioritized if right side has the value
+    '''
+    side = None
+    if right_side is not None:
+        side = right_side
+    elif left_side is not None:
+        side = left_side
+    return side
 
-def get_landmark_xy(landmarks, index, image_width, image_height):
-    VISIBILITY_THRESHOLD = 0.5
+def get_coordinate(landmarks, index, image_width, image_height):
+    '''
+    INPUT:
+    landmarks: the human body parts
+    index: index of body parts
+    image_width: the x resolution of image
+    image_height: the y resolution of image
+    OUTPUT:
+    [x_coord, y_coord] the xy coordinate of the body part, it needs to be above visibility threshold to get a value or it will return None
+    '''
     landmark = landmarks[index]
-    if landmark.visibility < VISIBILITY_THRESHOLD:
-        return None # use string to make life easier
+    if landmark.visibility < 0.5: # threshold
+        return None
     x_coord = int(landmark.x * image_width)
     y_coord = int((1 - landmark.y) * image_height)
     return [x_coord, y_coord]
@@ -48,7 +75,6 @@ def analyze_video(video_path):
     )
     cap = cv2.VideoCapture(video_path)
     frame_index = 0
-    # output_data = []
     output_data = {}
 
     while cap.isOpened():
@@ -67,68 +93,33 @@ def analyze_video(video_path):
         if results.pose_landmarks:
             landmarks = results.pose_landmarks.landmark
             h, w, _ = frame.shape
-
-            left_shoulder = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
-            right_shoulder = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
-            
-            left_elbow = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
-            right_elbow = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
-
-            left_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
-            right_wrist = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
-
-            left_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
-            right_hip = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
-
-            left_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
-            right_pinky = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
-
-            right_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
-            left_eye = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
-            
-            right_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
-            left_ear = get_landmark_xy(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
-
-            right_thumb = get_landmark_xy(landmarks, 22, w, h)
-            left_thumb = get_landmark_xy(landmarks, 21, w, h)
-
-            right_mouth = get_landmark_xy(landmarks, 10, w, h)
-            left_mouth = get_landmark_xy(landmarks, 9, w, h)
+            left_shoulder = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
+            right_shoulder = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
+            left_elbow = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
+            right_elbow = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
+            left_wrist = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
+            right_wrist = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
+            left_hip = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
+            right_hip = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
+            left_pinky = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
+            right_pinky = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
+            right_eye = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
+            left_eye = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
+            right_ear = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
+            left_ear = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
+            right_thumb = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_THUMB.value, w, h)
+            left_thumb = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_THUMB.value, w, h)
+            right_mouth = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_RIGHT.value, w, h)
+            left_mouth = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_LEFT.value, w, h)
 
             ball = detect_ball(frame)
 
-            if right_eye != None:
-                eye_level = right_eye
-            elif left_eye != None:
-                eye_level = left_eye
-            # elif right_ear != "NONE":
-            #     eye_level = right_ear
-            # elif left_ear != "NONE":
-            #     eye_level = left_ear
-            else:
-                eye_level = None
+            eye = choose_valid_side(left_eye, right_eye)
+            mouth = choose_valid_side(left_mouth, right_mouth)
+            wrist = choose_valid_side(left_wrist, right_wrist)
+            pinky = choose_valid_side(left_pinky, right_pinky)
 
-            if right_mouth != None:
-                mouth_level = right_mouth
-            elif left_mouth != None:
-                mouth_level = left_mouth
-            else:
-                mouth_level = None
-
-            if right_wrist != None:
-                wrist = right_wrist
-            elif left_wrist != None:
-                wrist = left_wrist
-            else:
-                wrist = None
-            
-            if right_pinky != None:
-                pinky = right_pinky
-            elif left_pinky != None:
-                pinky = left_pinky
-            else:
-                pinky = None
-
+            # For detecting which side of the player
             side = None
             if right_shoulder == None or right_elbow == None or right_wrist == None:
                 if left_shoulder != None and left_elbow != None and left_wrist != None:
@@ -139,14 +130,14 @@ def analyze_video(video_path):
             else:
                 side = "FRONT"
             
-            if ball is not None and eye_level is not None and mouth_level is not None:
+            if ball is not None and eye is not None and mouth is not None:
                 ball_x, ball_y = ball
                 ball[1] = h - ball_y
-                eye_level_x, eye_level_y = eye_level
-                mouth_level_x, mouth_level_y = mouth_level
-                # print(ball_y, eye_level_y, mouth_level_y)
-                if ball_y < 2 * eye_level_y - mouth_level_y and ball_y > 2 * mouth_level_y - eye_level_y:
-                # if ball_y < eye_level_y and ball_y > mouth_level_y:
+                eye_x, eye_y = eye
+                mouth_x, mouth_y = mouth
+                # print(ball_y, eye_y, mouth_y)
+                if ball_y < 2 * eye_y - mouth_y and ball_y > 2 * mouth_y - eye_y:
+                # if ball_y < eye_y and ball_y > mouth_y:
                     frame_data = {
                         "left_shoulder": left_shoulder,
                         "right_shoulder": right_shoulder,
@@ -165,12 +156,11 @@ def analyze_video(video_path):
                         "frame": frame_index
                     }
                     output_data[frame_index] = frame_data
-            elif wrist is not None and eye_level is not None and mouth_level is not None:
+            elif wrist is not None and eye is not None and mouth is not None:
                 wrist_x, wrist_y = wrist
-                eye_level_x, eye_level_y = eye_level
-                mouth_level_x, mouth_level_y = mouth_level
-                # print(wrist_y, eye_level_y, mouth_level_y)
-                if wrist_y < 2 * eye_level_y - mouth_level_y and wrist_y > 2 * mouth_level_y - eye_level_y:
+                eye_x, eye_y = eye
+                mouth_x, mouth_y = mouth
+                if wrist_y < 2 * eye_y - mouth_y and wrist_y > 2 * mouth_y - eye_y:
                     frame_data = {
                         "left_shoulder": left_shoulder,
                         "right_shoulder": right_shoulder,
