@@ -144,6 +144,9 @@ def generate_plot(dist_params_sew, dist_params_ewa, arm_name, save_plot=True):
 
 
 def get_steph_curry_s_ra_data():
+    """
+    manual steph data for generating his params
+    """
     nba_1 = {'left_shoulder': [323, 733], 'right_shoulder': [408, 775], 'left_elbow': None, 'right_elbow': [495, 786], 'left_wrist': None, 'right_wrist': [454, 855], 'left_hip': [343, 538], 'right_hip': [399, 539], 'left_pinky': None, 'right_pinky': [448, 884], 'left_thumb': None, 'right_thumb': [440, 858], 'ball': None, 'Side': 'RIGHT', 'frame': 38}
     nba_2 = {'left_shoulder': [260, 724], 'right_shoulder': [367, 760], 'left_elbow': None, 'right_elbow': [468, 767], 'left_wrist': None, 'right_wrist': [419, 843], 'left_hip': [291, 504], 'right_hip': [357, 501], 'left_pinky': None, 'right_pinky': [413, 874], 'left_thumb': None, 'right_thumb': [399, 858], 'ball': None, 'Side': 'RIGHT', 'frame': 81}
     nba_4 = {'left_shoulder': [66, 656], 'right_shoulder': [-22, 657], 'left_elbow': None, 'right_elbow': [34, 665], 'left_wrist': [137, 685], 'right_wrist': [77, 743], 'left_hip': [61, 455], 'right_hip': [-1, 449], 'left_pinky': [144, 692], 'right_pinky': [91, 760], 'left_thumb': [134, 698], 'right_thumb': [79, 760], 'ball': None, 'Side': 'RIGHT', 'frame': 124}

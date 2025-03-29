@@ -66,6 +66,15 @@ def calculate_angle(vertex, a, b):
     return math.degrees(math.acos(cos_value))
 
 def get_elbow(data):
+    """
+    generates elbow data, basically just the height between two elbows (y coordinate difference)
+    
+    Inputs:
+        data    = dictionary data
+    
+    Output:
+        y-value difference divided by arm length to scale it to different people
+    """
     if (data["right_wrist"][0] != None and data["right_elbow"][0] != None):
         arm_length = math.sqrt((data["right_wrist"][0] - data["right_elbow"][0])**2 + (data["right_wrist"][1] - data["right_elbow"][1])**2)
     elif (data["left_wrist"][0] != None and data["left_elbow"][0] != None):
@@ -80,6 +89,20 @@ def get_elbow(data):
         return (abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
 def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params):
+    """
+    compares front data between uploaded clip and parameters of selected nba player which is passed into the function
+    
+    Inputs:
+        data    = dictionary data from uploaded clip
+        hew     = hip elbow wrist
+        sew     = shoulder elbow wrist
+        ewa     = elbow wrist avg(pinky thumb)
+        ewp     = elbow wrist pinky
+        elbow_params = y coord diff between elbows scaled to arm length
+    
+    Output:
+        dictionary with similarity scores for each input
+    """
     # hip-elbow-wrist right arm
     if ((data["right_hip"] != None) and (data["right_wrist"] != None) and (data["right_elbow"] != None)):
         angle_hew_ra = calculate_angle(data["right_elbow"], data["right_hip"], data["right_wrist"])
@@ -119,28 +142,6 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     pdf_hew_la_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
     score_hew_la = (pdf_hew_la_new / pdf_hew_la_mean) * 100 if pdf_hew_la_mean != 0 else 0
     score_hew_la = math.ceil(max(0, min(100, score_hew_la)))
-    # print("hew score pdf/pdf: ", score_hew)
-    # score_hew_ra = beta.cdf(angle_hew_ra/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
-    # score_hew_la = beta.cdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    # hew_ra_mean = beta.cdf(hew_ra_params["mean"]/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
-    # hew_la_mean = beta.cdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    # if (score_hew_ra > hew_ra_mean):
-    #     score_hew_ra = 1 - score_hew_ra
-    #     score_hew_ra /= (1 - hew_ra_mean)
-    # else: score_hew_ra /= hew_ra_mean
-    # if (score_hew_la > hew_la_mean):
-    #     score_hew_la = 1 - score_hew_la
-    #     score_hew_la /= (1 - hew_la_mean)
-    # else: score_hew_la /= hew_la_mean
-
-    # score_hew_ra *= 100
-    # score_hew_la *= 100
-
-    # temp_hewla = beta.pdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    # temp_hewla_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
-    # print("hew cdf val: ", score_hew_la)
-    # print("hew pdf val: ", temp_hewla/temp_hewla_mean)
-
 
 
 
@@ -153,60 +154,21 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
     score_sew_ra = math.ceil(max(0, min(100, score_sew_ra)))
     score_sew_la = math.ceil(max(0, min(100, score_sew_la)))
-    # score_sew_ra = beta.cdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    # score_sew_la = beta.cdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    # sew_ra_mean = beta.cdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    # sew_la_mean = beta.cdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    # if (score_sew_ra > sew_ra_mean):
-    #     score_sew_ra = 1 - score_sew_ra
-    #     score_sew_ra /= (1 - sew_ra_mean)
-    # else: score_sew_ra /= sew_ra_mean
-    # if (score_sew_la > sew_la_mean):
-    #     score_sew_la = 1 - score_sew_la
-    #     score_sew_la /= (1 - sew_la_mean)
-    # else: score_sew_la /= sew_la_mean
-    # score_sew_ra *= 100
-    # score_sew_la *= 100
+
     
     # ewa: Angle at wrist using points: right elbow, wrist, average between thumb and pinky
     pdf_ewa_ra_new = beta.pdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
     pdf_ewa_ra_mean = beta.pdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
     score_ewa_ra = (pdf_ewa_ra_new / pdf_ewa_ra_mean) * 100 if pdf_ewa_ra_mean != 0 else 0
     score_ewa_ra = math.ceil(max(0, min(100, score_ewa_ra)))
-    # score_ewa_ra = beta.cdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
-    # ewa_ra_mean = beta.cdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
-    # if (score_ewa_ra > ewa_ra_mean):
-    #     score_ewa_ra = 1 - score_ewa_ra
-    #     score_ewa_ra /= (1 - ewa_ra_mean)
-    # else: score_ewa_ra /= ewa_ra_mean
-    # score_ewa_ra *= 100
+
 
     # ewp: Angle at wrist using points: left_elbow, wrist, pinky.
     pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
     pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
     score_ewp_la = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100 if pdf_ewp_la_mean != 0 else 0
     score_ewp_la = math.ceil(max(0, min(100, score_ewp_la)))
-    # score_ewp_la = beta.cdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
 
-    # print("cdf val ewp: ", score_ewp_la)
-
-    # ewp_la_mean = beta.cdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    # if (score_ewp_la > ewp_la_mean):
-    #     score_ewp_la = 1 - score_ewp_la
-    #     score_ewp_la /= (1 - ewp_la_mean)
-    # else: score_ewp_la /= ewp_la_mean
-    # score_ewp_la *= 100
-
-    # temp_ewp = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    # temp_ewp_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    # print("pdf val: ", temp_ewp/temp_ewp_mean)
-
-    # pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    # pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    # print("pdf / pdf: ", (pdf_ewp_la_new / pdf_ewp_la_mean))
-    # score_ewp = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100
-    # score_ewp = min(100, score_ewp)
-    # print("ewp score pdf/pdf: ", score_ewp)
 
     # ec: Use the calculate_elbow function.
     ec_value = get_elbow(data)
@@ -217,14 +179,6 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     score_ec = (pdf_ec_new / pdf_ec_mean) * 100 if pdf_ec_mean != 0 else 0
     score_ec = math.ceil(max(0, min(100, score_ec)))
 
-    # score_elbow = beta.cdf(ec_value, elbow_params["alpha"], elbow_params["beta"])
-    # elbow_mean = beta.cdf(elbow_params["mean"], elbow_params["alpha"], elbow_params["beta"])
-    # if (score_elbow > elbow_mean):
-    #     score_elbow = 1 - score_elbow
-    #     score_elbow /= (1 - elbow_mean)
-    # else: score_elbow /= elbow_mean
-
-    # score_elbow *= 100
 
     
     plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
@@ -248,6 +202,9 @@ def get_klay_data():
     return {'left_shoulder': [654, 518], 'right_shoulder': [373, 476], 'left_elbow': [750, 323], 'right_elbow': [431, 291], 'left_wrist': [685, 584], 'right_wrist': [544, 570], 'left_hip': [651, 53], 'right_hip': [446, 51], 'left_pinky': [668, 656], 'right_pinky': [562, 633], 'left_thumb': [660, 641], 'right_thumb': [549, 624], 'ball': None, 'Side': 'FRONT', 'frame': 18}
 
 def get_params():
+    """
+    just for testing steph params locally, disconnected from api. returns steph params manually copy pasted
+    """
     hew_ra_params = {'mean': 162.06345930992, 'std': 8.983861762318169, 'alpha': 31.526908690697145, 'beta': 3.4892731709603337}
     hew_la_params = {'mean': 144.18126862048007, 'std': 13.186107496883794, 'alpha': 22.99051113208135, 'beta': 5.711497411536249}
     sew_ra_params = {'mean': 19.874661879647583, 'std': 15.92261829791954, 'alpha': 1.2755687885743299, 'beta': 10.276948850908182}
