@@ -8,6 +8,7 @@ import {
     Dimensions,
     StyleSheet,
 } from 'react-native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 
 interface HomeProps {
     navigation: any;
@@ -16,8 +17,7 @@ interface HomeProps {
 const playerData = [
     { id: '1', name: 'LeBron James', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/LeBron_James_%2815662939969%29.jpg/220px-LeBron_James_%2815662939969%29.jpg' },
     { id: '2', name: 'Stephen Curry', image: 'https://phantom-marca.unidadeditorial.es/9b640ceb9e0621afd7b170f4713cae15/crop/0x0/1978x1318/resize/828/f/jpg/assets/multimedia/imagenes/2024/08/21/17242700992805.png' },
-    { id: '3', name: 'Kevin Durant', image: 'https://cdn.britannica.com/53/258153-050-88B167D3/kevin-durant-phoenix-suns-shoots-free-throw-against-houston-rockets-2024.jpg' },
-    { id: '4', name: 'Giannis Antetokounmpo', image: 'https://media.bleacherreport.com/image/upload/c_fill,g_faces,w_1600,h_1600,q_95/v1710966511/dksytvr9dgo6qxefnflq.jpg' },
+    { id: '3', name: 'Klay Thompson', image: 'https://www.kxan.com/wp-content/uploads/sites/40/2024/07/66837247e3f139.26670422.jpeg?strip=1' },
 ];
 
 const screenWidth = Dimensions.get('window').width;
@@ -26,8 +26,16 @@ const buttonWidth = screenWidth - 40;  // full width with side margins
 // Calculate a button height so that (for example) two buttons are fully visible in portrait mode
 const buttonHeight = (screenHeight - 40 - 10) / 2; 
 // 40 accounts for the container padding and 10 for margin between buttons
+type RootStackParamList = {
+    User: { user: string };
+};
+
+type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'User'>;
 
 const Compare: React.FC<HomeProps> = ({ navigation }) => {
+    const route = useRoute<ProcessVideosRouteProp>();
+    const { user } = route.params;
+
     return (
         <View style={styles.container}>
             <ScrollView
@@ -39,7 +47,7 @@ const Compare: React.FC<HomeProps> = ({ navigation }) => {
                     <TouchableOpacity
                         key={player.id}
                         style={styles.playerButton}
-                        onPress={() => navigation.navigate('UploadVideos', {selectedPlayer: player})}
+                        onPress={() => navigation.navigate('UploadVideos', { selectedPlayer: player, user: user})}
                     >
                         <ImageBackground
                             source={{ uri: player.image }}

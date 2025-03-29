@@ -103,21 +103,15 @@ def get_user_by_email(collection: Collection, email: str):
         
 # Define data schema 
 ### FIX THIS WITH WHATEVER DATA YOU NEED
-def add_new_data(collection: Collection, name: str, url: str, package_id: str = None, score: str = None, 
-                     version: str = None, net_score: float = None, ingestion_method: str = None,
-                     readme: str = None, secret: bool = None, user_group: str = None):
+def add_new_data(collection: Collection, name: str, front_results: any, side_results: any, overall_score: any, mode: str, date: str):
     try:
         package = {
             "name": name,
-            "url": url,
-            "score": score,
-            "version": version,
-            "packageId": package_id,
-            "netScore": net_score,
-            "ingestionMethod": ingestion_method,
-            "README": readme,
-            "secret": secret,
-            "userGroup": user_group
+            "front_results": front_results,
+            "side_results": side_results,
+            "overall_score": overall_score,
+            "mode": mode,
+            "date": date
         }
         collection.insert_one(package)
         # logger.info("Package added: %s", name)
@@ -171,3 +165,78 @@ def find_package_by_regex(collection: Collection, regex: str):
     except Exception as error:
         # logger.debug("Error fetching packages", exc_info=True)
         return False, error
+
+
+if __name__ == "__main__":
+    success, db = connect_to_mongodb("nba_players")
+    if not success:
+        print("Error connecting to MongoDB")
+        exit(1)
+    nba_players = db["stephen_curry"]
+    success, players = get_data_by_name_or_hash(nba_players, "Stephen Curry")
+    if not success:
+        print("Error fetching players")
+        exit(1)
+    print(success)
+    print(players)
+    # Add user
+    # success, user = add_user(db["users"], "test", "test", False, "test")
+    # if not success:
+    #     print("Error adding user")
+    #     exit(1)
+
+    # Get all users
+    # success, users = get_all_users(db["users"])
+    # if not success:
+    #     print("Error fetching users")
+    #     exit(1)
+    # print(users)
+
+    # Get user by hash
+    # success, user = get_user_by_hash(db["users"], "test")
+    # if not success:
+    #     print("Error fetching user")
+    #     exit(1)
+    # print(user)
+
+    # Add package
+    # success, package = add_new_data(db["data"], "test", "test", "test", "test", "test", "test", "test", False, "test")
+    # if not success:
+    #     print("Error adding package")
+    #     exit(1)
+
+    # Get all packages
+    # success, packages = get_all_data(db["data"])
+    # if not success:
+    #     print("Error fetching packages")
+    #     exit(1)
+    # print(packages)
+
+    # Get package by name or hash
+    # success, package = get_data_by_name_or_hash(db["data"], "test")
+    # if not success:
+    #     print("Error fetching package")
+    #     exit(1)
+    # print(package)
+
+    # Find package by regex
+    # success, packages = find_package_by_regex(db["data"], "test")
+    # if not success:
+    #     print("Error fetching package")
+    #     exit(1)
+    # print(packages)
+
+    # Remove user
+    # success, error = remove_user_by_name(db["users"], "test")
+    # if not success:
+    #     print("Error removing user")
+    #     exit(1)
+
+    # Remove package
+    # success = remove_data_by_name_or_hash(db["data"], "test")
+    # if not success:
+    #     print("Error removing package")
+    #     exit(1)
+
+    success, error = disconnect_mongodb(db)
+    # if not success:

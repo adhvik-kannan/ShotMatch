@@ -7,10 +7,12 @@ from functools import wraps
 import time
 from recognition_model import analyze_video
 from generate_front_statistics import compare_front
-from generate_side_statistics import compare_side
+from generate_side_statistics import compare_side_ra
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import connect_to_mongodb, add_user, get_user_by_email
-
+from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash
+import json
+import time
+import datetime
 # Constants
 SECRET_KEY = "your_secret_key"
 DB_NAME = "auth_db"
@@ -20,9 +22,14 @@ app = Flask(__name__)
 
 # Connect to MongoDB
 success, db = connect_to_mongodb(DB_NAME)
-if not success:
+success2, db2 = connect_to_mongodb("nba_players")
+success3, db3 = connect_to_mongodb("player_data")
+
+if not success or not success2 or not success3:
     raise Exception("Failed to connect to MongoDB")
 users_collection = db["users"]
+nba_players_collection = db2["stephen_curry"]
+player_data_collection = db3["player_data"]
 
 # Helper Functions
 def create_jwt_token(username):
@@ -82,11 +89,18 @@ def protected_route(username):
 
 @app.route("/process_videos", methods=["POST"])
 def process_videos():
+    # print('here')
+    timer = time.time()
     data_json = request.get_json()
     videos = data_json.get("videos")
-    if not videos or not isinstance(videos, list):
-        return jsonify({"message": "No videos provided or invalid format"}), 400
+    player = data_json.get("selectedPlayer")
+    user - data_json.get("user")
+    # player = {'name': "Stephen Curry"}
+    print(player, flush=True)
+    # if not videos or not isinstance(videos, list):
+    #     return jsonify({"message": "No videos provided or invalid format"}), 400
 
+    # processed_count = 2
     processed_results = []  # List to hold each video's OCR output (list will be 2 dictionaries)
     processed_count = len(videos)
 
@@ -96,7 +110,7 @@ def process_videos():
         if not base64_data:
             return jsonify({"message": "Missing base64 data for video", "video": video_uri}), 400
 
-        print(f"Processing video {video_uri}")
+        print(f"Processing video {video_uri}", flush=True)
         try:
             # Decode the base64 video and write to a temporary file
             temp_file_path = f"/tmp/{os.path.basename(video_uri)}"
@@ -104,10 +118,12 @@ def process_videos():
                 f.write(base64.b64decode(base64_data))
             
             # Run OCR analysis on the temporary file
+            print(temp_file_path)
             ocr_result = analyze_video(temp_file_path)
-            print(f"Processed video {video_uri} with data: {ocr_result}")
+            print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
 
             if not ocr_result:
+                print(f"Failed to process video {video_uri}", flush=True)
                 return jsonify({
                     "message": "Failed to process video",
                     "video": video_uri,
@@ -131,30 +147,58 @@ def process_videos():
     # format is 
     # processed_results[0] = {front_data}
     # processed_results[1] = {side_data}
+    # processed_results.append({'left_shoulder': [655, 518], 'right_shoulder': [373, 477], 'left_elbow': [751, 322], 'right_elbow': [431, 291], 'left_wrist': [685, 582], 'right_wrist': [544, 570], 'left_hip': [651, 53], 'right_hip': [446, 51], 'left_pinky': [669, 656], 'right_pinky': [563, 634], 'left_thumb': [661, 640], 'right_thumb': [549, 624], 'ball': None, 'Side': 'FRONT', 'frame': 18})
+    # processed_results.append({'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [887, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52})
     which_arm = ["left", "right"]
+    found, player_data = get_data_by_name_or_hash(nba_players_collection, player["name"])
+    if not found:
+        return jsonify({"message": "Player not found"}), 404
+    sew_f_ra = json.loads(player_data[0]["SEW_F_RA"])
+    # print(type(sew_f_ra))
+    sew_f_la = json.loads(player_data[0]["SEW_F_LA"])
+    ewa_f_ra = json.loads(player_data[0]["EWA_F_RA"])
+    ewp_f_la = json.loads(player_data[0]["EWP_F_LA"])
+    elbow_diff = json.loads(player_data[0]["ELBOW_DIFF"])
+    sew_s_ra = json.loads(player_data[0]["SEW_S_RA"])
+    ewp_s_ra = json.loads(player_data[0]["EWP_S_RA"])
+    hew_f_ra = json.loads(player_data[0]["HEW_F_RA"])
+    hew_f_la = json.loads(player_data[0]["HEW_F_LA"])
 
-    # for arm in which_arm:
-    #     # this basically gets from database nba player params
-    #     front_hse_params = get_front_hse_params(arm, player)
-    #     front_sew_params = get_front_sew_params(arm, player)
-    #     front_ewp_params = get_front_ewp_params(arm, player)
-    #     front_ec_params = get_front_ec_params(arm, player)
+    front_results = compare_front(processed_results[0], hew_f_ra, hew_f_la, sew_f_ra, sew_f_la, ewa_f_ra, ewp_f_la, elbow_diff)
+    side_results = compare_side_ra(processed_results[1], sew_s_ra, ewp_s_ra)
+    overall_score = (front_results["hew_ra_score"] + front_results["hew_la_score"] + front_results["sew_ra_score"] + front_results["ewa_ra_score"] + front_results["ewp_la_score"] + front_results["ec_score"] + side_results["sew_ra_score"] + side_results["ewp_ra_score"]) / 8
+    # this is what compare_front() returns
+    # the params you just get from database, hew_ra_params will be HEW_F_RA in mongo (F means front)
+    #
+    # def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params)
+    # return {
+    #     "hew_ra_score": score_hew_ra,
+    #     "hew_la_score": score_hew_la,
+    #     "sew_ra_score": score_sew_ra,
+    #     "sew_la_score": score_sew_la,
+    #     "ewa_ra_score": score_ewa_ra,
+    #     "ewp_la_score": score_ewp_la,
+    #     "ec_score": score_ec
+    # }
 
-    #     side_sew_params = get_side_sew_params(arm, player)
-    #     side_ewa_params = get_side_ewa_params(arm, player)
+    # same for compare_side_ra()
+    # compare_side_la() (for left arm) doesnt work rn cause we didnt get left arm data
+    #
+    # def compare_side_ra(data, sew_ra_params, ewp_ra_params)
+    # return {
+    #     "sew_ra_score": score_sew_ra,
+    #     "ewp_ra_score": score_ewp_ra,
+    # }
 
-    #     if arm == "left":
-    #         front_statistics_LA = compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-    #         side_statistics_LA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
-        
-    #     elif arm == "right": 
-    #         front_statistics_RA =  compare_front(processed_results[0], arm, front_hse_params, front_sew_params, front_ewp_params, front_ec_params)
-    #         side_statistics_RA = compare_side(processed_results[1], arm, side_sew_params, side_ewa_params)
-
+    added, padd_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", datetime.datetime.now())
+    timer_end = time.time()
+    print(f"Time taken: {timer_end - timer}")
     return jsonify({
         "message": "Videos processed successfully",
         "processed_count": processed_count,
-        "data": processed_results
+        "frontMetrics": front_results,
+        "sideMetrics": side_results,
+        "overallScore": overall_score
     }), 200
 
 @app.route("/process_consistency_videos", methods=["POST"])
@@ -250,4 +294,4 @@ def process_consistency_videos():
     }), 200
     
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=8080)
