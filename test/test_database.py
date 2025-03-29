@@ -17,7 +17,7 @@ def mock_db():
 def test_add_new_package(mock_db):
     """Test adding a new package."""
     package_collection = mock_db.packages
-    result, package = add_new_data(package_collection, "TestPkg", "http://example.com", "123")
+    result, package = add_new_data(package_collection, "TestPkg", "http://example.com", "123", "test", "test", "test")
     assert result is True
     assert package["name"] == "TestPkg"
 
