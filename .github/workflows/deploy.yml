@@ -30,14 +30,12 @@ jobs:
         cd frontend/ShotMatch
         npm install
         npm install -g eas-cli
-    - name: EAS Login
-      run: eas login --token ${{ secrets.EAS_TOKEN }}
-
+        
     - name: Configure EAS Build
-      run: eas build:configure
+      run: EXPO_TOKEN=${{ secrets.EAS_TOKEN }} eas build:configure
 
     - name: Build application
-      run: BUILD_OUTPUT=$(eas build -p android --non-interactive)
+      run: BUILD_OUTPUT=$(EXPO_TOKEN=${{ secrets.EAS_TOKEN }} eas build -p android --non-interactive)
     
     - name: Download APK
       run: |
