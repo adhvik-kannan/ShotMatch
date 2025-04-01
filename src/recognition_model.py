@@ -62,6 +62,18 @@ def get_coordinate(landmarks, index, image_width, image_height):
     y_coord = int((1 - landmark.y) * image_height)
     return [x_coord, y_coord]
 
+def detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist):
+    side = None
+    if right_shoulder == None or right_elbow == None or right_wrist == None:
+        if left_shoulder != None and left_elbow != None and left_wrist != None:
+            side = "LEFT"
+    elif left_shoulder == None or left_elbow == None or left_wrist == None:
+        if right_shoulder != None and right_elbow != None and right_wrist != None:
+            side = "RIGHT"
+    else:
+        side = "FRONT"
+    return side
+
 def analyze_video(video_path):
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
@@ -127,116 +139,107 @@ def analyze_video(video_path):
             left_foot_index  = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_FOOT_INDEX.value, w, h)
             right_foot_index = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value, w, h)
 
-            ball = detect_ball(frame)
-
-            eye = choose_valid_side(left_eye, right_eye)
-            mouth = choose_valid_side(left_mouth, right_mouth)
-            wrist = choose_valid_side(left_wrist, right_wrist)
-            pinky = choose_valid_side(left_pinky, right_pinky)
-
-            # For detecting which side of the player
-            side = None
-            if right_shoulder == None or right_elbow == None or right_wrist == None:
-                if left_shoulder != None and left_elbow != None and left_wrist != None:
-                    side = "LEFT"
-            elif left_shoulder == None or left_elbow == None or left_wrist == None:
-                if right_shoulder != None and right_elbow != None and right_wrist != None:
-                    side = "RIGHT"
-            else:
-                side = "FRONT"
+            ball    = detect_ball(frame)
+            eye     = choose_valid_side(left_eye, right_eye)
+            mouth   = choose_valid_side(left_mouth, right_mouth)
+            wrist   = choose_valid_side(left_wrist, right_wrist)
+            pinky   = choose_valid_side(left_pinky, right_pinky)
+            side    = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
             
-            if ball is not None and eye is not None and mouth is not None:
-                ball_x, ball_y = ball
-                ball[1] = h - ball_y
+
+            #  球在眼睛的高度
+            if eye is not None and mouth is None:
                 eye_x, eye_y = eye
                 mouth_x, mouth_y = mouth
-                if ball_y < 2 * eye_y - mouth_y and ball_y > 2 * mouth_y - eye_y:
-                # if ball_y < eye_y and ball_y > mouth_y:
-                    frame_data = {
-                        "nose"            : nose            ,
-                        "left_eye_inner"  : left_eye_inner  ,
-                        "left_eye"        : left_eye        ,
-                        "left_eye_outer"  : left_eye_outer  ,
-                        "right_eye_inner" : right_eye_inner ,
-                        "right_eye"       : right_eye       ,
-                        "right_eye_outer" : right_eye_outer ,
-                        "left_ear"        : left_ear        ,
-                        "right_ear"       : right_ear       ,
-                        "left_mouth"      : left_mouth      ,
-                        "right_mouth"     : right_mouth     ,
-                        "left_shoulder"   : left_shoulder   ,
-                        "right_shoulder"  : right_shoulder  ,
-                        "left_elbow"      : left_elbow      ,
-                        "right_elbow"     : right_elbow     ,
-                        "left_wrist"      : left_wrist      ,
-                        "right_wrist"     : right_wrist     ,
-                        "left_pinky"      : left_pinky      ,
-                        "right_pinky"     : right_pinky     ,
-                        "left_index"      : left_index      ,
-                        "right_index"     : right_index     ,
-                        "left_thumb"      : left_thumb      ,
-                        "right_thumb"     : right_thumb     ,
-                        "left_hip"        : left_hip        ,
-                        "right_hip"       : right_hip       ,
-                        "left_knee"       : left_knee       ,
-                        "right_knee"      : right_knee      ,
-                        "left_ankle"      : left_ankle      ,
-                        "right_ankle"     : right_ankle     ,
-                        "left_heel"       : left_heel       ,
-                        "right_heel"      : right_heel      ,
-                        "left_foot_index" : left_foot_index ,
-                        "right_foot_index": right_foot_index,
-                        "ball"            : ball            ,
-                        "Side"            : side            ,
-                        "frame"           : frame_index     ,
-                        "postion"         : "eye"
-                    }  
-                    output_data[frame_index] = frame_data
-            elif wrist is not None and eye is not None and mouth is not None:
-                wrist_x, wrist_y = wrist
-                eye_x, eye_y = eye
-                mouth_x, mouth_y = mouth
-                if wrist_y < 2 * eye_y - mouth_y and wrist_y > 2 * mouth_y - eye_y:
-                    frame_data = {
-                        "nose"            : nose            ,
-                        "left_eye_inner"  : left_eye_inner  ,
-                        "left_eye"        : left_eye        ,
-                        "left_eye_outer"  : left_eye_outer  ,
-                        "right_eye_inner" : right_eye_inner ,
-                        "right_eye"       : right_eye       ,
-                        "right_eye_outer" : right_eye_outer ,
-                        "left_ear"        : left_ear        ,
-                        "right_ear"       : right_ear       ,
-                        "left_mouth"      : left_mouth      ,
-                        "right_mouth"     : right_mouth     ,
-                        "left_shoulder"   : left_shoulder   ,
-                        "right_shoulder"  : right_shoulder  ,
-                        "left_elbow"      : left_elbow      ,
-                        "right_elbow"     : right_elbow     ,
-                        "left_wrist"      : left_wrist      ,
-                        "right_wrist"     : right_wrist     ,
-                        "left_pinky"      : left_pinky      ,
-                        "right_pinky"     : right_pinky     ,
-                        "left_index"      : left_index      ,
-                        "right_index"     : right_index     ,
-                        "left_thumb"      : left_thumb      ,
-                        "right_thumb"     : right_thumb     ,
-                        "left_hip"        : left_hip        ,
-                        "right_hip"       : right_hip       ,
-                        "left_knee"       : left_knee       ,
-                        "right_knee"      : right_knee      ,
-                        "left_ankle"      : left_ankle      ,
-                        "right_ankle"     : right_ankle     ,
-                        "left_heel"       : left_heel       ,
-                        "right_heel"      : right_heel      ,
-                        "left_foot_index" : left_foot_index ,
-                        "right_foot_index": right_foot_index,
-                        "ball"            : ball            ,
-                        "Side"            : side            ,
-                        "frame"           : frame_index     ,
-                        "postion"         : "eye"
-                    }
-                    output_data[frame_index] = frame_data
+                if ball is not None:
+                    ball_x, ball_y = ball
+                    ball[1] = h - ball_y
+                    if ball_y < (2 * eye_y) - mouth_y and ball_y > (2 * mouth_y) - eye_y:
+                    # if ball_y < eye_y and ball_y > mouth_y:
+                        frame_data = {
+                            "nose"            : nose            ,
+                            "left_eye_inner"  : left_eye_inner  ,
+                            "left_eye"        : left_eye        ,
+                            "left_eye_outer"  : left_eye_outer  ,
+                            "right_eye_inner" : right_eye_inner ,
+                            "right_eye"       : right_eye       ,
+                            "right_eye_outer" : right_eye_outer ,
+                            "left_ear"        : left_ear        ,
+                            "right_ear"       : right_ear       ,
+                            "left_mouth"      : left_mouth      ,
+                            "right_mouth"     : right_mouth     ,
+                            "left_shoulder"   : left_shoulder   ,
+                            "right_shoulder"  : right_shoulder  ,
+                            "left_elbow"      : left_elbow      ,
+                            "right_elbow"     : right_elbow     ,
+                            "left_wrist"      : left_wrist      ,
+                            "right_wrist"     : right_wrist     ,
+                            "left_pinky"      : left_pinky      ,
+                            "right_pinky"     : right_pinky     ,
+                            "left_index"      : left_index      ,
+                            "right_index"     : right_index     ,
+                            "left_thumb"      : left_thumb      ,
+                            "right_thumb"     : right_thumb     ,
+                            "left_hip"        : left_hip        ,
+                            "right_hip"       : right_hip       ,
+                            "left_knee"       : left_knee       ,
+                            "right_knee"      : right_knee      ,
+                            "left_ankle"      : left_ankle      ,
+                            "right_ankle"     : right_ankle     ,
+                            "left_heel"       : left_heel       ,
+                            "right_heel"      : right_heel      ,
+                            "left_foot_index" : left_foot_index ,
+                            "right_foot_index": right_foot_index,
+                            "ball"            : ball            ,
+                            "Side"            : side            ,
+                            "frame"           : frame_index     ,
+                            "postion"         : "EYE"
+                        }  
+                        output_data[frame_index] = frame_data
+                #  如果球不存在，那么看手腕的高度
+                elif wrist is not None:
+                    wrist_x, wrist_y = wrist
+                    if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+                        frame_data = {
+                            "nose"            : nose            ,
+                            "left_eye_inner"  : left_eye_inner  ,
+                            "left_eye"        : left_eye        ,
+                            "left_eye_outer"  : left_eye_outer  ,
+                            "right_eye_inner" : right_eye_inner ,
+                            "right_eye"       : right_eye       ,
+                            "right_eye_outer" : right_eye_outer ,
+                            "left_ear"        : left_ear        ,
+                            "right_ear"       : right_ear       ,
+                            "left_mouth"      : left_mouth      ,
+                            "right_mouth"     : right_mouth     ,
+                            "left_shoulder"   : left_shoulder   ,
+                            "right_shoulder"  : right_shoulder  ,
+                            "left_elbow"      : left_elbow      ,
+                            "right_elbow"     : right_elbow     ,
+                            "left_wrist"      : left_wrist      ,
+                            "right_wrist"     : right_wrist     ,
+                            "left_pinky"      : left_pinky      ,
+                            "right_pinky"     : right_pinky     ,
+                            "left_index"      : left_index      ,
+                            "right_index"     : right_index     ,
+                            "left_thumb"      : left_thumb      ,
+                            "right_thumb"     : right_thumb     ,
+                            "left_hip"        : left_hip        ,
+                            "right_hip"       : right_hip       ,
+                            "left_knee"       : left_knee       ,
+                            "right_knee"      : right_knee      ,
+                            "left_ankle"      : left_ankle      ,
+                            "right_ankle"     : right_ankle     ,
+                            "left_heel"       : left_heel       ,
+                            "right_heel"      : right_heel      ,
+                            "left_foot_index" : left_foot_index ,
+                            "right_foot_index": right_foot_index,
+                            "ball"            : ball            ,
+                            "Side"            : side            ,
+                            "frame"           : frame_index     ,
+                            "postion"         : "EYE"
+                        }
+                        output_data[frame_index] = frame_data
             # print(f"Output Data:{output_data}")
                     
             
