@@ -1,7 +1,7 @@
 {
   "name": "shotmatch",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "0.5.4",
   "scripts": {
     "start": "concurrently \"expo start\" \"python3 ../../src/backend_api.py\"",
     "reset-project": "node ./scripts/reset-project.js",
@@ -10,7 +10,6 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "expo": "expo start --tunnel"
   },
   "jest": {
     "preset": "jest-expo"
