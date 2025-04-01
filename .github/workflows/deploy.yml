@@ -32,7 +32,7 @@ jobs:
         npm install -g eas-cli
 
     - name: Build application
-      run: BUILD_OUTPUT=$(EXPO_TOKEN=${{ secrets.EAS_TOKEN }} eas build -p android --non-interactive)
+      run: BUILD_OUTPUT=$(EXPO_TOKEN=0iyWqciTZ-XzI2opiyzGIkH2v9OSQ-eTYQqmZhDq eas build -p android --non-interactive)
     
     - name: Download APK
       run: |
