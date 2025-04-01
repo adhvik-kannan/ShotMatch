@@ -12,3 +12,37 @@ jobs:
     env:
       LOG_LEVEL: 2                 # Set log level to 0
       LOG_FILE: "./logfile.txt"      # Define log file path
+      USER_NAME: "askannan2"
+      PASSWORD: "v5fStlVVtNA5cQdP"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token from secrets
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    
+    - name: Install dependencies
+      run: |  
+        cd frontend/ShotMatch
+        npm install
+        npm install -g eas-cli
+    - name: EAS Login
+      run: eas login --token ${{ secrets.EAS_TOKEN }}
+
+    - name: Configure EAS Build
+      run: eas build:configure
+
+    - name: Build application
+      run: BUILD_OUTPUT=$(eas build -p android --non-interactive)
+    
+    - name: Download APK
+      run: |
+        mkdir -p build
+        cd build
+        BUILD_LINK=$(echo "$BUILD_OUTPUT" | grep "https://expo.dev/artifacts/")
+        curl -L $BUILD_LINK -o app-android-build-0.5.4.aab
+    
