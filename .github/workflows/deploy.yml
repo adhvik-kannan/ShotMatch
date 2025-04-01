@@ -33,7 +33,7 @@ jobs:
 
     - name: Build application
       run: |
-        eas --help
+        eas build --help
         BUILD_OUTPUT=$(EXPO_TOKEN=0iyWqciTZ-XzI2opiyzGIkH2v9OSQ-eTYQqmZhDq eas build -p android --non-interactive)
     
     - name: Download APK
