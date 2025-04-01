@@ -172,7 +172,7 @@ def eye_level_measurement(eye, mouth, ball, wrist):
 
 # TODO: NOT DONE
 def waist_level_measurement(eye, mouth, ball, wrist):
-    frame_data = {}
+    frame_flag = False
     #  球在眼睛的高度
     if eye is not None and mouth is None:
         eye_x, eye_y = eye
@@ -182,89 +182,13 @@ def waist_level_measurement(eye, mouth, ball, wrist):
             ball[1] = h - ball_y
             if ball_y < (2 * eye_y) - mouth_y and ball_y > (2 * mouth_y) - eye_y:
             # if ball_y < eye_y and ball_y > mouth_y:
-                frame_data = {
-                    "nose"            : nose            ,
-                    "left_eye_inner"  : left_eye_inner  ,
-                    "left_eye"        : left_eye        ,
-                    "left_eye_outer"  : left_eye_outer  ,
-                    "right_eye_inner" : right_eye_inner ,
-                    "right_eye"       : right_eye       ,
-                    "right_eye_outer" : right_eye_outer ,
-                    "left_ear"        : left_ear        ,
-                    "right_ear"       : right_ear       ,
-                    "left_mouth"      : left_mouth      ,
-                    "right_mouth"     : right_mouth     ,
-                    "left_shoulder"   : left_shoulder   ,
-                    "right_shoulder"  : right_shoulder  ,
-                    "left_elbow"      : left_elbow      ,
-                    "right_elbow"     : right_elbow     ,
-                    "left_wrist"      : left_wrist      ,
-                    "right_wrist"     : right_wrist     ,
-                    "left_pinky"      : left_pinky      ,
-                    "right_pinky"     : right_pinky     ,
-                    "left_index"      : left_index      ,
-                    "right_index"     : right_index     ,
-                    "left_thumb"      : left_thumb      ,
-                    "right_thumb"     : right_thumb     ,
-                    "left_hip"        : left_hip        ,
-                    "right_hip"       : right_hip       ,
-                    "left_knee"       : left_knee       ,
-                    "right_knee"      : right_knee      ,
-                    "left_ankle"      : left_ankle      ,
-                    "right_ankle"     : right_ankle     ,
-                    "left_heel"       : left_heel       ,
-                    "right_heel"      : right_heel      ,
-                    "left_foot_index" : left_foot_index ,
-                    "right_foot_index": right_foot_index,
-                    "ball"            : ball            ,
-                    "Side"            : side            ,
-                    "frame"           : frame_index     ,
-                    "postion"         : "EYE"
-                }
+                frame_flag = True
         #  如果球不存在，那么看手腕的高度
         elif wrist is not None:
             wrist_x, wrist_y = wrist
             if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
-                frame_data = {
-                    "nose"            : nose            ,
-                    "left_eye_inner"  : left_eye_inner  ,
-                    "left_eye"        : left_eye        ,
-                    "left_eye_outer"  : left_eye_outer  ,
-                    "right_eye_inner" : right_eye_inner ,
-                    "right_eye"       : right_eye       ,
-                    "right_eye_outer" : right_eye_outer ,
-                    "left_ear"        : left_ear        ,
-                    "right_ear"       : right_ear       ,
-                    "left_mouth"      : left_mouth      ,
-                    "right_mouth"     : right_mouth     ,
-                    "left_shoulder"   : left_shoulder   ,
-                    "right_shoulder"  : right_shoulder  ,
-                    "left_elbow"      : left_elbow      ,
-                    "right_elbow"     : right_elbow     ,
-                    "left_wrist"      : left_wrist      ,
-                    "right_wrist"     : right_wrist     ,
-                    "left_pinky"      : left_pinky      ,
-                    "right_pinky"     : right_pinky     ,
-                    "left_index"      : left_index      ,
-                    "right_index"     : right_index     ,
-                    "left_thumb"      : left_thumb      ,
-                    "right_thumb"     : right_thumb     ,
-                    "left_hip"        : left_hip        ,
-                    "right_hip"       : right_hip       ,
-                    "left_knee"       : left_knee       ,
-                    "right_knee"      : right_knee      ,
-                    "left_ankle"      : left_ankle      ,
-                    "right_ankle"     : right_ankle     ,
-                    "left_heel"       : left_heel       ,
-                    "right_heel"      : right_heel      ,
-                    "left_foot_index" : left_foot_index ,
-                    "right_foot_index": right_foot_index,
-                    "ball"            : ball            ,
-                    "Side"            : side            ,
-                    "frame"           : frame_index     ,
-                    "postion"         : "EYE"
-                }
-    return frame_data
+                frame_flag = True
+    return frame_flag
                 
 
 def analyze_video(video_path):
@@ -339,9 +263,49 @@ def analyze_video(video_path):
             pinky   = choose_valid_side(left_pinky, right_pinky)
             side    = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
             
-            eye_level_data = eye_level_measurement(eye, mouth, ball, wrist)
-            if len(eye_level_data) is not 0:
-                output_data[frame_index] = eye_level_data
+            frame_flag = eye_level_measurement(eye, mouth, ball, wrist)
+            if frame_flag is True:
+                frame_data = {
+                        "nose"            : nose            ,
+                        "left_eye_inner"  : left_eye_inner  ,
+                        "left_eye"        : left_eye        ,
+                        "left_eye_outer"  : left_eye_outer  ,
+                        "right_eye_inner" : right_eye_inner ,
+                        "right_eye"       : right_eye       ,
+                        "right_eye_outer" : right_eye_outer ,
+                        "left_ear"        : left_ear        ,
+                        "right_ear"       : right_ear       ,
+                        "left_mouth"      : left_mouth      ,
+                        "right_mouth"     : right_mouth     ,
+                        "left_shoulder"   : left_shoulder   ,
+                        "right_shoulder"  : right_shoulder  ,
+                        "left_elbow"      : left_elbow      ,
+                        "right_elbow"     : right_elbow     ,
+                        "left_wrist"      : left_wrist      ,
+                        "right_wrist"     : right_wrist     ,
+                        "left_pinky"      : left_pinky      ,
+                        "right_pinky"     : right_pinky     ,
+                        "left_index"      : left_index      ,
+                        "right_index"     : right_index     ,
+                        "left_thumb"      : left_thumb      ,
+                        "right_thumb"     : right_thumb     ,
+                        "left_hip"        : left_hip        ,
+                        "right_hip"       : right_hip       ,
+                        "left_knee"       : left_knee       ,
+                        "right_knee"      : right_knee      ,
+                        "left_ankle"      : left_ankle      ,
+                        "right_ankle"     : right_ankle     ,
+                        "left_heel"       : left_heel       ,
+                        "right_heel"      : right_heel      ,
+                        "left_foot_index" : left_foot_index ,
+                        "right_foot_index": right_foot_index,
+                        "ball"            : ball            ,
+                        "Side"            : side            ,
+                        "frame"           : frame_index     ,
+                        "postion"         : "EYE"
+                    } 
+            output_data[frame_index] = frame_data
+            # waist_leve_data = waist_level_measurement(wrist, ball, hip)
             # print(f"Output Data:{output_data}")
                     
             
