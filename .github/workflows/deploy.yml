@@ -30,9 +30,6 @@ jobs:
         cd frontend/ShotMatch
         npm install
         npm install -g eas-cli
-        
-    - name: Configure EAS Build
-      run: EXPO_TOKEN=${{ secrets.EAS_TOKEN }} eas build:configure --non-interactive
 
     - name: Build application
       run: BUILD_OUTPUT=$(EXPO_TOKEN=${{ secrets.EAS_TOKEN }} eas build -p android --non-interactive)
