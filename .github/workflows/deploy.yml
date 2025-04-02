@@ -40,5 +40,4 @@ jobs:
 
       - name: Build Android app
         run: |
-          eas init
           eas build --platform android --profile preview --local --non-interactive
