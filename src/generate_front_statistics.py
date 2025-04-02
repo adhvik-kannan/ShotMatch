@@ -227,12 +227,12 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     # score_elbow *= 100
 
     
-    plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
+    # plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
     plot_beta_with_point(angle_hew_la, hew_la_params, label="HEW_LA")
-    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
-    plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
-    plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
-    plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
+    # plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
+    # plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
+    # plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
+    # plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
     
     return {
         "hew_ra_score": score_hew_ra,
