@@ -37,9 +37,7 @@ jobs:
           token: ${{ secrets.EAS_TOKEN }}
 
       - name: Install dependencies
-        run: |
-          cd frontend/ShotMatch
-          npm ci
+        run: npm ci
 
       - name: Build Android app
         run: eas build --platform android --profile preview --local --non-interactive
