@@ -9,6 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
+      "eas": {
+        "projectId": "ce0fa872-9c76-4ed6-8381-b988b316643f"
+      },
       "backendUrl": "128.46.4.97",
       "backendPort": "8080"
     },
