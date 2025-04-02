@@ -9,13 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
-      "backendUrl": "128.46.4.97",
       "router": {
         "origin": false
       },
       "eas": {
         "projectId": "ce0fa872-9c76-4ed6-8381-b988b316643f"
-      }
+      },
+      "backendUrl": "128.46.4.97",
+      "backendPort": "8080"
     },
     "ios": {
       "supportsTablet": true,

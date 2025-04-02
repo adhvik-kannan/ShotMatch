@@ -2,7 +2,7 @@ import pytest
 import cv2
 import numpy as np
 from unittest.mock import patch, MagicMock
-from src.recognition_model import detect_ball, get_landmark_xy, analyze_video
+from src.recognition_model import detect_ball, get_coordinate, analyze_video
 
 @pytest.fixture
 def sample_frame():
@@ -38,7 +38,7 @@ def test_detect_ball(sample_frame):
 
 
 # test landmark function is correctly returning expected data
-def test_get_landmark_xy():
+def test_get_coordinate():
     class MockLandmark:
         def __init__(self, x, y, visibility):
             self.x = x
@@ -48,21 +48,27 @@ def test_get_landmark_xy():
     # input landmark with visibility data
     mock_landmarks = [MockLandmark(0.5, 0.5, 1.0), MockLandmark(0.2, 0.8, 0.2)]
     image_width, image_height = 640, 480 # just some random value for now, because this part involves scaling depending on the resolution of video
-    visible_landmark = get_landmark_xy(mock_landmarks, 0, image_width, image_height)
-    hidden_landmark = get_landmark_xy(mock_landmarks, 1, image_width, image_height)
+    visible_landmark = get_coordinate(mock_landmarks, 0, image_width, image_height)
+    hidden_landmark = get_coordinate(mock_landmarks, 1, image_width, image_height)
     assert visible_landmark != "NONE", "Visible landmark should return coordinates"
     assert isinstance(visible_landmark, list) and len(visible_landmark) == 2, "Returned value should be a list of [x_coordinate, y_coordinate]"
-    assert hidden_landmark == "NONE", "Non-visible landmark should return string 'NONE'"
+    assert hidden_landmark == None, "Non-visible landmark should return string 'NONE'"
 
 
 # Test on analyze the mock video
 def test_analyze_video(mock_video):
     with patch("cv2.VideoCapture", return_value=mock_video):
         output_data = analyze_video("mock_video.mp4")
-        if output_data is not None: # only when it gets the data
-            assert isinstance(output_data, dict), "Output should be a list"
+        if output_data is not None:
+            assert isinstance(output_data, dict), "Output should be a dict"
             assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
             assert "ball" in output_data[0], "Frame data should contain ball"
+        # output_data = analyze_video("nba_test.mp4")
+        # if output_data is not None:
+        #     assert isinstance(output_data, dict), "Output should be a dict"
+        #     assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
+        #     assert "ball" in output_data[0], "Frame data should contain ball"
+
 
 if __name__ == "__main__":
     pytest.main()

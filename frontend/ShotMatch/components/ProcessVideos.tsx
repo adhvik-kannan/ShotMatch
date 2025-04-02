@@ -12,7 +12,7 @@ type VideoData = {
 };
 
 type RootStackParamList = {
-  ProcessVideos: { videos: VideoData[]; selectedPlayer: any };
+  ProcessVideos: { videos: VideoData[]; selectedPlayer: any, user: string };
 };
 
 type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'ProcessVideos'>;
@@ -23,7 +23,7 @@ interface HomeProps {
 
 const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
   const route = useRoute<ProcessVideosRouteProp>();
-  const { videos, selectedPlayer } = route.params;
+  const { videos, selectedPlayer, user } = route.params;
 
   const [processing, setProcessing] = useState<boolean>(true);
   const [message, setMessage] = useState<string>('Processing Videos...');
@@ -43,18 +43,21 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
         // console.log('Converted Videos:', convertedVideos);
 
         const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
+        const backendPort: string = Constants.expoConfig?.extra?.backendPort;
         console.log('Backend URL:', backendUrl);
-        const response = await fetch(`http://${backendUrl}:5000/process_videos`, {
+        console.log(`${videos[0].videoUri}, ${videos[1].videoUri}`);
+        const response = await fetch(`http://${backendUrl}:${backendPort}/process_videos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ videos: convertedVideos }),
+          body: JSON.stringify({ videos: convertedVideos, selectedPlayer: selectedPlayer, user: user }),
         });
         // console.log('Response:', response.json());
-        if (true) {
+        if (response.ok) {
           const jsonData = await response.json();
-          // console.log('Response from backend:', jsonData);
+          console.log('Response from backend:', jsonData);
+          console.log(jsonData.frontMetrics);
           const dummyMetrics = [
             { metric: 'Points', you: 25, player: 30 },
             { metric: 'Assists', you: 7, player: 5 },
@@ -64,10 +67,10 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
           setMessage('Videos processed successfully!');
           setTimeout(() => {
             navigation.navigate('PerformanceMetrics', {
-              frontMetrics: dummyMetrics,
-              sideMetrics: dummyMetrics,
+              frontMetrics: jsonData.frontMetrics,
+              sideMetrics: jsonData.sideMetrics,
               selectedPlayer: selectedPlayer,
-              overallComparisonScore: 87
+              overallComparisonScore: jsonData.overallScore
             });
           }, 1000);
         } else {
