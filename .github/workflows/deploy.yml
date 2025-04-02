@@ -39,4 +39,6 @@ jobs:
           npm ci
 
       - name: Build Android app
-        run: eas build --platform android --profile preview --local --non-interactive
+        run: |
+          eas init
+          eas build --platform android --profile preview --local --non-interactive
