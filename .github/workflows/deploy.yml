@@ -40,4 +40,5 @@ jobs:
 
       - name: Build Android app
         run: |
-          eas build --platform android --profile preview --local
+          cd frontend/ShotMatch
+          eas build --platform android --profile preview --local --non-interactive
