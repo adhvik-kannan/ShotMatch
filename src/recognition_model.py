@@ -74,8 +74,19 @@ def detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_el
         side = "FRONT"
     return side
 
-def eye_level_measurement(eye, mouth, ball, wrist):
-    frame_data = {}
+def eye_level_measurement(eye, mouth, ball, wrist, height):
+    '''
+    INPUT: 
+    eye: eye level coordinate
+    mouth: mouth level coordinate
+    ball: ball level coordinate
+    wrist: wrist level coordinate
+    height: image height
+    OUTPUT:
+    frame_flag: if the value is set to be True then it means that the ball is at the eye level
+    else it means that the ball is not at the eye level
+    '''
+    frame_flag = False
     #  球在眼睛的高度
     if eye is not None and mouth is None:
         eye_x, eye_y = eye
@@ -85,89 +96,13 @@ def eye_level_measurement(eye, mouth, ball, wrist):
             ball[1] = h - ball_y
             if ball_y < (2 * eye_y) - mouth_y and ball_y > (2 * mouth_y) - eye_y:
             # if ball_y < eye_y and ball_y > mouth_y:
-                frame_data = {
-                    "nose"            : nose            ,
-                    "left_eye_inner"  : left_eye_inner  ,
-                    "left_eye"        : left_eye        ,
-                    "left_eye_outer"  : left_eye_outer  ,
-                    "right_eye_inner" : right_eye_inner ,
-                    "right_eye"       : right_eye       ,
-                    "right_eye_outer" : right_eye_outer ,
-                    "left_ear"        : left_ear        ,
-                    "right_ear"       : right_ear       ,
-                    "left_mouth"      : left_mouth      ,
-                    "right_mouth"     : right_mouth     ,
-                    "left_shoulder"   : left_shoulder   ,
-                    "right_shoulder"  : right_shoulder  ,
-                    "left_elbow"      : left_elbow      ,
-                    "right_elbow"     : right_elbow     ,
-                    "left_wrist"      : left_wrist      ,
-                    "right_wrist"     : right_wrist     ,
-                    "left_pinky"      : left_pinky      ,
-                    "right_pinky"     : right_pinky     ,
-                    "left_index"      : left_index      ,
-                    "right_index"     : right_index     ,
-                    "left_thumb"      : left_thumb      ,
-                    "right_thumb"     : right_thumb     ,
-                    "left_hip"        : left_hip        ,
-                    "right_hip"       : right_hip       ,
-                    "left_knee"       : left_knee       ,
-                    "right_knee"      : right_knee      ,
-                    "left_ankle"      : left_ankle      ,
-                    "right_ankle"     : right_ankle     ,
-                    "left_heel"       : left_heel       ,
-                    "right_heel"      : right_heel      ,
-                    "left_foot_index" : left_foot_index ,
-                    "right_foot_index": right_foot_index,
-                    "ball"            : ball            ,
-                    "Side"            : side            ,
-                    "frame"           : frame_index     ,
-                    "postion"         : "EYE"
-                }
+                frame_flag = True
         #  如果球不存在，那么看手腕的高度
         elif wrist is not None:
             wrist_x, wrist_y = wrist
             if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
-                frame_data = {
-                    "nose"            : nose            ,
-                    "left_eye_inner"  : left_eye_inner  ,
-                    "left_eye"        : left_eye        ,
-                    "left_eye_outer"  : left_eye_outer  ,
-                    "right_eye_inner" : right_eye_inner ,
-                    "right_eye"       : right_eye       ,
-                    "right_eye_outer" : right_eye_outer ,
-                    "left_ear"        : left_ear        ,
-                    "right_ear"       : right_ear       ,
-                    "left_mouth"      : left_mouth      ,
-                    "right_mouth"     : right_mouth     ,
-                    "left_shoulder"   : left_shoulder   ,
-                    "right_shoulder"  : right_shoulder  ,
-                    "left_elbow"      : left_elbow      ,
-                    "right_elbow"     : right_elbow     ,
-                    "left_wrist"      : left_wrist      ,
-                    "right_wrist"     : right_wrist     ,
-                    "left_pinky"      : left_pinky      ,
-                    "right_pinky"     : right_pinky     ,
-                    "left_index"      : left_index      ,
-                    "right_index"     : right_index     ,
-                    "left_thumb"      : left_thumb      ,
-                    "right_thumb"     : right_thumb     ,
-                    "left_hip"        : left_hip        ,
-                    "right_hip"       : right_hip       ,
-                    "left_knee"       : left_knee       ,
-                    "right_knee"      : right_knee      ,
-                    "left_ankle"      : left_ankle      ,
-                    "right_ankle"     : right_ankle     ,
-                    "left_heel"       : left_heel       ,
-                    "right_heel"      : right_heel      ,
-                    "left_foot_index" : left_foot_index ,
-                    "right_foot_index": right_foot_index,
-                    "ball"            : ball            ,
-                    "Side"            : side            ,
-                    "frame"           : frame_index     ,
-                    "postion"         : "EYE"
-                }
-    return frame_data
+                frame_flag = True
+    return frame_flag
 
 
 # TODO: NOT DONE
@@ -204,7 +139,8 @@ def analyze_video(video_path):
     )
     cap = cv2.VideoCapture(video_path)
     frame_index = 0
-    output_data = {}
+    eye_level_data = {}
+    waist_level_data = {}
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -215,7 +151,7 @@ def analyze_video(video_path):
         results = pose.process(rgb_image)
 
         # Convert back to BGR for consistent processing (even if not displayed)
-        annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+        # annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
 
         frame_data = {}
 
@@ -261,10 +197,12 @@ def analyze_video(video_path):
             mouth   = choose_valid_side(left_mouth, right_mouth)
             wrist   = choose_valid_side(left_wrist, right_wrist)
             pinky   = choose_valid_side(left_pinky, right_pinky)
+            hip     = choose_valid_side(left_hip, right_hip)
+            shoulder= choose_valid_side(left_shoulder, right_shoulder)
             side    = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
             
-            frame_flag = eye_level_measurement(eye, mouth, ball, wrist)
-            if frame_flag is True:
+            eye_flag = eye_level_measurement(eye, mouth, ball, wrist, h)
+            if eye_flag is True:
                 frame_data = {
                         "nose"            : nose            ,
                         "left_eye_inner"  : left_eye_inner  ,
@@ -304,9 +242,52 @@ def analyze_video(video_path):
                         "frame"           : frame_index     ,
                         "postion"         : "EYE"
                     } 
-            output_data[frame_index] = frame_data
+            eye_level_data[frame_index] = frame_data
+
+            waist_flag = waist_level_measurement(hip, wrist, shoulder, h)
+            if waist_flag is True:
+                frame_data = {
+                        "nose"            : nose            ,
+                        "left_eye_inner"  : left_eye_inner  ,
+                        "left_eye"        : left_eye        ,
+                        "left_eye_outer"  : left_eye_outer  ,
+                        "right_eye_inner" : right_eye_inner ,
+                        "right_eye"       : right_eye       ,
+                        "right_eye_outer" : right_eye_outer ,
+                        "left_ear"        : left_ear        ,
+                        "right_ear"       : right_ear       ,
+                        "left_mouth"      : left_mouth      ,
+                        "right_mouth"     : right_mouth     ,
+                        "left_shoulder"   : left_shoulder   ,
+                        "right_shoulder"  : right_shoulder  ,
+                        "left_elbow"      : left_elbow      ,
+                        "right_elbow"     : right_elbow     ,
+                        "left_wrist"      : left_wrist      ,
+                        "right_wrist"     : right_wrist     ,
+                        "left_pinky"      : left_pinky      ,
+                        "right_pinky"     : right_pinky     ,
+                        "left_index"      : left_index      ,
+                        "right_index"     : right_index     ,
+                        "left_thumb"      : left_thumb      ,
+                        "right_thumb"     : right_thumb     ,
+                        "left_hip"        : left_hip        ,
+                        "right_hip"       : right_hip       ,
+                        "left_knee"       : left_knee       ,
+                        "right_knee"      : right_knee      ,
+                        "left_ankle"      : left_ankle      ,
+                        "right_ankle"     : right_ankle     ,
+                        "left_heel"       : left_heel       ,
+                        "right_heel"      : right_heel      ,
+                        "left_foot_index" : left_foot_index ,
+                        "right_foot_index": right_foot_index,
+                        "ball"            : ball            ,
+                        "Side"            : side            ,
+                        "frame"           : frame_index     ,
+                        "postion"         : "WAIST"
+                    } 
+                waist_level_data[frame_index] = frame_data
             # waist_leve_data = waist_level_measurement(wrist, ball, hip)
-            # print(f"Output Data:{output_data}")
+            # print(f"Output Data:{eye_level_data}")
                     
             
 
@@ -332,10 +313,10 @@ def analyze_video(video_path):
     #===================================== start of comment ===============================
     # cv2.destroyAllWindows()
     #===================================== end of comment =================================
-    if len(output_data) != 0:
-        max_key = max(output_data.keys())
-        max_value = output_data[max_key]
-        # return output_data
+    if len(eye_level_data) != 0:
+        max_key = max(eye_level_data.keys())
+        max_value = eye_level_data[max_key]
+        # return eye_level_data
         return max_value
     else:
         return None
