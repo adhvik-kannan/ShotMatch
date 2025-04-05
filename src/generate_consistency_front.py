@@ -144,21 +144,11 @@ def get_parameters(angles, max_val=180):
     angles = np.array(angles)
     mean_val = float(np.mean(angles))
     std_val = float(np.std(angles))
-    m_y = mean_val / max_val
-    s_y_sq = (std_val**2) / (max_val**2)
+    cv = (std_val / mean_val) * 100     # coefficient of variation normalizes consistency regardless of magnitude
     print(angles)
     # print(f"s_y_sq: {s_y_sq}")
-
-    if s_y_sq <= 0:
-        alpha = beta_val = 100
-    else:
-        factor = (m_y * (1 - m_y) / s_y_sq) - 1
-        # print(f"my: {m_y}")
-        # print(f"factor: {factor}")
-        alpha = m_y * factor
-        beta_val = (1 - m_y) * factor
     
-    return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
+    return cv
 
 def generate_elbow_parameters(data):
     elbows_list = []
@@ -183,43 +173,7 @@ def generate_elbow_parameters(data):
         mean_val = 0.0
         std_val = 0.0
     
-    m_y = mean_val  
-    s_y_sq = std_val**2
-    
-    # Compute Beta distribution parameters.
-    if s_y_sq <= 0:
-        alpha = beta_val = 100  # default for very low variance
-    else:
-        factor = (m_y * (1 - m_y) / s_y_sq) - 1
-        alpha = m_y * factor
-        beta_val = (1 - m_y) * factor
-
-
-    return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
-
-def plot_beta_distribution(params):
-    print(f"params: {params}")
-    alpha = params["alpha"]
-    beta_val = params["beta"]
-
-    # Generate x values between 0 and 1
-    x = np.linspace(0, 1, 100)
-
-    # Compute the Beta probability density function (PDF)
-    y = beta.pdf(x, alpha, beta_val)
-
-    # Plot the distribution
-    plt.figure(figsize=(8, 5))
-    plt.plot(x, y, label=f'Beta({alpha:.2f}, {beta_val:.2f})', color='b')
-    plt.fill_between(x, y, alpha=0.3, color='blue')  # Fill under the curve
-    plt.xlabel('x')
-    plt.ylabel('Density')
-    plt.title('Beta Distribution')
-    plt.legend()
-    plt.grid()
-
-    # Show the plot
-    plt.show()
+    return (std_val / mean_val) * 100
 
 def get_steph_curry_front_data():
     nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'left_pinky': [198, 549], 'right_pinky': [159, 543], 'left_thumb': [197, 543], 'right_thumb': [156, 538], 'ball': None, 'Side': 'FRONT', 'frame': 63}
@@ -255,14 +209,6 @@ def main():
     print("\nSteph Curry Front-ewp-la params: ", sc_f_ewp_la)
     print("\nSteph Curry Front-Elbow Params: ", sc_f_elbow)
 
-    # plot_beta_distribution(sc_f_hew_ra)
-    plot_beta_distribution(sc_f_hew_la)
-    # plot_beta_distribution(sc_f_sew_ra)
-    # plot_beta_distribution(sc_f_sew_la)
-    # plot_beta_distribution(sc_f_ewa_ra)
-    # plot_beta_distribution(sc_f_ewp_la)
-    # plot_beta_distribution(sc_f_elbow)
-    
 
 if __name__ == "__main__":
     main()
