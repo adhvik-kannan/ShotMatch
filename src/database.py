@@ -103,7 +103,7 @@ def get_user_by_email(collection: Collection, email: str):
         
 # Define data schema 
 ### FIX THIS WITH WHATEVER DATA YOU NEED
-def add_new_data(collection: Collection, name: str, front_results: any, side_results: any, overall_score: any, mode: str, date: str):
+def add_new_data(collection: Collection, name: str, front_results: any, side_results: any, overall_score: any, mode: str, date: any):
     try:
         package = {
             "name": name,

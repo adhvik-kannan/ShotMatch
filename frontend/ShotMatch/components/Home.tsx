@@ -19,7 +19,7 @@ type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'User'>;
 const Home: React.FC<HomeProps> = ({ navigation }) => {
     const route = useRoute<ProcessVideosRouteProp>();
     const { user } = route.params;
-
+    
     return (
         <View style={styles.container}>
             <TouchableOpacity 

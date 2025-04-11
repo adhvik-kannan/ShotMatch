@@ -9,7 +9,7 @@ from recognition_model import analyze_video
 from generate_front_statistics import compare_front
 from generate_side_statistics import compare_side_ra
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash
+from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash, add_new_data
 import json
 import time
 import datetime
@@ -94,7 +94,7 @@ def process_videos():
     data_json = request.get_json()
     videos = data_json.get("videos")
     player = data_json.get("selectedPlayer")
-    user - data_json.get("user")
+    user = data_json.get("user")
     # player = {'name': "Stephen Curry"}
     print(player, flush=True)
     # if not videos or not isinstance(videos, list):
@@ -189,8 +189,21 @@ def process_videos():
     #     "sew_ra_score": score_sew_ra,
     #     "ewp_ra_score": score_ewp_ra,
     # }
+    try:
+        now = datetime.datetime.now()
+        timestamp = {
+            "year": now.year,
+            "month": now.month,
+            "day": now.day,
+            "hour": now.hour,
+            "minute": now.minute,
+            "second": now.second
+        }
+        added, inserted_data = add_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", timestamp)
+    except Exception as e:
+        print(f"Error inserting data into MongoDB: {e}")
+        return jsonify({"message": "Error inserting data into MongoDB"}), 50
 
-    added, padd_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", datetime.datetime.now())
     timer_end = time.time()
     print(f"Time taken: {timer_end - timer}")
     return jsonify({
@@ -292,6 +305,24 @@ def process_consistency_videos():
         "front_data": front_results,
         "side_data": side_results
     }), 200
-    
+
+@app.route("/player_data", methods=["POST"])
+def get_player_data_by_user():
+    data_json = request.get_json()
+    user = data_json.get("user")
+    mode = data_json.get("mode")
+    # print(user)
+    if not user:
+        return jsonify({"message": "Missing user parameter"}), 400
+    try:
+        # Query for documents that match the provided user.
+        data = list(player_data_collection.find({"name": user}))
+        # print(data)
+        for record in data:
+            record["_id"] = str(record["_id"])  # convert ObjectId to string for JSON serialization
+        return jsonify({"player_data": data}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
