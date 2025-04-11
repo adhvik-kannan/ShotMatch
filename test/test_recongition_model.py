@@ -60,7 +60,7 @@ def test_analyze_video(mock_video):
     with patch("cv2.VideoCapture", return_value=mock_video):
         output_data = analyze_video("mock_video.mp4")
         if output_data is not None:
-            assert isinstance(output_data, dict), "Output should be a dict"
+            assert isinstance(output_data, tuple), "Output should be a tuple"
             assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
             assert "ball" in output_data[0], "Frame data should contain ball"
         # output_data = analyze_video("nba_test.mp4")

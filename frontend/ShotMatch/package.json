@@ -1,17 +1,17 @@
 {
   "name": "shotmatch",
   "main": "expo-router/entry",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "scripts": {
     "start": "concurrently \"expo start\" \"python3 ../../src/backend_api.py\"",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
     "build": "eas build -p ios",
-    "test": "expo start prebuild -p android",
-    "expor": "expo start --no-dev --minify"
+    "expor": "expo start --no-dev --minify",
+    "test": "jest --watchAll",
+    "lint": "expo lint"
   },
   "jest": {
     "preset": "jest-expo"
@@ -24,6 +24,7 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
+    "expo": "52.0.27",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.7",
     "expo-dev-client": "^5.0.20",

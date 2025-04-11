@@ -255,13 +255,13 @@ def main():
     print("\nSteph Curry Front-ewp-la params: ", sc_f_ewp_la)
     print("\nSteph Curry Front-Elbow Params: ", sc_f_elbow)
 
-    plot_beta_distribution(sc_f_hew_ra)
+    # plot_beta_distribution(sc_f_hew_ra)
     plot_beta_distribution(sc_f_hew_la)
-    plot_beta_distribution(sc_f_sew_ra)
-    plot_beta_distribution(sc_f_sew_la)
-    plot_beta_distribution(sc_f_ewa_ra)
-    plot_beta_distribution(sc_f_ewp_la)
-    plot_beta_distribution(sc_f_elbow)
+    # plot_beta_distribution(sc_f_sew_ra)
+    # plot_beta_distribution(sc_f_sew_la)
+    # plot_beta_distribution(sc_f_ewa_ra)
+    # plot_beta_distribution(sc_f_ewp_la)
+    # plot_beta_distribution(sc_f_elbow)
     
 
 if __name__ == "__main__":

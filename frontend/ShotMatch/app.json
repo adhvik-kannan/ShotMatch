@@ -9,6 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "ce0fa872-9c76-4ed6-8381-b988b316643f"
       },
@@ -16,13 +19,15 @@
       "backendPort": "8080"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ceonagauv.ShotMatch"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ceonagauv.ShotMatch"
     },
     "web": {
       "bundler": "metro",
@@ -43,6 +48,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "ceonagauv"
   }
 }

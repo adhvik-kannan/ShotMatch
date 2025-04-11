@@ -62,6 +62,67 @@ def get_coordinate(landmarks, index, image_width, image_height):
     y_coord = int((1 - landmark.y) * image_height)
     return [x_coord, y_coord]
 
+def detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist):
+    side = None
+    if right_shoulder == None or right_elbow == None or right_wrist == None:
+        if left_shoulder != None and left_elbow != None and left_wrist != None:
+            side = "LEFT"
+    elif left_shoulder == None or left_elbow == None or left_wrist == None:
+        if right_shoulder != None and right_elbow != None and right_wrist != None:
+            side = "RIGHT"
+    else:
+        side = "FRONT"
+    return side
+
+def eye_level_measurement(eye, mouth, ball, wrist, height):
+    '''
+    INPUT: 
+    eye: eye level coordinate
+    mouth: mouth level coordinate
+    ball: ball level coordinate
+    wrist: wrist level coordinate
+    height: image height
+    OUTPUT:
+    frame_flag: if the value is set to be True then it means that the ball is at the eye level
+    else it means that the ball is not at the eye level
+    '''
+    frame_flag = False
+    #  球在眼睛的高度
+    if eye is not None and mouth is None:
+        eye_x, eye_y = eye
+        mouth_x, mouth_y = mouth
+        if ball is not None:
+            ball_x, ball_y = ball
+            ball[1] = height - ball_y
+            if ball_y < (2 * eye_y) - mouth_y and ball_y > (2 * mouth_y) - eye_y:
+            # if ball_y < eye_y and ball_y > mouth_y:
+                frame_flag = True
+        #  如果球不存在，那么看手腕的高度
+        elif wrist is not None:
+            wrist_x, wrist_y = wrist
+            if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+                frame_flag = True
+    return frame_flag
+
+
+# TODO: NOT DONE
+def waist_level_measurement(hip, wrist, shoulder, ball, height):
+    frame_flag = False
+    if hip is not None and shoulder is None:
+        hip_x, hip_y = hip
+        shoulder_x, shoulder_y = shoulder
+        if ball is not None:
+            ball_x, ball_y = ball
+            ball[1] = height - ball_y
+            if ball_y < shoulder_y and ball_y > hip_y:
+                frame_flag = True
+        elif wrist is not None:
+            wrist_x, wrist_y = wrist
+            if wrist_y < shoulder_y and wrist_y > hip_y:
+                frame_flag = True
+    return frame_flag
+                
+
 def analyze_video(video_path):
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
@@ -75,7 +136,8 @@ def analyze_video(video_path):
     )
     cap = cv2.VideoCapture(video_path)
     frame_index = 0
-    output_data = {}
+    eye_level_data = {}
+    waist_level_data = {}
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -86,100 +148,143 @@ def analyze_video(video_path):
         results = pose.process(rgb_image)
 
         # Convert back to BGR for consistent processing (even if not displayed)
-        annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+        # annotated_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
 
         frame_data = {}
 
         if results.pose_landmarks:
             landmarks = results.pose_landmarks.landmark
             h, w, _ = frame.shape
-            left_shoulder = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
-            right_shoulder = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
-            left_elbow = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
-            right_elbow = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
-            left_wrist = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
-            right_wrist = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
-            left_hip = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
-            right_hip = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
-            left_pinky = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
-            right_pinky = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
-            right_eye = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
-            left_eye = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
-            right_ear = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
-            left_ear = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
-            right_thumb = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_THUMB.value, w, h)
-            left_thumb = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_THUMB.value, w, h)
-            right_mouth = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_RIGHT.value, w, h)
-            left_mouth = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_LEFT.value, w, h)
+            nose             = get_coordinate(landmarks, mp_pose.PoseLandmark.NOSE.value, w, h)
+            left_eye_inner   = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE_INNER.value, w, h)
+            left_eye         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
+            left_eye_outer   = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE_OUTER.value, w, h)
+            right_eye_inner  = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE_INNER.value, w, h)
+            right_eye        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
+            right_eye_outer  = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE_OUTER.value, w, h)
+            left_ear         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
+            right_ear        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
+            left_mouth       = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_LEFT.value, w, h)
+            right_mouth      = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_RIGHT.value, w, h)
+            left_shoulder    = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
+            right_shoulder   = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
+            left_elbow       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
+            right_elbow      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
+            left_wrist       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
+            right_wrist      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
+            left_pinky       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
+            right_pinky      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
+            left_index       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_INDEX.value, w, h)
+            right_index      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_INDEX.value, w, h)
+            left_thumb       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_THUMB.value, w, h)
+            right_thumb      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_THUMB.value, w, h)
+            left_hip         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
+            right_hip        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
+            left_knee        = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_KNEE.value, w, h)
+            right_knee       = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_KNEE.value, w, h)
+            left_ankle       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ANKLE.value, w, h)
+            right_ankle      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ANKLE.value, w, h)
+            left_heel        = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HEEL.value, w, h)
+            right_heel       = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HEEL.value, w, h)
+            left_foot_index  = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_FOOT_INDEX.value, w, h)
+            right_foot_index = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value, w, h)
 
-            ball = detect_ball(frame)
-
-            eye = choose_valid_side(left_eye, right_eye)
-            mouth = choose_valid_side(left_mouth, right_mouth)
-            wrist = choose_valid_side(left_wrist, right_wrist)
-            pinky = choose_valid_side(left_pinky, right_pinky)
-
-            # For detecting which side of the player
-            side = None
-            if right_shoulder == None or right_elbow == None or right_wrist == None:
-                if left_shoulder != None and left_elbow != None and left_wrist != None:
-                    side = "LEFT"
-            elif left_shoulder == None or left_elbow == None or left_wrist == None:
-                if right_shoulder != None and right_elbow != None and right_wrist != None:
-                    side = "RIGHT"
-            else:
-                side = "FRONT"
+            ball    = detect_ball(frame)
+            eye     = choose_valid_side(left_eye, right_eye)
+            mouth   = choose_valid_side(left_mouth, right_mouth)
+            wrist   = choose_valid_side(left_wrist, right_wrist)
+            pinky   = choose_valid_side(left_pinky, right_pinky)
+            hip     = choose_valid_side(left_hip, right_hip)
+            shoulder= choose_valid_side(left_shoulder, right_shoulder)
+            side    = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
             
-            if ball is not None and eye is not None and mouth is not None:
-                ball_x, ball_y = ball
-                ball[1] = h - ball_y
-                eye_x, eye_y = eye
-                mouth_x, mouth_y = mouth
-                # print(ball_y, eye_y, mouth_y)
-                if ball_y < 2 * eye_y - mouth_y and ball_y > 2 * mouth_y - eye_y:
-                # if ball_y < eye_y and ball_y > mouth_y:
-                    frame_data = {
-                        "left_shoulder": left_shoulder,
-                        "right_shoulder": right_shoulder,
-                        "left_elbow": left_elbow,
-                        "right_elbow": right_elbow,
-                        "left_wrist": left_wrist,
-                        "right_wrist": right_wrist,
-                        "left_hip": left_hip,
-                        "right_hip": right_hip,
-                        "left_pinky": left_pinky,
-                        "right_pinky": right_pinky,
-                        "left_thumb": left_thumb,
-                        "right_thumb": right_thumb,
-                        "ball": ball,
-                        "Side": side,
-                        "frame": frame_index
-                    }
-                    output_data[frame_index] = frame_data
-            elif wrist is not None and eye is not None and mouth is not None:
-                wrist_x, wrist_y = wrist
-                eye_x, eye_y = eye
-                mouth_x, mouth_y = mouth
-                if wrist_y < 2 * eye_y - mouth_y and wrist_y > 2 * mouth_y - eye_y:
-                    frame_data = {
-                        "left_shoulder": left_shoulder,
-                        "right_shoulder": right_shoulder,
-                        "left_elbow": left_elbow,
-                        "right_elbow": right_elbow,
-                        "left_wrist": left_wrist,
-                        "right_wrist": right_wrist,
-                        "left_hip": left_hip,
-                        "right_hip": right_hip,
-                        "left_pinky": left_pinky,
-                        "right_pinky": right_pinky,
-                        "left_thumb": left_thumb,
-                        "right_thumb": right_thumb,
-                        "ball": ball,
-                        "Side": side,
-                        "frame": frame_index
-                    }
-                    output_data[frame_index] = frame_data
-            # print(f"Output Data:{output_data}")
+            eye_flag = eye_level_measurement(eye, mouth, ball, wrist, h)
+            if eye_flag is True:
+                frame_data = {
+                        "nose"            : nose            ,
+                        "left_eye_inner"  : left_eye_inner  ,
+                        "left_eye"        : left_eye        ,
+                        "left_eye_outer"  : left_eye_outer  ,
+                        "right_eye_inner" : right_eye_inner ,
+                        "right_eye"       : right_eye       ,
+                        "right_eye_outer" : right_eye_outer ,
+                        "left_ear"        : left_ear        ,
+                        "right_ear"       : right_ear       ,
+                        "left_mouth"      : left_mouth      ,
+                        "right_mouth"     : right_mouth     ,
+                        "left_shoulder"   : left_shoulder   ,
+                        "right_shoulder"  : right_shoulder  ,
+                        "left_elbow"      : left_elbow      ,
+                        "right_elbow"     : right_elbow     ,
+                        "left_wrist"      : left_wrist      ,
+                        "right_wrist"     : right_wrist     ,
+                        "left_pinky"      : left_pinky      ,
+                        "right_pinky"     : right_pinky     ,
+                        "left_index"      : left_index      ,
+                        "right_index"     : right_index     ,
+                        "left_thumb"      : left_thumb      ,
+                        "right_thumb"     : right_thumb     ,
+                        "left_hip"        : left_hip        ,
+                        "right_hip"       : right_hip       ,
+                        "left_knee"       : left_knee       ,
+                        "right_knee"      : right_knee      ,
+                        "left_ankle"      : left_ankle      ,
+                        "right_ankle"     : right_ankle     ,
+                        "left_heel"       : left_heel       ,
+                        "right_heel"      : right_heel      ,
+                        "left_foot_index" : left_foot_index ,
+                        "right_foot_index": right_foot_index,
+                        "ball"            : ball            ,
+                        "Side"            : side            ,
+                        "frame"           : frame_index     ,
+                        "postion"         : "EYE"
+                    } 
+            eye_level_data[frame_index] = frame_data
+
+            waist_flag = waist_level_measurement(hip, wrist, shoulder, h)
+            if waist_flag is True:
+                frame_data = {
+                        "nose"            : nose            ,
+                        "left_eye_inner"  : left_eye_inner  ,
+                        "left_eye"        : left_eye        ,
+                        "left_eye_outer"  : left_eye_outer  ,
+                        "right_eye_inner" : right_eye_inner ,
+                        "right_eye"       : right_eye       ,
+                        "right_eye_outer" : right_eye_outer ,
+                        "left_ear"        : left_ear        ,
+                        "right_ear"       : right_ear       ,
+                        "left_mouth"      : left_mouth      ,
+                        "right_mouth"     : right_mouth     ,
+                        "left_shoulder"   : left_shoulder   ,
+                        "right_shoulder"  : right_shoulder  ,
+                        "left_elbow"      : left_elbow      ,
+                        "right_elbow"     : right_elbow     ,
+                        "left_wrist"      : left_wrist      ,
+                        "right_wrist"     : right_wrist     ,
+                        "left_pinky"      : left_pinky      ,
+                        "right_pinky"     : right_pinky     ,
+                        "left_index"      : left_index      ,
+                        "right_index"     : right_index     ,
+                        "left_thumb"      : left_thumb      ,
+                        "right_thumb"     : right_thumb     ,
+                        "left_hip"        : left_hip        ,
+                        "right_hip"       : right_hip       ,
+                        "left_knee"       : left_knee       ,
+                        "right_knee"      : right_knee      ,
+                        "left_ankle"      : left_ankle      ,
+                        "right_ankle"     : right_ankle     ,
+                        "left_heel"       : left_heel       ,
+                        "right_heel"      : right_heel      ,
+                        "left_foot_index" : left_foot_index ,
+                        "right_foot_index": right_foot_index,
+                        "ball"            : ball            ,
+                        "Side"            : side            ,
+                        "frame"           : frame_index     ,
+                        "postion"         : "WAIST"
+                    } 
+                waist_level_data[frame_index] = frame_data
+            # waist_leve_data = waist_level_measurement(wrist, ball, hip)
+            # print(f"Output Data:{eye_level_data}")
                     
             
 
@@ -205,12 +310,105 @@ def analyze_video(video_path):
     #===================================== start of comment ===============================
     # cv2.destroyAllWindows()
     #===================================== end of comment =================================
-    if len(output_data) != 0:
-        max_key = max(output_data.keys())
-        max_value = output_data[max_key]
-        # return output_data
-        return max_value
+    if len(eye_level_data) != 0 and len(waist_level_data) != 0:
+        min_waist = min(waist_level_data.keys())
+        max_key = max(eye_level_data.keys())
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        offset_frame = int(max_key + fps * 0.1)
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, offset_frame)
+        success, frame = cap.read()
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = pose.process(rgb_image)
+        if results.pose_landmarks:
+            landmarks = results.pose_landmarks.landmark
+            h, w, _ = frame.shape
+            nose             = get_coordinate(landmarks, mp_pose.PoseLandmark.NOSE.value, w, h)
+            left_eye_inner   = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE_INNER.value, w, h)
+            left_eye         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE.value, w, h)
+            left_eye_outer   = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EYE_OUTER.value, w, h)
+            right_eye_inner  = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE_INNER.value, w, h)
+            right_eye        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE.value, w, h)
+            right_eye_outer  = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EYE_OUTER.value, w, h)
+            left_ear         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_EAR.value, w, h)
+            right_ear        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_EAR.value, w, h)
+            left_mouth       = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_LEFT.value, w, h)
+            right_mouth      = get_coordinate(landmarks, mp_pose.PoseLandmark.MOUTH_RIGHT.value, w, h)
+            left_shoulder    = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_SHOULDER.value, w, h)
+            right_shoulder   = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_SHOULDER.value, w, h)
+            left_elbow       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ELBOW.value, w, h)
+            right_elbow      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ELBOW.value, w, h)
+            left_wrist       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_WRIST.value, w, h)
+            right_wrist      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_WRIST.value, w, h)
+            left_pinky       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_PINKY.value, w, h)
+            right_pinky      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_PINKY.value, w, h)
+            left_index       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_INDEX.value, w, h)
+            right_index      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_INDEX.value, w, h)
+            left_thumb       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_THUMB.value, w, h)
+            right_thumb      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_THUMB.value, w, h)
+            left_hip         = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HIP.value, w, h)
+            right_hip        = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HIP.value, w, h)
+            left_knee        = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_KNEE.value, w, h)
+            right_knee       = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_KNEE.value, w, h)
+            left_ankle       = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_ANKLE.value, w, h)
+            right_ankle      = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_ANKLE.value, w, h)
+            left_heel        = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_HEEL.value, w, h)
+            right_heel       = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_HEEL.value, w, h)
+            left_foot_index  = get_coordinate(landmarks, mp_pose.PoseLandmark.LEFT_FOOT_INDEX.value, w, h)
+            right_foot_index = get_coordinate(landmarks, mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value, w, h)
+            ball    = detect_ball(frame)
+            eye     = choose_valid_side(left_eye, right_eye)
+            mouth   = choose_valid_side(left_mouth, right_mouth)
+            wrist   = choose_valid_side(left_wrist, right_wrist)
+            pinky   = choose_valid_side(left_pinky, right_pinky)
+            hip     = choose_valid_side(left_hip, right_hip)
+            shoulder= choose_valid_side(left_shoulder, right_shoulder)
+            side    = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
+            frame_data = {
+                        "nose"            : nose            ,
+                        "left_eye_inner"  : left_eye_inner  ,
+                        "left_eye"        : left_eye        ,
+                        "left_eye_outer"  : left_eye_outer  ,
+                        "right_eye_inner" : right_eye_inner ,
+                        "right_eye"       : right_eye       ,
+                        "right_eye_outer" : right_eye_outer ,
+                        "left_ear"        : left_ear        ,
+                        "right_ear"       : right_ear       ,
+                        "left_mouth"      : left_mouth      ,
+                        "right_mouth"     : right_mouth     ,
+                        "left_shoulder"   : left_shoulder   ,
+                        "right_shoulder"  : right_shoulder  ,
+                        "left_elbow"      : left_elbow      ,
+                        "right_elbow"     : right_elbow     ,
+                        "left_wrist"      : left_wrist      ,
+                        "right_wrist"     : right_wrist     ,
+                        "left_pinky"      : left_pinky      ,
+                        "right_pinky"     : right_pinky     ,
+                        "left_index"      : left_index      ,
+                        "right_index"     : right_index     ,
+                        "left_thumb"      : left_thumb      ,
+                        "right_thumb"     : right_thumb     ,
+                        "left_hip"        : left_hip        ,
+                        "right_hip"       : right_hip       ,
+                        "left_knee"       : left_knee       ,
+                        "right_knee"      : right_knee      ,
+                        "left_ankle"      : left_ankle      ,
+                        "right_ankle"     : right_ankle     ,
+                        "left_heel"       : left_heel       ,
+                        "right_heel"      : right_heel      ,
+                        "left_foot_index" : left_foot_index ,
+                        "right_foot_index": right_foot_index,
+                        "ball"            : ball            ,
+                        "Side"            : side            ,
+                        "frame"           : frame_index     ,
+                        "postion"         : "AFTER_EYE"
+                    } 
+        max_value = eye_level_data[max_key]
+        min_value = waist_level_data[min_waist]
+        # return eye_level_data
+        return min_value, max_value, frame_data
     else:
+        # TODO: Post some fix later here
         return None
 
 # example usage:
@@ -251,14 +449,14 @@ if __name__ == "__main__":
     # print(f"nba_17: {pose_data}")
     # pose_data = analyze_video("nba_18.mp4")
     # print(f"nba_18: {pose_data}")
-    pose_data = analyze_video("nba_19.mp4")
-    print(f"nba_19: {pose_data}")
+    # pose_data = analyze_video("nba_19.mp4")
+    # print(f"nba_19: {pose_data}")
     # pose_data = analyze_video("nba_20.mp4")
     # print(f"nba_20: {pose_data}")
     # pose_data = analyze_video("nba_21.mp4")
     # print(f"nba_21: {pose_data}")
-    pose_data = analyze_video("nba_22.mp4")
-    print(f"nba_22: {pose_data}")
+    # pose_data = analyze_video("nba_22.mp4")
+    # print(f"nba_22: {pose_data}")
     # pose_data = analyze_video("nba_23.mp4")
     # print(f"nba_23: {pose_data}")
     # pose_data = analyze_video("nba_24.mp4")
@@ -271,3 +469,62 @@ if __name__ == "__main__":
     # print(f"nba_27: {pose_data}")
     # pose_data = analyze_video("nba_29.mp4")
     # print(f"klay: {pose_data}")
+    # pose_data = analyze_video("nba_30.mp4")  
+    # print(f"nba_1: {pose_data}")
+    # pose_data = analyze_video("nba_31.mp4")
+    # print(f"nba_2: {pose_data}")
+    # pose_data = analyze_video("nba_32.mp4")
+    # print(f"nba_3: {pose_data}")
+    # pose_data = analyze_video("nba_33.mp4")
+    # print(f"nba_4: {pose_data}")
+    # pose_data = analyze_video("nba_34.mp4")
+    # print(f"nba_5: {pose_data}")
+    # pose_data = analyze_video("nba_35.mp4")
+    # print(f"nba_6: {pose_data}")
+    # pose_data = analyze_video("nba_36.mp4")
+    # print(f"nba_7: {pose_data}")
+    # pose_data = analyze_video("nba_37.mp4")
+    # print(f"nba_8: {pose_data}")
+    # pose_data = analyze_video("nba_38.mp4")
+    # print(f"nba_9: {pose_data}")
+    # pose_data = analyze_video("nba_39.mp4")
+    # print(f"nba_10: {pose_data}")
+    # pose_data = analyze_video("nba_40.mp4")
+    # print(f"nba_11: {pose_data}")
+    # pose_data = analyze_video("nba_41.mp4")
+    # print(f"nba_12: {pose_data}")
+    # pose_data = analyze_video("nba_42.mp4")
+    # print(f"nba_13: {pose_data}")
+    # pose_data = analyze_video("nba_43.mp4")
+    # print(f"nba_14: {pose_data}")
+    # pose_data = analyze_video("nba_44.mp4")
+    # print(f"nba_15: {pose_data}")
+    # pose_data = analyze_video("nba_45.mp4")
+    # print(f"nba_16: {pose_data}")
+    # pose_data = analyze_video("nba_46.mp4")
+    # print(f"nba_17: {pose_data}")
+    # pose_data = analyze_video("nba_47.mp4")
+    # print(f"nba_18: {pose_data}")
+    # pose_data = analyze_video("nba_48.mp4")
+    # print(f"nba_19: {pose_data}")
+    # pose_data = analyze_video("nba_49.mp4")
+    # print(f"nba_20: {pose_data}")
+    # pose_data = analyze_video("nba_50.mp4")
+    # print(f"nba_21: {pose_data}")
+    # pose_data = analyze_video("nba_51.mp4")
+    # print(f"nba_22: {pose_data}")
+    # pose_data = analyze_video("nba_52.mp4")
+    # print(f"nba_23: {pose_data}")
+    # pose_data = analyze_video("nba_53.mp4")
+    # print(f"nba_24: {pose_data}")
+    # pose_data = analyze_video("nba_54.mp4")
+    # print(f"nba_25: {pose_data}")
+    # pose_data = analyze_video("nba_55.mp4")
+    # print(f"nba_26: {pose_data}")
+    # pose_data = analyze_video("nba_56.mp4")
+    # print(f"nba_27: {pose_data}")
+    # pose_data = analyze_video("nba_57.mp4")
+    # print(f"klay: {pose_data}")
+    # pose_data = analyze_video("nba_58.mp4")  
+    # print(f"nba_1: {pose_data}")
+    pass
