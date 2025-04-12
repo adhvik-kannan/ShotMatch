@@ -20,7 +20,7 @@ type Player = {
 };
 
 type RootStackParamList = {
-  UploadVideos: { selectedPlayer: Player, user: string };
+  UploadVideos: { selectedPlayer: Player; user: string };
 };
 
 type UploadVideosRouteProp = RouteProp<RootStackParamList, 'UploadVideos'>;

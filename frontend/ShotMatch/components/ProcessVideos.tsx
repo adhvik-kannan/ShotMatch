@@ -12,7 +12,7 @@ type VideoData = {
 };
 
 type RootStackParamList = {
-  ProcessVideos: { videos: VideoData[]; selectedPlayer: any, user: string };
+  ProcessVideos: { videos: VideoData[]; selectedPlayer: any; user: string; };
 };
 
 type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'ProcessVideos'>;
@@ -70,20 +70,21 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
               frontMetrics: jsonData.frontMetrics,
               sideMetrics: jsonData.sideMetrics,
               selectedPlayer: selectedPlayer,
-              overallComparisonScore: jsonData.overallScore
+              overallComparisonScore: jsonData.overallScore,
+              user: user,
             });
           }, 1000);
         } else {
           setMessage('Failed to process videos.');
           setTimeout(() => {
-            navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer });
+            navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer, user: user });
           }, 1500);
         }
       } catch (error) {
         console.error(error);
         setMessage('Error processing videos.');
         setTimeout(() => {
-          navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer });
+          navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer, user: user });
         }, 1500);
       } finally {
         setProcessing(false);
