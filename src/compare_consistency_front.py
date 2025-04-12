@@ -1,48 +1,46 @@
-from scipy.stats import beta
-import math
 import numpy as np
 import matplotlib.pyplot as plt
+import math
+from scipy.stats import beta
 
-def plot_beta_with_point(new_angle, params, label="Beta Distribution", save_filename=None):
+NUM_CLIPS = 0
+
+def calculate_acute_angle(vertex, a, b):
     """
-    Plots the Beta distribution (scaled to [0,180]) for the given parameters and marks
-    the new angle value on the plot.
+    Calculate the angle (in degrees) between three points: a -> vertex -> b.
     
     Inputs:
-      new_angle: float, the new data point (angle in degrees) to mark.
-      params: dict, Beta distribution parameters in the format
-              {"mean": mean_val, "std": std_val, "alpha": alpha_val, "beta": beta_val}
-      label: string, title/label for the plot.
-      save_filename: if provided, the plot will be saved to this file.
+        a       = point 1 (e.g., hip for hew, shoulder for sew, or elbow for ewp)
+        vertex  = point 2 (e.g., shoulder for hew, elbow for sew, or wrist for ewp)
+        b       = point 3 (e.g., elbow for hew, wrist for sew, or pinky for ewp)
+    
+    Output:
+        Angle in degrees between a -> vertex -> b.
     """
-    # Generate x-values over the range [0, 180].
-    x = np.linspace(0, 180, 300)
-    # Compute the Beta PDF scaled to [0,180]:
-    y = (1/180.0) * beta.pdf(x/180.0, params["alpha"], params["beta"])
+    AV = (abs(a[0] - vertex[0]), abs(a[1] - vertex[1]))
+    BV = (abs(b[0] - vertex[0]), abs(b[1] - vertex[1]))
     
-    plt.figure(figsize=(8, 6))
-    plt.plot(x, y, label=f"Beta({params['alpha']:.2f}, {params['beta']:.2f})", color="blue")
+    dot_product = AV[0]*BV[0] + AV[1]*BV[1]
+    AV_magnitude = math.sqrt(AV[0]**2 + AV[1]**2)
+    BV_magnitude = math.sqrt(BV[0]**2 + BV[1]**2)
     
-    # Mark the new data point:
-    # Compute PDF value at new_angle
-    new_val = (1/180.0) * beta.pdf(new_angle/180.0, params["alpha"], params["beta"])
-    plt.axvline(new_angle, color="red", linestyle="--", label=f"New Angle: {new_angle:.1f}°")
-    plt.scatter([new_angle], [new_val], color="red", zorder=5)
+    if AV_magnitude == 0 or BV_magnitude == 0:
+        return 0.0
     
-    plt.xlabel("Angle (degrees)")
-    plt.ylabel("Density")
-    plt.title(label)
-    plt.legend()
-    plt.grid(True)
-    
-    if save_filename:
-        plt.savefig(save_filename)
-    
-    plt.show()
+    cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
+    return math.degrees(math.acos(cos_value))
 
 def calculate_angle(vertex, a, b):
     """
-    Calculate the angle (in degrees) between three points: a -> vertex -> b.
+    Calculate angle (in degrees) for (a -> vertex -> b)
+
+    Inputs:
+        a       = point 1 (e.g., shoulder)
+        vertex  = point 2 (e.g., elbow)
+        b       = point 3 (e.g., wrist)
+
+    Output:
+        Angle in degrees between a -> vertex -> b.
     """
     AV = (a[0] - vertex[0], a[1] - vertex[1])
     BV = (b[0] - vertex[0], b[1] - vertex[1])
@@ -57,81 +55,160 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def compare_side_ra(data, sew_ra_params, ewp_ra_params):
-    # shoulder-elbow-wrist right arm
-    if ((data["right_shoulder"] != None) and (data["right_elbow"] != None) and (data["right_wrist"] != None)):
-        angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
-
-    # elbow-wrist-pinky right arm
-    if ((data["right_elbow"] != None) and (data["right_wrist"] != None) and (data["right_pinky"] != None)):
-        angle_ewp_ra = calculate_angle(data["right_wrist"], data["right_elbow"], data["right_pinky"])
+def generate_front_parameters(data):
+    """
+    Processes frames of front-view data and computes four arrays:
+      - hew: Hip -> Shoulder -> Elbow angles (vertex = shoulder)
+      - sew: Shoulder -> Elbow -> Wrist angles (vertex = elbow)
+      - ewp: Elbow -> Wrist -> Pinky angles (vertex = wrist)
+      - ec : Elbow Comparison metric = (|left_elbow_y - right_elbow_y|) / (distance between left_wrist and left_elbow)
     
-    # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
-    pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
-    score_sew_ra = math.ceil(max(0, min(100, score_sew_ra)))
+    Inputs:
+        hip         = list of hip coordinates
+        shoulder    = list of shoulder coordinates
+        left_elbow  = list of left elbow coordinates
+        right_elbow = list of right elbow coordinates
+        wrist       = list of wrist coordinates
+        pinky       = list of pinky coordinates
+        
+    Outputs:
+        hew_array, sew_array, ewp_array, ec_array as numpy arrays.
+    """
+    hew_ra_list = []
+    hew_la_list = []
+    sew_ra_list = []
+    sew_la_list = []
+    ewa_ra_list = []
+    ewp_la_list = []
     
-    # ewp: Angle at wrist using points: right_elbow, wrist, pinky.
-    pdf_ewp_ra_new = beta.pdf(angle_ewp_ra/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
-    pdf_ewp_ra_mean = beta.pdf(ewp_ra_params["mean"]/180.0, ewp_ra_params["alpha"], ewp_ra_params["beta"])
-    score_ewp_ra = (pdf_ewp_ra_new / pdf_ewp_ra_mean) * 100 if pdf_ewp_ra_mean != 0 else 0
-    score_ewp_ra = math.ceil(max(0, min(100, score_ewp_ra)))
+    for i in range(len(data["ball"])):
+        # hip-elbow-wrist right arm
+        if ((data["right_hip"][i] != None) and (data["right_wrist"][i] != None) and (data["right_elbow"][i] != None)):
+            angle = calculate_angle(data["right_elbow"][i], data["right_hip"][i], data["right_wrist"][i])
+            hew_ra_list.append(angle)
+        
+        # hip-elbow-wrist left arm
+        if ((data["left_hip"][i] != None) and (data["left_wrist"][i] != None) and (data["left_elbow"][i] != None)):
+            angle = calculate_angle(data["left_elbow"][i], data["left_hip"][i], data["left_wrist"][i])
+            hew_la_list.append(angle)
 
-    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
-    plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
+        # shoulder-elbow-wrist right arm
+        if ((data["right_shoulder"][i] != None) and (data["right_elbow"][i] != None) and (data["right_wrist"][i] != None)):
+            angle = calculate_acute_angle(data["right_elbow"][i], data["right_shoulder"][i], data["right_wrist"][i])
+            sew_ra_list.append(angle)
+        
+        # shoulder-elbow-wrist left arm
+        if ((data["left_shoulder"][i] != None) and (data["left_elbow"][i] != None) and (data["left_wrist"][i] != None)):
+            angle = calculate_acute_angle(data["left_elbow"][i], data["left_shoulder"][i], data["left_wrist"][i])
+            sew_la_list.append(angle)
+        
+        # elbow-wrist-average right arm (avg = thumb and pinky)
+        if ((data["right_elbow"][i] != None) and (data["right_wrist"][i] != None)):
+            if (data["right_pinky"][i] != None and data["right_thumb"][i] != None):
+                x = (data["right_pinky"][i][0] + data["right_thumb"][i][0]) / 2
+                y = (data["right_pinky"][i][1] + data["right_thumb"][i][1]) / 2
+                coord = [x, y]
+                angle = calculate_angle(data["right_wrist"][i], data["right_elbow"][i], coord)
+                ewa_ra_list.append(angle)
 
-    return {
-        "sew_ra_score": score_sew_ra,
-        "ewp_ra_score": score_ewp_ra,
-    }
+        # elbow-wrist-pinky left arm
+        if ((data["left_elbow"][i] != None) and (data["left_wrist"][i] != None) and (data["left_pinky"][i] != None)):
+            angle = calculate_angle(data["left_wrist"][i], data["left_elbow"][i], data["left_pinky"][i])
+            ewp_la_list.append(angle)
+        
+    hew_ra = get_parameters(hew_ra_list)
+    hew_la = get_parameters(hew_la_list)
+    sew_ra = get_parameters(sew_ra_list)
+    sew_la = get_parameters(sew_la_list)
+    ewa_ra = get_parameters(ewa_ra_list)
+    ewp_la = get_parameters(ewp_la_list)
 
-def compare_side_la(data, sew_la_params, ewa_la_params):
-    # shoulder-elbow-wrist left arm
-    if ((data["left_shoulder"] != None) and (data["left_elbow"] != None) and (data["left_wrist"] != None)):
-        angle_sew_la = calculate_angle(data["left_elbow"], data["left_shoulder"], data["left_wrist"])
+    return hew_ra, hew_la, sew_ra, sew_la, ewa_ra, ewp_la
 
-    # elbow-wrist-average left arm (avg = thumb and pinky)
-    if ((data["left_elbow"] != None) and (data["left_wrist"] != None)):
-        if (data["left_pinky"] != None and data["left_thumb"] != None):
-            x = (data["left_pinky"][0] + data["left_thumb"][0]) / 2
-            y = (data["left_pinky"][1] + data["left_thumb"][1]) / 2
-            coord = [x, y]
-            angle_ewa_la = calculate_angle(data["left_wrist"], data["left_elbow"], coord)
-
+def get_parameters(angles, max_val=180):
+    """
+    Calculates distribution parameters for a given set of values by scaling
+    them to the [0,1] interval and fitting a Beta distribution.
     
-    # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
-    pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
-    score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
-    score_sew_la = math.ceil(max(0, min(100, score_sew_la)))
+    Inputs:
+        angles  = numpy array of values (in degrees by default; for ratios, adjust max_val)
+        max_val = maximum value (default is 180 for angles; for ratios use 1)
     
-    # ewa: Angle at wrist using points: left elbow, wrist, average between thumb and pinky
-    pdf_ewa_la_new = beta.pdf(angle_ewa_la/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
-    pdf_ewa_la_mean = beta.pdf(ewa_la_params["mean"]/180.0, ewa_la_params["alpha"], ewa_la_params["beta"])
-    score_ewa_la = (pdf_ewa_la_new / pdf_ewa_la_mean) * 100 if pdf_ewa_la_mean != 0 else 0
-    score_ewa_la = math.ceil(max(0, min(100, score_ewa_la)))
+    Outputs:
+        A dictionary containing:
+            - mean: sample mean
+            - std: sample standard deviation
+            - alpha: Beta distribution alpha parameter
+            - beta: Beta distribution beta parameter
+    """
+    angles = np.array(angles)
+    mean_val = float(np.mean(angles))
+    std_val = float(np.std(angles))
+    cv = (std_val / mean_val) * 100     # coefficient of variation normalizes consistency regardless of magnitude
+    print(angles)
+    # print(f"s_y_sq: {s_y_sq}")
     
-    return {
-        "sew_la_score": score_sew_la,
-        "ewa_la_score": score_ewa_la
-    }
+    return cv
 
-def get_klay_data():
-    return {'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [886, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52}
+def generate_elbow_parameters(data):
+    elbows_list = []
+    
+    if (data["right_wrist"][0] != None and data["right_elbow"][0] != None):
+        arm_length = math.sqrt((data["right_wrist"][0][0] - data["right_elbow"][0][0])**2 + (data["right_wrist"][0][1] - data["right_elbow"][0][1])**2)
+    else:
+        arm_length = math.sqrt((data["left_wrist"][0][0] - data["left_elbow"][0][0])**2 + (data["left_wrist"][0][1] - data["left_elbow"][0][1])**2)
 
-def get_ra_params():
-    sew_ra_params = {'mean': 80.85076856368889, 'std': 15.340129920993972, 'alpha': 14.852084900953656, 'beta': 18.213466975226094}
-    ewp_ra_params = {'mean': 168.20268550842667, 'std': 7.730845782832074, 'alpha': 30.091304505321396, 'beta': 2.1105286258535343}
-    return sew_ra_params, ewp_ra_params
+    for i in range(len(data["left_elbow"])):
+        if (data["left_elbow"][i] != None) and (data["right_elbow"][i] != None):
+            left_entry = data["left_elbow"][i]
+            right_entry = data["right_elbow"][i]
+            elbows_list.append(abs(((left_entry[1]) - (right_entry[1])) / arm_length))
+
+    elbows = np.array(elbows_list)
+    # print(f"elbow diff list = {elbows_list}")
+    if len(elbows > 0):
+        mean_val = float(np.mean(elbows))
+        std_val = float(np.std(elbows))
+    else:
+        mean_val = 0.0
+        std_val = 0.0
+    
+    return (std_val / mean_val) * 100
+
+def get_steph_curry_front_data():
+    nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'left_pinky': [198, 549], 'right_pinky': [159, 543], 'left_thumb': [197, 543], 'right_thumb': [156, 538], 'ball': None, 'Side': 'FRONT', 'frame': 63}
+    nba_19 = {'left_shoulder': [436, 656], 'right_shoulder': [362, 662], 'left_elbow': [474, 618], 'right_elbow': [352, 633], 'left_wrist': [460, 636], 'right_wrist': [380, 695], 'left_hip': [425, 521], 'right_hip': [382, 525], 'left_pinky': [454, 638], 'right_pinky': [389, 711], 'left_thumb': [446, 643], 'right_thumb': [387, 708], 'ball': None, 'Side': 'FRONT', 'frame': 45}
+    nba_20 = {'left_shoulder': [168, 533], 'right_shoulder': [101, 538], 'left_elbow': [196, 528], 'right_elbow': [108, 517], 'left_wrist': [184, 592], 'right_wrist': [127, 575], 'left_hip': [156, 391], 'right_hip': [113, 393], 'left_pinky': [179, 609], 'right_pinky': [132, 595], 'left_thumb': [177, 606], 'right_thumb': [130, 595], 'ball': None, 'Side': 'FRONT', 'frame': 15}
+    nba_22 = {'left_shoulder': [271, 508], 'right_shoulder': [207, 510], 'left_elbow': [313, 511], 'right_elbow': [218, 529], 'left_wrist': [277, 567], 'right_wrist': [227, 589], 'left_hip': [271, 363], 'right_hip': [228, 367], 'left_pinky': [270, 583], 'right_pinky': [232, 606], 'left_thumb': [266, 578], 'right_thumb': [231, 597], 'ball': None, 'Side': 'FRONT', 'frame': 37}
+    nba_23 = {'left_shoulder': [241, 610], 'right_shoulder': [173, 615], 'left_elbow': [271, 615], 'right_elbow': [176, 595], 'left_wrist': [254, 676], 'right_wrist': [196, 662], 'left_hip': [224, 469], 'right_hip': [182, 473], 'left_pinky': [250, 691], 'right_pinky': [200, 684], 'left_thumb': [246, 688], 'right_thumb': [194, 678], 'ball': None, 'Side': 'FRONT', 'frame': 19}
+    nba_24 = {'left_shoulder': [132, 747], 'right_shoulder': [63, 747], 'left_elbow': [161, 745], 'right_elbow': [73, 736], 'left_wrist': [145, 810], 'right_wrist': [88, 800], 'left_hip': [118, 603], 'right_hip': [74, 605], 'left_pinky': [136, 826], 'right_pinky': [96, 816], 'left_thumb': [134, 823], 'right_thumb': [90, 811], 'ball': None, 'Side': 'FRONT', 'frame': 11}
+    nba_26 = {'left_shoulder': [256, 666], 'right_shoulder': [186, 675], 'left_elbow': [294, 669], 'right_elbow': [201, 666], 'left_wrist': [277, 731], 'right_wrist': [214, 732], 'left_hip': [242, 513], 'right_hip': [195, 516], 'left_pinky': [269, 749], 'right_pinky': [217, 750], 'left_thumb': [266, 744], 'right_thumb': [213, 744], 'ball': None, 'Side': 'FRONT', 'frame': 21}
+    nba_27 = {'left_shoulder': [263, 723], 'right_shoulder': [192, 728], 'left_elbow': [290, 729], 'right_elbow': [198, 714], 'left_wrist': [277, 796], 'right_wrist': [216, 787], 'left_hip': [245, 570], 'right_hip': [199, 574], 'left_pinky': [267, 815], 'right_pinky': [217, 805], 'left_thumb': [267, 809], 'right_thumb': [217, 802], 'ball': None, 'Side': 'FRONT', 'frame': 10}
+
+    merged_dict = {}
+
+    for d in [nba_18, nba_19, nba_20, nba_22, nba_23, nba_24, nba_26, nba_27]:
+        for key, value in d.items():
+            if key not in merged_dict:
+                merged_dict[key] = [value]
+            else:
+                merged_dict[key].append(value)
+
+    return merged_dict
 
 def main():
-    side_ra_data = get_klay_data()
-    sew_ra_params, ewp_ra_params = get_ra_params()
-    side_ra_scores = compare_side_ra(side_ra_data, sew_ra_params, ewp_ra_params)
+    sc_f_data = get_steph_curry_front_data()
 
-    print("Side View RA similarity scores:")
-    print(side_ra_scores)
+    sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(sc_f_data)
+    sc_f_elbow = generate_elbow_parameters(sc_f_data)
+    print("\nSteph Curry Front-hew-ra params: ", sc_f_hew_ra)
+    print("\nSteph Curry Front-hew-la params: ", sc_f_hew_la)
+    print("\nSteph Curry Front-sew-ra params: ", sc_f_sew_ra)
+    print("\nSteph Curry Front-sew-la params: ", sc_f_sew_la)
+    print("\nSteph Curry Front-ewa-ra params: ", sc_f_ewa_ra)
+    print("\nSteph Curry Front-ewp-la params: ", sc_f_ewp_la)
+    print("\nSteph Curry Front-Elbow Params: ", sc_f_elbow)
+
 
 if __name__ == "__main__":
     main()
