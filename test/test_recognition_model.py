@@ -22,7 +22,7 @@ def mock_video():
 # When YOLOV11X is trying to recognize the object, it will have xyxy which will return the top left xy coordinate and bottom right xy coordinate
 def test_detect_ball(sample_frame):
     # Mock YOLO model to avoid loading the model
-    with patch("src.recognition_model.model") as mock_model:
+    with patch("src.recognition_model.yolo_model") as mock_model:
         mock_result = MagicMock()
         mock_box = MagicMock()
         mock_box.cls = [32]
