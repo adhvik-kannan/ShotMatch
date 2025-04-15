@@ -91,7 +91,7 @@ Provide a clear and concise description of the issue or suggestion\
 recommended template:\
 Summary: ...\
 Expected Behavior: ...\
-Actual Behavior: ...\
+Actual Behavior: ...
 ### 3. Context
 Include relevant information
 1. Selected professional player for comparison
