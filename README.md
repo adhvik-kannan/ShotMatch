@@ -1,9 +1,14 @@
 # ShotMatch
-This project can analyze your shooting similarity and consistency with some professional basketball players.
+## Introduction
+This project can analyze your shooting similarity and consistency with some professional basketball players. This software is a perfect alternative when you cannot afford a coach. It also gives you historical data for you to analyze, and lets you choose the player you want to compare yourself to. It also gives you a professional player's curve to show where your shooting is when you give your score.
 
-## System Requirement
+## Server System Requirement
 MacOS version 11 or later\
 Ubuntu 18.04 or later
+
+## User System Requirement
+Android 10 or later\
+IOS 14 or later
 
 ## Install Instruction
 
@@ -67,4 +72,38 @@ It will give you a URL to access the app. To access the app, you can go to your 
 After you finish install the Expo Go
 You should see an output on the server that said:\
 *Metro waiting on exp://<ip_addr>:<port_num>*\
-Use connect feature on the Expo, type the link above into the Expo Go then you can access our software
+Use connect feature on the Expo, type the 
+*exp://<ip_addr>:<port_num>* above into the Expo Go then you can access our software.
+
+## User manual
+access the User Manual here
+
+## Report Issue
+Please follow the following format when report the issue
+### 1. Issue Type
+1. Bug Report
+2. Feature Request
+3. Enhancement Suggestion
+4. Performance Issue
+5. Other (please describe)
+### 2. Description
+Provide a clear and concise description of the issue or suggestion\
+recommended template:\
+Summary: ...\
+Expected Behavior: ...\
+Actual Behavior: ...\
+### 3. Context
+Include relevant information
+1. Selected professional player for comparison
+2. Device used
+3. Camera type (if relevant)
+4. ShotMatch version
+### 4. Screenshots / Video (if applicable)
+Take screenshots or videos here to help explain your issue.
+### 5. Steps to reproduce
+Show the steps to reproduce the bug so it can save us a lot of time.
+### 6. Feature Request Details (if applicable)
+What's the feature you’d like to see?\
+Why do you think it's useful?
+
+***Submit the Issue/Request in our [GitHub Issue Page](https://github.com/adhvik-kannan/ShotMatch/issues)***
