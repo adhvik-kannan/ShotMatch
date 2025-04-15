@@ -12,13 +12,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash, add_new_data
 import json
 import time
-import datetime
+
+# Swagger imports
+from flasgger import Swagger
+
 # Constants
 SECRET_KEY = "your_secret_key"
 DB_NAME = "auth_db"
 
 # Initialize Flask App
 app = Flask(__name__)
+swagger = Swagger(app)
 
 # Connect to MongoDB
 success, db = connect_to_mongodb(DB_NAME)
@@ -65,6 +69,29 @@ def token_required(f):
 # Routes
 @app.route("/signup", methods=["POST"])
 def signup():
+    """
+    User Signup endpoint.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: User signup data
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: User created successfully.
+      400:
+        description: Error in user creation.
+    """
     data = request.json
     print(data)
     success, response = add_user(users_collection, data["email"], generate_password_hash(data["password"]), False, "default")
@@ -74,6 +101,29 @@ def signup():
 
 @app.route("/login", methods=["POST"])
 def login():
+    """
+    User Login endpoint.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: User login credentials
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Successful login with access token.
+      401:
+        description: Invalid credentials.
+    """
     data = request.json
     success, user = get_user_by_email(users_collection, data["email"])
     print(success, user)
@@ -85,23 +135,71 @@ def login():
 @app.route("/protected", methods=["GET"])
 @token_required
 def protected_route(username):
+    """
+    Protected endpoint that requires a valid JWT token.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: Authorization
+        in: header
+        type: string
+        required: true
+        description: Bearer token for authentication.
+    responses:
+      200:
+        description: You are authorized.
+      401:
+        description: Token is missing or invalid.
+    """
     return jsonify({"message": "You are authorized", "user": username})
 
 @app.route("/process_videos", methods=["POST"])
 def process_videos():
-    # print('here')
+    """
+    Process Videos endpoint.
+    ---
+    tags:
+      - Video Processing
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: JSON payload containing list of videos, selected player, and user.
+        schema:
+          type: object
+          properties:
+            videos:
+              type: array
+              items:
+                type: object
+                properties:
+                  videoUri:
+                    type: string
+                  base64Data:
+                    type: string
+            selectedPlayer:
+              type: object
+              properties:
+                name:
+                  type: string
+            user:
+              type: string
+    responses:
+      200:
+        description: Videos processed successfully.
+      400:
+        description: Missing video data or invalid video format.
+      500:
+        description: Failed video processing or error during processing.
+    """
     timer = time.time()
     data_json = request.get_json()
     videos = data_json.get("videos")
     player = data_json.get("selectedPlayer")
     user = data_json.get("user")
-    # player = {'name': "Stephen Curry"}
     print(player, flush=True)
-    # if not videos or not isinstance(videos, list):
-    #     return jsonify({"message": "No videos provided or invalid format"}), 400
-
-    # processed_count = 2
-    processed_results = []  # List to hold each video's OCR output (list will be 2 dictionaries)
+    processed_results = []  # List to hold each video's OCR output.
     processed_count = len(videos)
 
     for video in videos:
@@ -112,12 +210,12 @@ def process_videos():
 
         print(f"Processing video {video_uri}", flush=True)
         try:
-            # Decode the base64 video and write to a temporary file
+            # Decode the base64 video and write to a temporary file.
             temp_file_path = f"/tmp/{os.path.basename(video_uri)}"
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            # Run OCR analysis on the temporary file
+            # Run OCR analysis on the temporary file.
             print(temp_file_path)
             ocr_result = analyze_video(temp_file_path)
             print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
@@ -139,22 +237,15 @@ def process_videos():
                 "error": str(e)
             }), 500
         finally:
-            # Clean up the temporary file if it exists
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
     
-    # generate statistics for the videos
-    # format is 
-    # processed_results[0] = {front_data}
-    # processed_results[1] = {side_data}
-    # processed_results.append({'left_shoulder': [655, 518], 'right_shoulder': [373, 477], 'left_elbow': [751, 322], 'right_elbow': [431, 291], 'left_wrist': [685, 582], 'right_wrist': [544, 570], 'left_hip': [651, 53], 'right_hip': [446, 51], 'left_pinky': [669, 656], 'right_pinky': [563, 634], 'left_thumb': [661, 640], 'right_thumb': [549, 624], 'ball': None, 'Side': 'FRONT', 'frame': 18})
-    # processed_results.append({'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [887, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52})
-    which_arm = ["left", "right"]
+    # Generate statistics for the videos.
     found, player_data = get_data_by_name_or_hash(nba_players_collection, player["name"])
     if not found:
         return jsonify({"message": "Player not found"}), 404
+
     sew_f_ra = json.loads(player_data[0]["SEW_F_RA"])
-    # print(type(sew_f_ra))
     sew_f_la = json.loads(player_data[0]["SEW_F_LA"])
     ewa_f_ra = json.loads(player_data[0]["EWA_F_RA"])
     ewp_f_la = json.loads(player_data[0]["EWP_F_LA"])
@@ -166,29 +257,13 @@ def process_videos():
 
     front_results = compare_front(processed_results[0], hew_f_ra, hew_f_la, sew_f_ra, sew_f_la, ewa_f_ra, ewp_f_la, elbow_diff)
     side_results = compare_side_ra(processed_results[1], sew_s_ra, ewp_s_ra)
-    overall_score = (front_results["hew_ra_score"] + front_results["hew_la_score"] + front_results["sew_ra_score"] + front_results["ewa_ra_score"] + front_results["ewp_la_score"] + front_results["ec_score"] + side_results["sew_ra_score"] + side_results["ewp_ra_score"]) / 8
-    # this is what compare_front() returns
-    # the params you just get from database, hew_ra_params will be HEW_F_RA in mongo (F means front)
-    #
-    # def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params)
-    # return {
-    #     "hew_ra_score": score_hew_ra,
-    #     "hew_la_score": score_hew_la,
-    #     "sew_ra_score": score_sew_ra,
-    #     "sew_la_score": score_sew_la,
-    #     "ewa_ra_score": score_ewa_ra,
-    #     "ewp_la_score": score_ewp_la,
-    #     "ec_score": score_ec
-    # }
+    overall_score = (
+        front_results["hew_ra_score"] + front_results["hew_la_score"] +
+        front_results["sew_ra_score"] + front_results["ewa_ra_score"] +
+        front_results["ewp_la_score"] + front_results["ec_score"] +
+        side_results["sew_ra_score"] + side_results["ewp_ra_score"]
+    ) / 8
 
-    # same for compare_side_ra()
-    # compare_side_la() (for left arm) doesnt work rn cause we didnt get left arm data
-    #
-    # def compare_side_ra(data, sew_ra_params, ewp_ra_params)
-    # return {
-    #     "sew_ra_score": score_sew_ra,
-    #     "ewp_ra_score": score_ewp_ra,
-    # }
     try:
         now = datetime.datetime.now()
         timestamp = {
@@ -216,6 +291,45 @@ def process_videos():
 
 @app.route("/process_consistency_videos", methods=["POST"])
 def process_consistency_videos():
+    """
+    Process Consistency Videos endpoint.
+    ---
+    tags:
+      - Video Processing
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: JSON payload containing lists of front and side videos.
+        schema:
+          type: object
+          properties:
+            frontVideos:
+              type: array
+              items:
+                type: object
+                properties:
+                  videoUri:
+                    type: string
+                  base64Data:
+                    type: string
+            sideVideos:
+              type: array
+              items:
+                type: object
+                properties:
+                  videoUri:
+                    type: string
+                  base64Data:
+                    type: string
+    responses:
+      200:
+        description: Consistency videos processed successfully.
+      400:
+        description: Missing or invalid video data.
+      500:
+        description: Error during video processing.
+    """
     data_json = request.get_json()
     front_videos = data_json.get("frontVideos")
     side_videos = data_json.get("sideVideos")
@@ -308,18 +422,40 @@ def process_consistency_videos():
 
 @app.route("/player_data", methods=["POST"])
 def get_player_data_by_user():
+    """
+    Get Player Data endpoint.
+    ---
+    tags:
+      - Data Retrieval
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: JSON payload containing the user and mode.
+        schema:
+          type: object
+          properties:
+            user:
+              type: string
+            mode:
+              type: string
+    responses:
+      200:
+        description: Player data retrieved successfully.
+      400:
+        description: Missing user parameter.
+      500:
+        description: Error retrieving player data.
+    """
     data_json = request.get_json()
     user = data_json.get("user")
     mode = data_json.get("mode")
-    # print(user)
     if not user:
         return jsonify({"message": "Missing user parameter"}), 400
     try:
-        # Query for documents that match the provided user.
         data = list(player_data_collection.find({"name": user}))
-        # print(data)
         for record in data:
-            record["_id"] = str(record["_id"])  # convert ObjectId to string for JSON serialization
+            record["_id"] = str(record["_id"])  # Convert ObjectId to string for JSON serialization.
         return jsonify({"player_data": data}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
