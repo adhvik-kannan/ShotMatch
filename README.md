@@ -76,7 +76,7 @@ Use connect feature on the Expo, type the
 *exp://<ip_addr>:<port_num>* above into the Expo Go then you can access our software.
 
 ## User manual
-access the User Manual here
+***Access the [User Manual](https://github.com/adhvik-kannan/ShotMatch/blob/integration/1.0/UserManual.md) here***
 
 ## Report Issue
 Please follow the following format when report the issue
