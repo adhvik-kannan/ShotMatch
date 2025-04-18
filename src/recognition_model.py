@@ -137,6 +137,7 @@ def analyze_video(video_path):
     frame_index = 0
     max_hand_y = None
     max_hand_frame_data = None
+    hand_frame_data = {}
 
     while True:
         success, frame = cap.read()
@@ -229,6 +230,7 @@ def analyze_video(video_path):
                     "right_heel"      : right_heel      ,
                     "left_foot_index" : left_foot_index ,
                     "right_foot_index": right_foot_index,
+                    # "wrist"           : wrist,
                     # "ball"            : ball            ,
                     "Side"            : side            ,
                     "frame"           : frame_index     ,
@@ -272,6 +274,7 @@ def analyze_video(video_path):
                     "right_heel"      : right_heel      ,
                     "left_foot_index" : left_foot_index ,
                     "right_foot_index": right_foot_index,
+                    # "wrist"           : wrist,
                     # "ball"            : ball            ,
                     "Side"            : side            ,
                     "frame"           : frame_index     ,
@@ -279,54 +282,115 @@ def analyze_video(video_path):
                 } 
                 waist_level_data[frame_index] = frame_data
 
+            # if wrist is not None:
+            #     if max_hand_y is None or wrist[1] < max_hand_y:
+            #         max_hand_y = wrist[1]
+            #         max_hand_frame_data = {
+            #             "nose"            : nose            ,
+            #             "left_eye_inner"  : left_eye_inner  ,
+            #             "left_eye"        : left_eye        ,
+            #             "left_eye_outer"  : left_eye_outer  ,
+            #             "right_eye_inner" : right_eye_inner ,
+            #             "right_eye"       : right_eye       ,
+            #             "right_eye_outer" : right_eye_outer ,
+            #             "left_ear"        : left_ear        ,
+            #             "right_ear"       : right_ear       ,
+            #             "left_mouth"      : left_mouth      ,
+            #             "right_mouth"     : right_mouth     ,
+            #             "left_shoulder"   : left_shoulder   ,
+            #             "right_shoulder"  : right_shoulder  ,
+            #             "left_elbow"      : left_elbow      ,
+            #             "right_elbow"     : right_elbow     ,
+            #             "left_wrist"      : left_wrist      ,
+            #             "right_wrist"     : right_wrist     ,
+            #             "left_pinky"      : left_pinky      ,
+            #             "right_pinky"     : right_pinky     ,
+            #             "left_index"      : left_index      ,
+            #             "right_index"     : right_index     ,
+            #             "left_thumb"      : left_thumb      ,
+            #             "right_thumb"     : right_thumb     ,
+            #             "left_hip"        : left_hip        ,
+            #             "right_hip"       : right_hip       ,
+            #             "left_knee"       : left_knee       ,
+            #             "right_knee"      : right_knee      ,
+            #             "left_ankle"      : left_ankle      ,
+            #             "right_ankle"     : right_ankle     ,
+            #             "left_heel"       : left_heel       ,
+            #             "right_heel"      : right_heel      ,
+            #             "left_foot_index" : left_foot_index ,
+            #             "right_foot_index": right_foot_index,
+            #             # "ball"            : ball            ,
+            #             "Side"            : side            ,
+            #             "frame"           : frame_index     ,
+            #             "postion"         : "MAX_HAND"
+            #         } 
             if wrist is not None:
-                if max_hand_y is None or wrist[1] < max_hand_y:
-                    max_hand_y = wrist[1]
-                    max_hand_frame_data = {
-                        "nose"            : nose            ,
-                        "left_eye_inner"  : left_eye_inner  ,
-                        "left_eye"        : left_eye        ,
-                        "left_eye_outer"  : left_eye_outer  ,
-                        "right_eye_inner" : right_eye_inner ,
-                        "right_eye"       : right_eye       ,
-                        "right_eye_outer" : right_eye_outer ,
-                        "left_ear"        : left_ear        ,
-                        "right_ear"       : right_ear       ,
-                        "left_mouth"      : left_mouth      ,
-                        "right_mouth"     : right_mouth     ,
-                        "left_shoulder"   : left_shoulder   ,
-                        "right_shoulder"  : right_shoulder  ,
-                        "left_elbow"      : left_elbow      ,
-                        "right_elbow"     : right_elbow     ,
-                        "left_wrist"      : left_wrist      ,
-                        "right_wrist"     : right_wrist     ,
-                        "left_pinky"      : left_pinky      ,
-                        "right_pinky"     : right_pinky     ,
-                        "left_index"      : left_index      ,
-                        "right_index"     : right_index     ,
-                        "left_thumb"      : left_thumb      ,
-                        "right_thumb"     : right_thumb     ,
-                        "left_hip"        : left_hip        ,
-                        "right_hip"       : right_hip       ,
-                        "left_knee"       : left_knee       ,
-                        "right_knee"      : right_knee      ,
-                        "left_ankle"      : left_ankle      ,
-                        "right_ankle"     : right_ankle     ,
-                        "left_heel"       : left_heel       ,
-                        "right_heel"      : right_heel      ,
-                        "left_foot_index" : left_foot_index ,
-                        "right_foot_index": right_foot_index,
-                        # "ball"            : ball            ,
-                        "Side"            : side            ,
-                        "frame"           : frame_index     ,
-                        "postion"         : "MAX_HAND"
-                    } 
+                frame_data = {
+                    "nose"            : nose            ,
+                    "left_eye_inner"  : left_eye_inner  ,
+                    "left_eye"        : left_eye        ,
+                    "left_eye_outer"  : left_eye_outer  ,
+                    "right_eye_inner" : right_eye_inner ,
+                    "right_eye"       : right_eye       ,
+                    "right_eye_outer" : right_eye_outer ,
+                    "left_ear"        : left_ear        ,
+                    "right_ear"       : right_ear       ,
+                    "left_mouth"      : left_mouth      ,
+                    "right_mouth"     : right_mouth     ,
+                    "left_shoulder"   : left_shoulder   ,
+                    "right_shoulder"  : right_shoulder  ,
+                    "left_elbow"      : left_elbow      ,
+                    "right_elbow"     : right_elbow     ,
+                    "left_wrist"      : left_wrist      ,
+                    "right_wrist"     : right_wrist     ,
+                    "left_pinky"      : left_pinky      ,
+                    "right_pinky"     : right_pinky     ,
+                    "left_index"      : left_index      ,
+                    "right_index"     : right_index     ,
+                    "left_thumb"      : left_thumb      ,
+                    "right_thumb"     : right_thumb     ,
+                    "left_hip"        : left_hip        ,
+                    "right_hip"       : right_hip       ,
+                    "left_knee"       : left_knee       ,
+                    "right_knee"      : right_knee      ,
+                    "left_ankle"      : left_ankle      ,
+                    "right_ankle"     : right_ankle     ,
+                    "left_heel"       : left_heel       ,
+                    "right_heel"      : right_heel      ,
+                    "left_foot_index" : left_foot_index ,
+                    "right_foot_index": right_foot_index,
+                    # "wrist"           : wrist,
+                    # "ball"            : ball            ,
+                    "Side"            : side            ,
+                    "frame"           : frame_index     ,
+                    "postion"         : "HAND"
+                } 
+                hand_frame_data[frame_index] = frame_data
 
         frame_index += 1
 
     cap.release()
 
-    if len(eye_level_data) > 0:
+    # if len(eye_level_data) > 0:
+    #     earliest_eye_index = min(eye_level_data.keys())
+    #     latest_eye_index = max(eye_level_data.keys())
+    #     latest_eye_frame = eye_level_data[latest_eye_index]
+    #     waist_before_index = None
+    #     for w_i in waist_level_data.keys():
+    #         if w_i < earliest_eye_index:
+    #             if waist_before_index is None or w_i > waist_before_index:
+    #                 waist_before_index = w_i
+    #     waist_frame_before_eye = waist_level_data[waist_before_index] if waist_before_index is not None else None
+    # else:
+    #     # earliest_eye_frame = None
+    #     latest_eye_frame = None
+    #     waist_frame_before_eye = None
+    # # if earliest_eye_frame is not None and waist_frame_before_eye is not None and max_hand_frame_data is not None:
+    # if latest_eye_frame is not None and waist_frame_before_eye is not None and max_hand_frame_data is not None:
+    #     return waist_frame_before_eye, latest_eye_frame, max_hand_frame_data
+    # else:
+    #     return None
+    if len(eye_level_data) > 0 and len(waist_level_data) > 0 and len(hand_frame_data) > 0:
         earliest_eye_index = min(eye_level_data.keys())
         latest_eye_index = max(eye_level_data.keys())
         latest_eye_frame = eye_level_data[latest_eye_index]
@@ -336,11 +400,22 @@ def analyze_video(video_path):
                 if waist_before_index is None or w_i > waist_before_index:
                     waist_before_index = w_i
         waist_frame_before_eye = waist_level_data[waist_before_index] if waist_before_index is not None else None
+        
+        hand_after_index = None
+        max_wrist_y = None
+        for h_i in hand_frame_data.keys():
+            if h_i > latest_eye_index:
+                wrist = choose_valid_side(hand_frame_data[h_i]["left_wrist"], hand_frame_data[h_i]["right_wrist"])
+                wrist_y = wrist[1] if wrist is not None else float('inf')
+                if max_wrist_y is None or wrist_y > max_wrist_y:
+                    max_wrist_y = wrist_y
+                    hand_after_index = h_i
+        max_hand_frame_data = hand_frame_data[hand_after_index] if hand_after_index is not None else None
     else:
-        # earliest_eye_frame = None
         latest_eye_frame = None
         waist_frame_before_eye = None
-    # if earliest_eye_frame is not None and waist_frame_before_eye is not None and max_hand_frame_data is not None:
+        max_hand_frame_data = None
+
     if latest_eye_frame is not None and waist_frame_before_eye is not None and max_hand_frame_data is not None:
         return waist_frame_before_eye, latest_eye_frame, max_hand_frame_data
     else:
@@ -349,4 +424,6 @@ def analyze_video(video_path):
 if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("nba_1.mp4")  
     print(f"nba_1 waist: {pose_data_waist}\n nba_1 eye: {pose_data_eye}\n nba_1 max hand: {pose_data_high_hand}")
+    pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("nba_2.mp4")  
+    print(f"nba_2 waist: {pose_data_waist}\n nba_2 eye: {pose_data_eye}\n nba_2 max hand: {pose_data_high_hand}")
     pass
