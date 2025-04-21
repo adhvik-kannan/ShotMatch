@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import math
 from scipy.stats import beta
 import ast
+import re
 
 NUM_CLIPS = 0
 
@@ -199,7 +200,7 @@ def generate_elbow_parameters(data):
     return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
 
 def plot_beta_distribution(params):
-    print(f"params: {params}")
+    # print(f"params: {params}")
     alpha = params["alpha"]
     beta_val = params["beta"]
 
@@ -232,72 +233,90 @@ def prep_data(dict_list):
     
     for d in dict_list:
         for key in merged_dict:
-            merged_dict[key].append(d.get(key, None))
+            if d.get("Side") == 'FRONT':
+                merged_dict[key].append(d.get(key, None))
     
     return merged_dict
 
-def parse_data():
-    with open('data_steph.txt', 'r') as file:
-        lines = file.readlines()
+def parse_data(file_content):
+    waist_data = []
+    eye_data = []
+    hand_data = []
     
-    data = {}
-    for line in lines:
-        line = line.strip()
-        if not line:
+    entries = file_content.strip().split('\n')
+    
+    for entry in entries:
+        if not entry.strip() or entry.strip().lower() == 'none':
             continue
-        player, view, dict_str = line.split(' ', 2)
-        player_view = f"{player}_{view}"
+            
         try:
-            data_dict = ast.literal_eval(dict_str)
-            data[player_view] = data_dict
-        except:
-            data[player_view] = None
+            # xtract player ID and position (e.g., nba_1 waist)
+            match = re.match(r'(nba_\d+)\s+(\w+):\s+(.+)', entry)
+            if not match:
+                continue
+                
+            player_id, position, data_str = match.groups()
+            
+            data_dict = ast.literal_eval(data_str)
+            
+            if data_dict is None:
+                continue
+                
+            data_dict['player_id'] = player_id
+            
+            if position.lower() == 'waist':
+                waist_data.append(data_dict)
+            elif position.lower() == 'eye':
+                eye_data.append(data_dict)
+            elif position.lower() == 'max':
+                hand_data.append(data_dict)
+                    
+                    
+        except (SyntaxError, ValueError) as e:
+            print(f"Error parsing entry: {entry[:50]}... Error: {e}")
+            continue
     
-    merged_data = {'waist': [], 'eye': [], 'max_hand': []}
-    for i in range(1, 30):
-        for view in ['waist', 'eye', 'max_hand']:
-            key = f"nba_{i}_{view}"
-            if key in data and data[key] is not None:
-                if 'Side' in data[key] and data[key]['Side'] == 'FRONT':
-                    merged_data[view].append(data[key])
-    
-    return merged_data
+    return waist_data, eye_data, hand_data
 
 def main():
     # Parse data from data_steph.txt
-    data = parse_data()
-    print(f"data: {data}")
+    with open('data_steph.txt', 'r') as file:
+        file_content = file.read()
     
-    for view in ['waist', 'eye', 'max_hand']:
-        if not data[view]:
-            print(f"No valid data for {view} view")
-            continue
+    # Parse the data
+    waist_data, eye_data, hand_data = parse_data(file_content)
         
-        # prep data
-        sc_f_data = prep_data(data[view])
-        
-        # generate parameters
-        sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(sc_f_data)
-        sc_f_elbow = generate_elbow_parameters(sc_f_data)
-        
-        # print parameters
-        print(f"\nSteph Curry {view.capitalize()} View Parameters:")
-        print(f"HEW Right Arm: {sc_f_hew_ra}")
-        print(f"HEW Left Arm: {sc_f_hew_la}")
-        print(f"SEW Right Arm: {sc_f_sew_ra}")
-        print(f"SEW Left Arm: {sc_f_sew_la}")
-        print(f"EWA Right Arm: {sc_f_ewa_ra}")
-        print(f"EWP Left Arm: {sc_f_ewp_la}")
-        print(f"Elbow Comparison: {sc_f_elbow}")
-        
-        # plot
-        plot_beta_distribution(sc_f_hew_ra, f"Beta Distribution for HEW Right Arm ({view.capitalize()})", f"hew_ra_{view}.png")
-        plot_beta_distribution(sc_f_hew_la, f"Beta Distribution for HEW Left Arm ({view.capitalize()})", f"hew_la_{view}.png")
-        plot_beta_distribution(sc_f_sew_ra, f"Beta Distribution for SEW Right Arm ({view.capitalize()})", f"sew_ra_{view}.png")
-        plot_beta_distribution(sc_f_sew_la, f"Beta Distribution for SEW Left Arm ({view.capitalize()})", f"sew_la_{view}.png")
-        plot_beta_distribution(sc_f_ewa_ra, f"Beta Distribution for EWA Right Arm ({view.capitalize()})", f"ewa_ra_{view}.png")
-        plot_beta_distribution(sc_f_ewp_la, f"Beta Distribution for EWP Left Arm ({view.capitalize()})", f"ewp_la_{view}.png")
-        plot_beta_distribution(sc_f_elbow, f"Beta Distribution for Elbow Comparison ({view.capitalize()})", f"elbow_{view}.png")
+    waist_data = prep_data(waist_data)
+    eye_data = prep_data(eye_data)
+    hand_data = prep_data(hand_data)
+
+    print("Waist Data:", len(waist_data), "entries")
+    print("Eye Data:", len(eye_data), "entries")
+    print("Hand Data:", len(hand_data), "entries")
+
+    data = eye_data
+
+    # generate parameters
+    sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
+    sc_f_elbow = generate_elbow_parameters(data)
+    
+    # print parameters
+    print(f"HEW Right Arm: {sc_f_hew_ra}")
+    print(f"HEW Left Arm: {sc_f_hew_la}")
+    print(f"SEW Right Arm: {sc_f_sew_ra}")
+    print(f"SEW Left Arm: {sc_f_sew_la}")
+    print(f"EWA Right Arm: {sc_f_ewa_ra}")
+    print(f"EWP Left Arm: {sc_f_ewp_la}")
+    print(f"Elbow Comparison: {sc_f_elbow}")
+    
+    # plot
+    plot_beta_distribution(sc_f_hew_ra)
+    plot_beta_distribution(sc_f_hew_la)
+    plot_beta_distribution(sc_f_sew_ra)
+    plot_beta_distribution(sc_f_sew_la)
+    plot_beta_distribution(sc_f_ewa_ra)
+    plot_beta_distribution(sc_f_ewp_la)
+    plot_beta_distribution(sc_f_elbow)
 
 if __name__ == "__main__":
     main()
