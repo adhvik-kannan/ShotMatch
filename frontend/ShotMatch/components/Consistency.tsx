@@ -7,13 +7,15 @@ import {
   Alert, 
   ScrollView, 
   Image, 
-  ActivityIndicator 
+  ActivityIndicator
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
 import ConsistencyProcess from './ConsistencyProcess';
+import { RouteProp, useRoute } from '@react-navigation/native';
+
 interface VideoData {
   videoUri: string;
   thumbnailUri: string;
@@ -23,6 +25,12 @@ interface VideoData {
 interface ConsistencyUploadProps {
   navigation: any;
 }
+
+type RootStackParamList = {
+    User: { user: string };
+};
+
+type ProcessVideosRouteProp = RouteProp<RootStackParamList, 'User'>;
 
 const frontExampleImages = [
   'https://photo-cdn2.icons8.com/PBC4NhdxYUzJOkCgAcR9S9YwQHW8eCETrTRwbZrmCCI/rs:fit:576:864/czM6Ly9pY29uczgu/bW9vc2UtcHJvZC5h/c3NldHMvYXNzZXRz/L3NhdGEvb3JpZ2lu/YWwvMzcyLzQ0Nzkx/ZWNjLWU4ODEtNDc0/NS05ODEyLTg1YTg0/YjE2ZWRjMi5qcGc.webp'
@@ -37,7 +45,8 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
   const [frontVideos, setFrontVideos] = useState<VideoData[]>([]);
   const [sideVideos, setSideVideos] = useState<VideoData[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
-
+  const route = useRoute<ProcessVideosRouteProp>();
+  const { user } = route.params;
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -141,7 +150,7 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
         ];
         const overallScore = 87;
         Alert.alert('Success', 'Consistency videos processed successfully!');
-        navigation.navigate('ConsistencyResults', { frontData: dummyFrontData, sideData: dummySideData, overallScore: overallScore });
+        navigation.navigate('ConsistencyResults', { frontData: dummyFrontData, sideData: dummySideData, overallScore: overallScore, user: user });
       } else {
         Alert.alert('Error', 'Failed to process consistency videos.');
         navigation.navigate('Consistency');
@@ -149,7 +158,7 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while uploading videos.');
-      navigation.navigate('Consistency');
+      navigation.navigate('Consistency', { user: user });
     } finally {
       setUploading(false);
     }
