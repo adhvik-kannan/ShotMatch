@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Button } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 type Metric = {
   metric: string;
@@ -12,6 +13,7 @@ type RootStackParamList = {
     frontData: Metric[];
     sideData: Metric[];
     overallScore: number;
+    user: string;
   };
 };
 
@@ -23,14 +25,56 @@ interface ResultsProps {
 
 const ConsistencyResults: React.FC<ResultsProps> = ({ navigation }) => {
   const route = useRoute<ConsistencyResultsRouteProp>();
-  const { frontData, sideData, overallScore } = route.params;
+  const { frontData, sideData, overallScore, user } = route.params;
+  
+  // Circle configurations identical to PerformanceMetrics.tsx
+  const radius = 45;
+  const strokeWidth = 10;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - overallScore / 100);
+  const roundedOverallScore = Math.round(overallScore);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Consistency Results</Text>
 
       <View style={styles.overallScoreContainer}>
-        <Text style={styles.overallScoreText}>Overall Score: {overallScore}%</Text>
+        <Svg height="100" width="100" viewBox="0 0 100 100">
+          {/* Background Circle (red) */}
+          <Circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="red"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          {/* Progress Circle (green) */}
+          <Circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="green"
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            rotation="-90"
+            origin="50,50"
+          />
+          {/* Overall Score Text */}
+          <SvgText 
+            x="50" 
+            y="55" 
+            fontSize="18" 
+            fill="black" 
+            textAnchor="middle"
+          >
+            {`${roundedOverallScore}%`}
+          </SvgText>
+        </Svg>
+        <Text style={styles.overallScoreText}>Overall Score</Text>
       </View>
 
       <Text style={styles.subTitle}>Front View Results</Text>
@@ -62,8 +106,8 @@ const ConsistencyResults: React.FC<ResultsProps> = ({ navigation }) => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <Button title="Home" onPress={() => navigation.navigate('Home')} />
-        <Button title="Upload More Videos" onPress={() => navigation.navigate('Consistency')} />
+        <Button title="Home" onPress={() => navigation.navigate('Home', { user })} />
+        <Button title="Upload More Videos" onPress={() => navigation.navigate('Consistency', { user })} />
       </View>
     </ScrollView>
   );
@@ -86,7 +130,8 @@ const styles = StyleSheet.create({
   },
   overallScoreText: {
     fontSize: 20,
-    fontWeight: '600'
+    fontWeight: '600',
+    marginTop: 10
   },
   subTitle: {
     fontSize: 20,
