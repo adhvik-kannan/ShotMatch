@@ -58,11 +58,10 @@ def test_get_coordinate():
 # Test on analyze the mock video
 def test_analyze_video(mock_video):
     with patch("cv2.VideoCapture", return_value=mock_video):
-        output_data = analyze_video("mock_video.mp4")
-        if output_data is not None:
-            assert isinstance(output_data, tuple), "Output should be a tuple"
-            assert "left_shoulder" in output_data[0], "Frame data should contain left_shoulder"
-            assert "ball" in output_data[0], "Frame data should contain ball"
+        pose_data_waist, pose_data_eye, pose_data_high_hand = analyze_video("mock_video.mp4")
+        if pose_data_waist is not None and pose_data_eye is not None and pose_data_high_hand is not None:
+            assert isinstance(pose_data_waist, dict) and isinstance(pose_data_eye, dict) and isinstance(pose_data_high_hand, dict), "Output should be a dict"
+            assert "left_shoulder" in pose_data_eye[0], "Frame data should contain left_shoulder"
         # output_data = analyze_video("nba_test.mp4")
         # if output_data is not None:
         #     assert isinstance(output_data, dict), "Output should be a dict"

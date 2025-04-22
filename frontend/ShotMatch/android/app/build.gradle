@@ -4,6 +4,15 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+// Tell Gradle how to bundle your JS into index.android.bundle
+project.ext.react = [
+  entryFile: "index.js",
+  bundleInDebug: true,    // embed the JS even in debug
+  bundleInRelease: true,  // and of course in release
+  bundleAssetName: "index.android.bundle"
+]
+
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -86,7 +95,11 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+<<<<<<< HEAD
     namespace "com.shotmatch"
+=======
+    namespace 'com.ceonagauv.ShotMatch'
+>>>>>>> 2b479a04868175f88c87c211607f293d5fe9f728
     defaultConfig {
         applicationId 'com.ceonagauv.ShotMatch'
         minSdkVersion rootProject.ext.minSdkVersion
