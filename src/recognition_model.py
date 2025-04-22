@@ -141,6 +141,7 @@ def analyze_video(video_path):
     max_hand_frame_data = None
     hand_frame_data = {}
     side = None
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
     while True:
         success, frame = cap.read()
@@ -236,6 +237,7 @@ def analyze_video(video_path):
                     # "ball"            : ball            ,
                     # "Side"            : side            ,
                     "frame"           : frame_index     ,
+                    "time"            : frame_index/fps,
                     "postion"         : "EYE"
                 } 
                 eye_level_data[frame_index] = frame_data
@@ -280,6 +282,7 @@ def analyze_video(video_path):
                     # "ball"            : ball            ,
                     # "Side"            : side            ,
                     "frame"           : frame_index     ,
+                    "time"            : frame_index/fps,
                     "postion"         : "WAIST"
                 } 
                 waist_level_data[frame_index] = frame_data
@@ -365,6 +368,7 @@ def analyze_video(video_path):
                     # "ball"            : ball            ,
                     # "Side"            : side            ,
                     "frame"           : frame_index     ,
+                    "time"            : frame_index/fps,
                     "postion"         : "HAND"
                 } 
                 hand_frame_data[frame_index] = frame_data
@@ -511,6 +515,8 @@ if __name__ == "__main__":
     # print('\n')
     # pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("nba_29.mp4")  
     # print(f"nba_29 waist: {pose_data_waist}\nnba_29 eye: {pose_data_eye}\nnba_29 max hand: {pose_data_high_hand}")
+
+    '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_front_01.mp4")  
     print(f"klay_front_01 waist: {pose_data_waist}\nklay_front_01 eye: {pose_data_eye}\nklay_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -592,9 +598,10 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_side_ra_10.mp4")  
     print(f"klay_side_ra_10 waist: {pose_data_waist}\nklay_side_ra_10 eye: {pose_data_eye}\nklay_side_ra_10 max_hand: {pose_data_high_hand}")
     print('\n')
-
-
     '''
+
+
+    
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01.mp4")  
     print(f"lebron_front_01 waist: {pose_data_waist}\nlebron_front_01 eye: {pose_data_eye}\nlebron_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -643,5 +650,5 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_side_ra_06.mp4")  
     print(f"lebron_side_ra_06 waist: {pose_data_waist}\nlebron_side_ra_06 eye: {pose_data_eye}\nlebron_side_ra_06 max_hand: {pose_data_high_hand}")
     print('\n')
-    '''
+    
     pass
