@@ -13,6 +13,8 @@ except:
     yolo_model = None
     device = "cpu"
 
+# For new server setup
+
 def get_coordinate(landmarks, index, image_width, image_height):
     '''
     INPUT:
