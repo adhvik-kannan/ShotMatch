@@ -197,7 +197,7 @@ def analyze_video(video_path):
 
             eye_flag = eye_level_measurement(eye, wrist, mouth, h)
             if eye_flag is True:
-                side = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
+                # side = detect_side(right_shoulder, right_elbow, right_wrist, left_shoulder, left_elbow, left_wrist)
                 frame_data = {
                     "nose"            : nose            ,
                     "left_eye_inner"  : left_eye_inner  ,
@@ -234,7 +234,7 @@ def analyze_video(video_path):
                     "right_foot_index": right_foot_index,
                     # "wrist"           : wrist,
                     # "ball"            : ball            ,
-                    "Side"            : side            ,
+                    # "Side"            : side            ,
                     "frame"           : frame_index     ,
                     "postion"         : "EYE"
                 } 
