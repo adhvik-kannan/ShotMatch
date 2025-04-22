@@ -245,7 +245,7 @@ def process_videos():
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
-    sew_f_ra = json.loads(player_data[0]["SEW_F_RA"])
+    sew_f_ra = json.loads(player_data[0]["SEW_F_RA"]) 
     sew_f_la = json.loads(player_data[0]["SEW_F_LA"])
     ewa_f_ra = json.loads(player_data[0]["EWA_F_RA"])
     ewp_f_la = json.loads(player_data[0]["EWP_F_LA"])

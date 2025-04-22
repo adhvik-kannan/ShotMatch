@@ -189,13 +189,13 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     # plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
     
     return {
-        "hew_ra_score": score_hew_ra,
-        "hew_la_score": score_hew_la,
-        "sew_ra_score": score_sew_ra,
-        "sew_la_score": score_sew_la,
-        "ewa_ra_score": score_ewa_ra,
-        "ewp_la_score": score_ewp_la,
-        "ec_score": score_ec
+        "Hip->Elbow->Wrist Score (Right Arm)": score_hew_ra,
+        "Hip->Elbow->Wrist Score (Left Arm)": score_hew_la,
+        "Shoulder->Elbow->Wrist Score (Right Arm)": score_sew_ra,
+        "Shoulder->Elbow->Wrist Score (Left Arm)": score_sew_la,
+        "Elbow->Wrist->Fingers Score (Right Arm)": score_ewa_ra,
+        "Elbow->Wrist->Pinky Score (Left Arm)": score_ewp_la,
+        "Elbow Alignment Score": score_ec
     }
 
 def get_klay_data():
