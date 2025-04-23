@@ -185,10 +185,22 @@ def get_steph_curry_front_data():
     nba_26 = {'left_shoulder': [256, 666], 'right_shoulder': [186, 675], 'left_elbow': [294, 669], 'right_elbow': [201, 666], 'left_wrist': [277, 731], 'right_wrist': [214, 732], 'left_hip': [242, 513], 'right_hip': [195, 516], 'left_pinky': [269, 749], 'right_pinky': [217, 750], 'left_thumb': [266, 744], 'right_thumb': [213, 744], 'ball': None, 'Side': 'FRONT', 'frame': 21}
     nba_27 = {'left_shoulder': [263, 723], 'right_shoulder': [192, 728], 'left_elbow': [290, 729], 'right_elbow': [198, 714], 'left_wrist': [277, 796], 'right_wrist': [216, 787], 'left_hip': [245, 570], 'right_hip': [199, 574], 'left_pinky': [267, 815], 'right_pinky': [217, 805], 'left_thumb': [267, 809], 'right_thumb': [217, 802], 'ball': None, 'Side': 'FRONT', 'frame': 10}
 
-    merged_dict = {}
+    merged_list = []
 
     for d in [nba_18, nba_19, nba_20, nba_22, nba_23, nba_24, nba_26, nba_27]:
-        for key, value in d.items():
+        merged_list.append(d)
+    
+    return d
+
+def get_consistency(data):
+    for i in range(len(data["left_elbow"])):
+        f_hew_ra, f_hew_la, f_sew_ra, f_sew_la, f_ewa_ra, f_ewp_la = generate_front_parameters(data)
+        f_elbow = generate_elbow_parameters(data)
+
+def format_data(data_list):
+    merged_dict = {}
+    for data in data_list:
+        for key, value in data.items():
             if key not in merged_dict:
                 merged_dict[key] = [value]
             else:
@@ -198,17 +210,10 @@ def get_steph_curry_front_data():
 
 def main():
     sc_f_data = get_steph_curry_front_data()
+    sc_f_data = format_data(sc_f_data)
 
-    sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(sc_f_data)
-    sc_f_elbow = generate_elbow_parameters(sc_f_data)
-    print("\nSteph Curry Front-hew-ra params: ", sc_f_hew_ra)
-    print("\nSteph Curry Front-hew-la params: ", sc_f_hew_la)
-    print("\nSteph Curry Front-sew-ra params: ", sc_f_sew_ra)
-    print("\nSteph Curry Front-sew-la params: ", sc_f_sew_la)
-    print("\nSteph Curry Front-ewa-ra params: ", sc_f_ewa_ra)
-    print("\nSteph Curry Front-ewp-la params: ", sc_f_ewp_la)
-    print("\nSteph Curry Front-Elbow Params: ", sc_f_elbow)
-
+    score = get_consistency(sc_f_data)
+    print(f"consistency score: {score}")
 
 if __name__ == "__main__":
     main()

@@ -82,8 +82,8 @@ def compare_side_ra(data, sew_ra_params, ewp_ra_params):
     plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
 
     return {
-        "sew_ra_score": score_sew_ra,
-        "ewp_ra_score": score_ewp_ra,
+        "Shoulder->Elbow->Wrist Score (Right Arm)": score_sew_ra,
+        "Elbow->Wrist->Fingers Score (Right Arm)": score_ewp_ra,
     }
 
 def compare_side_la(data, sew_la_params, ewa_la_params):
@@ -113,8 +113,8 @@ def compare_side_la(data, sew_la_params, ewa_la_params):
     score_ewa_la = math.ceil(max(0, min(100, score_ewa_la)))
     
     return {
-        "sew_la_score": score_sew_la,
-        "ewa_la_score": score_ewa_la
+        "Shoulder->Elbow->Wrist Score (Left Arm)": score_sew_la,
+        "Elbow->Wrist->Fingers Score (Left Arm)": score_ewa_la
     }
 
 def get_klay_data():
