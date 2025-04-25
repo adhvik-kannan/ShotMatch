@@ -66,5 +66,5 @@ jobs:
           export PASSWORD=${{ env.PASSWORD }}
           # Start the backend server in a detached screen session within the virtual environment
           echo "Starting backend_api.py in screen session..."
-          screen -dmS backend_api bash -c "source ~/ece495/bin/activate && python3 backend_api.py > backend_api.log 2>&1"
+          nohup bash -c "source ~/ece495/bin/activate && python3 backend_api.py > backend_api.log 2>&1" &
         EOF
