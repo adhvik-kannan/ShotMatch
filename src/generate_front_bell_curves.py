@@ -148,7 +148,7 @@ def get_parameters(angles, max_val=180):
     std_val = float(np.std(angles))
     m_y = mean_val / max_val
     s_y_sq = (std_val**2) / (max_val**2)
-    print(angles)
+    # print(angles)
     # print(f"s_y_sq: {s_y_sq}")
 
     if s_y_sq <= 0:
@@ -199,7 +199,7 @@ def generate_elbow_parameters(data):
 
     return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
 
-def plot_beta_distribution(params):
+def plot_beta_distribution(params, title):
     # print(f"params: {params}")
     alpha = params["alpha"]
     beta_val = params["beta"]
@@ -216,7 +216,7 @@ def plot_beta_distribution(params):
     plt.fill_between(x, y, alpha=0.3, color='blue')  # Fill under the curve
     plt.xlabel('x')
     plt.ylabel('Density')
-    plt.title('Beta Distribution')
+    plt.title(title)
     plt.legend()
     plt.grid()
 
@@ -233,8 +233,7 @@ def prep_data(dict_list):
     
     for d in dict_list:
         for key in merged_dict:
-            if d.get("Side") == 'FRONT':
-                merged_dict[key].append(d.get(key, None))
+            merged_dict[key].append(d.get(key, None))
     
     return merged_dict
 
@@ -250,37 +249,53 @@ def parse_data(file_content):
             continue
             
         try:
-            # xtract player ID and position (e.g., nba_1 waist)
-            match = re.match(r'(nba_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., klay_front_01 waist)
+            # Updated regex to match klay_front_## or klay_side_ra_## followed by position
+            match = re.match(r'(klay_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
+                print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
                 
             player_id, position, data_str = match.groups()
             
-            data_dict = ast.literal_eval(data_str)
-            
-            if data_dict is None:
+            # Skip if data_str is 'None'
+            if data_str.strip().lower() == 'none':
                 continue
                 
+            # Parse the dictionary string
+            try:
+                data_dict = ast.literal_eval(data_str)
+            except (SyntaxError, ValueError) as e:
+                print(f"Error parsing dictionary in entry: {entry[:50]}... Error: {e}")
+                continue
+            
+            # Ensure data_dict is a dictionary, not None
+            if not isinstance(data_dict, dict):
+                print(f"Skipping entry, data_dict is not a dictionary: {entry[:50]}...")
+                continue
+                
+            # Add player_id to the dictionary
             data_dict['player_id'] = player_id
             
+            # Categorize based on position
             if position.lower() == 'waist':
                 waist_data.append(data_dict)
             elif position.lower() == 'eye':
                 eye_data.append(data_dict)
-            elif position.lower() == 'max':
+            elif position.lower() == 'max_hand':  # Updated to match data
                 hand_data.append(data_dict)
+            else:
+                print(f"Unknown position '{position}' in entry: {entry[:50]}...")
                     
-                    
-        except (SyntaxError, ValueError) as e:
-            print(f"Error parsing entry: {entry[:50]}... Error: {e}")
+        except Exception as e:
+            print(f"Error processing entry: {entry[:50]}... Error: {e}")
             continue
     
     return waist_data, eye_data, hand_data
 
 def main():
     # Parse data from data_steph.txt
-    with open('data_steph.txt', 'r') as file:
+    with open('data_klay.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
@@ -310,13 +325,13 @@ def main():
     print(f"Elbow Comparison: {sc_f_elbow}")
     
     # plot
-    plot_beta_distribution(sc_f_hew_ra)
-    plot_beta_distribution(sc_f_hew_la)
-    plot_beta_distribution(sc_f_sew_ra)
-    plot_beta_distribution(sc_f_sew_la)
-    plot_beta_distribution(sc_f_ewa_ra)
-    plot_beta_distribution(sc_f_ewp_la)
-    plot_beta_distribution(sc_f_elbow)
+    plot_beta_distribution(sc_f_hew_ra, "HEW_RA")
+    plot_beta_distribution(sc_f_hew_la, "HEW_LA")
+    plot_beta_distribution(sc_f_sew_ra, "SEW_RA")
+    plot_beta_distribution(sc_f_sew_la, "SEW_LA")
+    plot_beta_distribution(sc_f_ewa_ra, "EWA_RA")
+    plot_beta_distribution(sc_f_ewp_la, "EWP_LA")
+    plot_beta_distribution(sc_f_elbow, "ELBOW")
 
 if __name__ == "__main__":
     main()

@@ -255,6 +255,9 @@ def process_videos():
     hew_f_ra = json.loads(player_data[0]["HEW_F_RA"])
     hew_f_la = json.loads(player_data[0]["HEW_F_LA"])
 
+    # -----------------------------------------------------
+    # COMPARISON 
+    # -----------------------------------------------------
     front_results = compare_front(processed_results[0], hew_f_ra, hew_f_la, sew_f_ra, sew_f_la, ewa_f_ra, ewp_f_la, elbow_diff)
     side_results = compare_side_ra(processed_results[1], sew_s_ra, ewp_s_ra)
     overall_score = (
