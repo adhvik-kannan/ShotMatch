@@ -1,0 +1,70 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - integration/1.0
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      REPO_URL: "https://github.com/adhvik-kannan/ShotMatch.git"  # Update with your repository URL
+      LOG_LEVEL: 2
+      LOG_FILE: "./logfile.txt"
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      PORT: 8080
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      USER_NAME: ${{ secrets.USER_NAME }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      EC2_IP_ADDRESS: ${{ secrets.EC2_IP_ADDRESS }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10.12'
+
+    - name: Deploy backend_api.py to EC2
+      run: |
+        echo "${{ secrets.AWS_PEM_KEY }}" > new_aws_access.pem
+        chmod 600 new_aws_access.pem
+        ssh -o StrictHostKeyChecking=no -i new_aws_access.pem ${{ env.EC2_USER }}@${{ env.EC2_IP_ADDRESS }} << 'EOF'
+          # Kill any process running on PORT if exists
+          PID=$(lsof -t -i:${{ env.PORT }})
+          if [ -n "$PID" ]; then
+            echo "Killing process $PID on port ${{ env.PORT }}..."
+            kill -9 $PID
+          fi
+          # Clone repository if not exists, otherwise pull latest changes
+          if [ ! -d "ShotMatch" ]; then
+            echo "Cloning repository..."
+            git clone https://github.com/adhvik-kannan/ShotMatch.git
+          else
+            echo "Repository exists. Pulling latest changes..."
+            cd ShotMatch
+            git pull
+            cd ..
+          fi
+          # Change directory to repository, activate venv, and run installation script
+          cd ShotMatch
+          source ~/ece495/bin/activate
+          chmod +x ./run
+          ./run install
+          # Export environment variables
+          export LOG_LEVEL=${{ env.LOG_LEVEL }}
+          export LOG_FILE=${{ env.LOG_FILE }}
+          export GITHUB_TOKEN=${{ env.GITHUB_TOKEN }}
+          export PORT=${{ env.PORT }}
+          export SECRET_KEY=${{ env.SECRET_KEY }}
+          export USER_NAME=${{ env.USER_NAME }}
+          export PASSWORD=${{ env.PASSWORD }}
+          # Start the backend server in a detached screen session within the virtual environment
+          echo "Starting backend_api.py in screen session..."
+          screen -dmS backend_api bash -c "source ~/ece495/bin/activate && python3 backend_api.py > backend_api.log 2>&1"
+        EOF

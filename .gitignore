@@ -6,3 +6,9 @@ addData.py
 lebron*.mp4
 klay*.mp4
 steph*.mp4
+python-sbom.json
+python_lic.py
+sbom-with-licenses.json
+sbom.json
+sbom.spdx.json
+frontend/ShotMatch/npm-sbom.json
