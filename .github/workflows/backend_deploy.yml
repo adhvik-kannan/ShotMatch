@@ -34,7 +34,7 @@ jobs:
       run: |
         echo "${{ secrets.AWS_PEM_KEY }}" > new_aws_access.pem
         chmod 600 new_aws_access.pem
-        ssh -i new_aws_access.pem ${{ env.EC2_USER }}@${{ env.EC2_IP_ADDRESS }} << 'EOF'
+        ssh -o StrictHostKeyChecking=no -i new_aws_access.pem ${{ env.EC2_USER }}@${{ env.EC2_IP_ADDRESS }} << 'EOF'
           # Kill any process running on PORT if exists
           PID=$(lsof -t -i:${{ env.PORT }})
           if [ -n "$PID" ]; then
