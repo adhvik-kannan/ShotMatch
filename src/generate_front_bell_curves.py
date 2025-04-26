@@ -127,7 +127,7 @@ def generate_front_parameters(data):
 
     return hew_ra, hew_la, sew_ra, sew_la, ewa_ra, ewp_la
 
-def get_parameters(angles, max_val=180):
+def get_parameters(angles, max_val=360):
     """
     Calculates distribution parameters for a given set of values by scaling
     them to the [0,1] interval and fitting a Beta distribution.
@@ -177,7 +177,7 @@ def generate_elbow_parameters(data):
             elbows_list.append(abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
     elbows = np.array(elbows_list)
-    # print(f"elbow diff list = {elbows_list}")
+    print(f"elbow diff list = {elbows_list}")
     if len(elbows > 0):
         mean_val = float(np.mean(elbows))
         std_val = float(np.std(elbows))
@@ -309,29 +309,30 @@ def main():
     print("Eye Data:", len(eye_data), "entries")
     print("Hand Data:", len(hand_data), "entries")
 
-    data = eye_data
-
+    data = waist_data
+    name = "MAX"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
     
     # print parameters
-    print(f"HEW Right Arm: {sc_f_hew_ra}")
-    print(f"HEW Left Arm: {sc_f_hew_la}")
-    print(f"SEW Right Arm: {sc_f_sew_ra}")
-    print(f"SEW Left Arm: {sc_f_sew_la}")
-    print(f"EWA Right Arm: {sc_f_ewa_ra}")
-    print(f"EWP Left Arm: {sc_f_ewp_la}")
-    print(f"Elbow Comparison: {sc_f_elbow}")
+    print(f"{name}_F_EWA_RA: {sc_f_ewa_ra}")
+    print(f"{name}_F_EWP_LA: {sc_f_ewp_la}")
+    print(f"{name}_F_HEW_RA: {sc_f_hew_ra}")
+    print(f"{name}_F_HEW_LA: {sc_f_hew_la}")
+    print(f"{name}_F_SEW_RA: {sc_f_sew_ra}")
+    print(f"{name}_F_SEW_LA: {sc_f_sew_la}")
+    print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
     
     # plot
-    plot_beta_distribution(sc_f_hew_ra, "HEW_RA")
-    plot_beta_distribution(sc_f_hew_la, "HEW_LA")
-    plot_beta_distribution(sc_f_sew_ra, "SEW_RA")
-    plot_beta_distribution(sc_f_sew_la, "SEW_LA")
-    plot_beta_distribution(sc_f_ewa_ra, "EWA_RA")
-    plot_beta_distribution(sc_f_ewp_la, "EWP_LA")
-    plot_beta_distribution(sc_f_elbow, "ELBOW")
+    plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
+    plot_beta_distribution(sc_f_ewp_la, name + "_F_EWP_LA")
+    plot_beta_distribution(sc_f_hew_ra, name + "_F_HEW_RA")
+    plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
+    plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
+    plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
+
+    plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
 
 if __name__ == "__main__":
     main()
