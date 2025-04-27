@@ -245,28 +245,90 @@ def process_videos():
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
-    sew_f_ra = json.loads(player_data[0]["SEW_F_RA"]) 
-    sew_f_la = json.loads(player_data[0]["SEW_F_LA"])
-    ewa_f_ra = json.loads(player_data[0]["EWA_F_RA"])
-    ewp_f_la = json.loads(player_data[0]["EWP_F_LA"])
-    elbow_diff = json.loads(player_data[0]["ELBOW_DIFF"])
-    sew_s_ra = json.loads(player_data[0]["SEW_S_RA"])
-    ewp_s_ra = json.loads(player_data[0]["EWP_S_RA"])
-    hew_f_ra = json.loads(player_data[0]["HEW_F_RA"])
-    hew_f_la = json.loads(player_data[0]["HEW_F_LA"])
+
+    # -----------------------------------------------------
+    # LOADING MAX PARAMS
+    # -----------------------------------------------------
+    max_f_hew_ra = json.loads(player_data[0]["max_f_hew_ra"])
+    max_f_hew_la = json.loads(player_data[0]["max_f_hew_la"])
+    max_f_sew_ra = json.loads(player_data[0]["max_f_sew_ra"]) 
+    max_f_sew_la = json.loads(player_data[0]["max_f_sew_la"])
+    max_f_ewa_ra = json.loads(player_data[0]["max_f_ewa_ra"])
+    max_f_ewp_la = json.loads(player_data[0]["max_f_ewp_la"])
+    max_f_elbow_diff = json.loads(player_data[0]["max_F_ELBOW_DIFF"])
+
+    max_s_ewp_ra = json.loads(player_data[0]["max_s_ewp_ra"])
+    max_s_sew_ra = json.loads(player_data[0]["max_s_sew_ra"])
+    max_s_hse_ra = json.loads(player_data[0]["max_s_hse_ra"])
+
+
+    # -----------------------------------------------------
+    # LOADING EYE PARAMS
+    # -----------------------------------------------------
+    eye_f_hew_ra = json.loads(player_data[0]["eye_f_hew_ra"])
+    eye_f_hew_la = json.loads(player_data[0]["eye_f_hew_la"])
+    eye_f_sew_ra = json.loads(player_data[0]["eye_f_sew_ra"]) 
+    eye_f_sew_la = json.loads(player_data[0]["eye_f_sew_la"])
+    eye_f_ewa_ra = json.loads(player_data[0]["eye_f_ewa_ra"])
+    eye_f_ewp_la = json.loads(player_data[0]["eye_f_ewp_la"])
+    eye_f_elbow_diff = json.loads(player_data[0]["eye_f_elbow_diff"])
+
+    eye_s_ewp_ra = json.loads(player_data[0]["eye_s_ewp_ra"])
+    eye_s_sew_ra = json.loads(player_data[0]["eye_s_sew_ra"])
+    eye_s_hse_ra = json.loads(player_data[0]["eye_s_hse_ra"])
+
+
+    # -----------------------------------------------------
+    # LOADING WAIST PARAMS
+    # -----------------------------------------------------
+    waist_f_hew_ra = json.loads(player_data[0]["waist_f_hew_ra"])
+    waist_f_hew_la = json.loads(player_data[0]["waist_f_hew_la"])
+    waist_f_sew_ra = json.loads(player_data[0]["waist_f_sew_ra"]) 
+    waist_f_sew_la = json.loads(player_data[0]["waist_f_sew_la"])
+    waist_f_ewa_ra = json.loads(player_data[0]["waist_f_ewa_ra"])
+    waist_f_ewp_la = json.loads(player_data[0]["waist_f_ewp_la"])
+    waist_f_elbow_diff = json.loads(player_data[0]["waist_F_ELBOW_DIFF"])
+
+    waist_s_ewp_ra = json.loads(player_data[0]["waist_s_ewp_ra"])
+    waist_s_sew_ra = json.loads(player_data[0]["waist_s_sew_ra"])
+    waist_s_hse_ra = json.loads(player_data[0]["waist_s_hse_ra"])
+
 
     # -----------------------------------------------------
     # COMPARISON 
     # -----------------------------------------------------
-    front_results = compare_front(processed_results[0], hew_f_ra, hew_f_la, sew_f_ra, sew_f_la, ewa_f_ra, ewp_f_la, elbow_diff)
-    side_results = compare_side_ra(processed_results[1], sew_s_ra, ewp_s_ra)
-    overall_score = (
-        front_results["hew_ra_score"] + front_results["hew_la_score"] +
-        front_results["sew_ra_score"] + front_results["ewa_ra_score"] +
-        front_results["ewp_la_score"] + front_results["ec_score"] +
-        side_results["sew_ra_score"] + side_results["ewp_ra_score"]
+    max_front_results = compare_front(processed_results[0], max_f_hew_ra, max_f_hew_la, max_f_sew_ra, max_f_sew_la, max_f_ewa_ra, max_f_ewp_la, max_f_elbow_diff)
+    max_side_results = compare_side_ra(processed_results[1], max_s_ewp_ra, max_s_hse_ra, max_s_sew_ra)
+    eye_front_results = compare_front(processed_results[0], eye_f_hew_ra, eye_f_hew_la, eye_f_sew_ra, eye_f_sew_la, eye_f_ewa_ra, eye_f_ewp_la, eye_f_elbow_diff)
+    eye_side_results = compare_side_ra(processed_results[1], eye_s_ewp_ra, eye_s_hse_ra, eye_s_sew_ra)
+    waist_front_results = compare_front(processed_results[0], waist_f_hew_ra, waist_f_hew_la, waist_f_sew_ra, waist_f_sew_la, waist_f_ewa_ra, waist_f_ewp_la, waist_f_elbow_diff)
+    waist_side_results = compare_side_ra(processed_results[1], waist_s_ewp_ra, waist_s_hse_ra, waist_s_sew_ra)
+    # NEED TO CHANGE THIS PROCESSED RESULTS FOR EACH MAX_HAND, EYE, AND WAIST DATA processed_results[X]
+    # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+    max_overall_score = (
+        max_front_results["hew_ra_score"] + max_front_results["hew_la_score"] +
+        max_front_results["sew_ra_score"] + max_front_results["ewa_ra_score"] +
+        max_front_results["ewp_la_score"] + max_front_results["ec_score"] +
+        max_side_results["sew_ra_score"] + max_side_results["ewp_ra_score"]
     ) / 8
 
+    eye_overall_score = (
+        eye_front_results["hew_ra_score"] + eye_front_results["hew_la_score"] +
+        eye_front_results["sew_ra_score"] + eye_front_results["ewa_ra_score"] +
+        eye_front_results["ewp_la_score"] + eye_front_results["ec_score"] +
+        eye_side_results["sew_ra_score"] + eye_side_results["ewp_ra_score"]
+    ) / 8
+
+    waist_overall_score = (
+        waist_front_results["hew_ra_score"] + waist_front_results["hew_la_score"] +
+        waist_front_results["sew_ra_score"] + waist_front_results["ewa_ra_score"] +
+        waist_front_results["ewp_la_score"] + waist_front_results["ec_score"] +
+        waist_side_results["sew_ra_score"] + waist_side_results["ewp_ra_score"]
+    ) / 8
+
+    overall_score = (0.4 * max_overall_score) + (0.5 * eye_overall_score) + (0.1 * waist_overall_score)
+    
     try:
         now = datetime.datetime.now()
         timestamp = {
@@ -277,7 +339,7 @@ def process_videos():
             "minute": now.minute,
             "second": now.second
         }
-        added, inserted_data = add_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", timestamp)
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_results, eye_side_results, overall_score, "Compare", timestamp)
     except Exception as e:
         print(f"Error inserting data into MongoDB: {e}")
         return jsonify({"message": "Error inserting data into MongoDB"}), 50
@@ -287,8 +349,8 @@ def process_videos():
     return jsonify({
         "message": "Videos processed successfully",
         "processed_count": processed_count,
-        "frontMetrics": front_results,
-        "sideMetrics": side_results,
+        "frontMetrics": eye_front_results,
+        "sideMetrics": eye_side_results,
         "overallScore": overall_score
     }), 200
 

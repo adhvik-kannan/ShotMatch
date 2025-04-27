@@ -127,7 +127,7 @@ def generate_front_parameters(data):
 
     return hew_ra, hew_la, sew_ra, sew_la, ewa_ra, ewp_la
 
-def get_parameters(angles, max_val=180):
+def get_parameters(angles, max_val=360):
     """
     Calculates distribution parameters for a given set of values by scaling
     them to the [0,1] interval and fitting a Beta distribution.
@@ -177,7 +177,7 @@ def generate_elbow_parameters(data):
             elbows_list.append(abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
     elbows = np.array(elbows_list)
-    # print(f"elbow diff list = {elbows_list}")
+    print(f"elbow diff list = {elbows_list}")
     if len(elbows > 0):
         mean_val = float(np.mean(elbows))
         std_val = float(np.std(elbows))
@@ -203,24 +203,19 @@ def plot_beta_distribution(params, title):
     # print(f"params: {params}")
     alpha = params["alpha"]
     beta_val = params["beta"]
+    
+    x = np.linspace(0, 1, 100)          # Generate x values between 0 and 1=
+    y = beta.pdf(x, alpha, beta_val)    # Compute the Beta probability density function (PDF)
 
-    # Generate x values between 0 and 1
-    x = np.linspace(0, 1, 100)
-
-    # Compute the Beta probability density function (PDF)
-    y = beta.pdf(x, alpha, beta_val)
-
-    # Plot the distribution
+    # plot
     plt.figure(figsize=(8, 5))
     plt.plot(x, y, label=f'Beta({alpha:.2f}, {beta_val:.2f})', color='b')
-    plt.fill_between(x, y, alpha=0.3, color='blue')  # Fill under the curve
+    plt.fill_between(x, y, alpha=0.3, color='blue')  
     plt.xlabel('x')
     plt.ylabel('Density')
     plt.title(title)
     plt.legend()
     plt.grid()
-
-    # Show the plot
     plt.show()
 
 def prep_data(dict_list):
@@ -249,9 +244,9 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position (e.g., klay_front_01 waist)
-            # Updated regex to match klay_front_## or klay_side_ra_## followed by position
-            match = re.match(r'(klay_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., steph_front_01 waist)
+            # Updated regex to match steph_front_## or steph_side_ra_## followed by position
+            match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
@@ -295,7 +290,7 @@ def parse_data(file_content):
 
 def main():
     # Parse data from data_steph.txt
-    with open('data_klay.txt', 'r') as file:
+    with open('data_steph.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
@@ -303,35 +298,36 @@ def main():
         
     waist_data = prep_data(waist_data)
     eye_data = prep_data(eye_data)
-    hand_data = prep_data(hand_data)
+    max_data = prep_data(hand_data)
 
     print("Waist Data:", len(waist_data), "entries")
     print("Eye Data:", len(eye_data), "entries")
     print("Hand Data:", len(hand_data), "entries")
 
-    data = eye_data
-
+    data = max_data
+    name = "MAX"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
     
     # print parameters
-    print(f"HEW Right Arm: {sc_f_hew_ra}")
-    print(f"HEW Left Arm: {sc_f_hew_la}")
-    print(f"SEW Right Arm: {sc_f_sew_ra}")
-    print(f"SEW Left Arm: {sc_f_sew_la}")
-    print(f"EWA Right Arm: {sc_f_ewa_ra}")
-    print(f"EWP Left Arm: {sc_f_ewp_la}")
-    print(f"Elbow Comparison: {sc_f_elbow}")
+    print(f"{name}_F_EWA_RA: {sc_f_ewa_ra}")
+    print(f"{name}_F_EWP_LA: {sc_f_ewp_la}")
+    print(f"{name}_F_HEW_RA: {sc_f_hew_ra}")
+    print(f"{name}_F_HEW_LA: {sc_f_hew_la}")
+    print(f"{name}_F_SEW_RA: {sc_f_sew_ra}")
+    print(f"{name}_F_SEW_LA: {sc_f_sew_la}")
+    print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
     
     # plot
-    plot_beta_distribution(sc_f_hew_ra, "HEW_RA")
-    plot_beta_distribution(sc_f_hew_la, "HEW_LA")
-    plot_beta_distribution(sc_f_sew_ra, "SEW_RA")
-    plot_beta_distribution(sc_f_sew_la, "SEW_LA")
-    plot_beta_distribution(sc_f_ewa_ra, "EWA_RA")
-    plot_beta_distribution(sc_f_ewp_la, "EWP_LA")
-    plot_beta_distribution(sc_f_elbow, "ELBOW")
+    plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
+    plot_beta_distribution(sc_f_ewp_la, name + "_F_EWP_LA")
+    plot_beta_distribution(sc_f_hew_ra, name + "_F_HEW_RA")
+    plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
+    plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
+    plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
+
+    plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
 
 if __name__ == "__main__":
     main()
