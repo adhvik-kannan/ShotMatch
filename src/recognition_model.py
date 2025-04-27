@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import torch
+import sys
+import os
+import glob
 from ultralytics import YOLO
 
 try:
@@ -439,7 +442,23 @@ def analyze_video(video_path):
         return None, None, None
 
 if __name__ == "__main__":
-    
+    subject = sys.argv[1] if len(sys.argv) > 1 else "steph"
+    video_dir = f"/root/ShotMatch/video/{subject}"
+    pattern = os.path.join(video_dir, f"{subject}_*.mp4")
+    video_files = sorted(glob.glob(pattern))
+    if not video_files:
+        print(f"[!] No videos found for subject '{subject}' in {video_dir}")
+        sys.exit(0)
+    for path in video_files:
+        pose_data_waist, pose_data_eye, pose_data_high_hand = analyze_video(path)
+        label = os.path.splitext(os.path.basename(path))[0]
+        print(
+            f"{label} waist: {pose_data_waist}\n"
+            f"{label} eye: {pose_data_eye}\n"
+            f"{label} max_hand: {pose_data_high_hand}\n"
+            f"\n"
+        )
+    '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_front_01.mp4")  
     print(f"steph_front_01 waist: {pose_data_waist}\nsteph_front_01 eye: {pose_data_eye}\nsteph_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -521,7 +540,7 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_side_ra_17.mp4")  
     print(f"steph_side_ra_17 waist: {pose_data_waist}\nsteph_side_ra_17 eye: {pose_data_eye}\nsteph_side_ra_17 max_hand: {pose_data_high_hand}")
     print('\n')
-    
+    '''
     '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_front_01.mp4")  
     print(f"klay_front_01 waist: {pose_data_waist}\nklay_front_01 eye: {pose_data_eye}\nklay_front_01 max_hand: {pose_data_high_hand}")
