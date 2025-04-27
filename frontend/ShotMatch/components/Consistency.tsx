@@ -139,18 +139,30 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (true) {
-        const dummyFrontData = [
-          { metric: 'Accuracy', score: 85 },
-          { metric: 'Precision', score: 90 },
-        ];
-        const dummySideData = [
-          { metric: 'Stability', score: 80 },
-          { metric: 'Consistency', score: 88 },
-        ];
-        const overallScore = 87;
+      if (response.ok) {
+        const { 
+          max_front_score,
+          eye_front_score,
+          waist_front_score,
+          max_side_score,
+          eye_side_score,
+          waist_side_score,
+          overall_score,
+        } = data;
+        const frontData = [
+          { name: 'Max Front Score', value: max_front_score },
+          { name: 'Eye Front Score', value: eye_front_score },
+          { name: 'Waist Front Score', value: waist_front_score }
+        ]
+        const sideData = [
+          { name: 'Max Side Score', value: max_side_score },
+          { name: 'Eye Side Score', value: eye_side_score },
+          { name: 'Waist Side Score', value: waist_side_score }
+        ]
+        const overallScore = overall_score;
+
         Alert.alert('Success', 'Consistency videos processed successfully!');
-        navigation.navigate('ConsistencyResults', { frontData: dummyFrontData, sideData: dummySideData, overallScore: overallScore, user: user });
+        navigation.navigate('ConsistencyResults', { frontData: frontData, sideData: sideData, overallScore: overallScore, user: user });
       } else {
         Alert.alert('Error', 'Failed to process consistency videos.');
         navigation.navigate('Consistency');

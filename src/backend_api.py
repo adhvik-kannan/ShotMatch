@@ -487,6 +487,7 @@ def process_videos():
         waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
     ) / 8
 
+
     overall_score = (0.4 * max_overall_score) + (0.5 * eye_overall_score) + (0.1 * waist_overall_score)
     
     try:
@@ -663,7 +664,7 @@ def process_consistency_videos():
         "waist_front_score": waist_front_score,
         "max_side_score": max_side_score,
         "eye_side_score": eye_side_score,
-        "waist_side_score": waist_side_score
+        "waist_side_score": waist_side_score,
     }), 200
 
 @app.route("/player_data", methods=["POST"])
