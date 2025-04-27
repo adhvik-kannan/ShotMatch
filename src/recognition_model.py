@@ -400,8 +400,9 @@ def analyze_video(video_path):
     #     return None
     if len(eye_level_data) > 0:
         earliest_eye_index = min(eye_level_data.keys())
-        latest_eye_index = max(eye_level_data.keys())
-        latest_eye_frame = eye_level_data[latest_eye_index]
+        # latest_eye_index = max(eye_level_data.keys())
+        # latest_eye_frame = eye_level_data[latest_eye_index]
+        earlist_eye_frame = eye_level_data[earliest_eye_index]
         waist_before_index = None
         for w_i in waist_level_data.keys():
             if w_i < earliest_eye_index:
@@ -411,7 +412,13 @@ def analyze_video(video_path):
         hand_after_index = None
         max_wrist_y = None
         for h_i in hand_frame_data.keys():
-            if h_i > latest_eye_index:
+            # if h_i > latest_eye_index:
+            #     wrist = choose_valid_side(hand_frame_data[h_i]["left_wrist"], hand_frame_data[h_i]["right_wrist"])
+            #     wrist_y = wrist[1] if wrist is not None else float('inf')
+            #     if max_wrist_y is None or wrist_y > max_wrist_y:
+            #         max_wrist_y = wrist_y
+            #         hand_after_index = h_i
+            if h_i > earliest_eye_index:
                 wrist = choose_valid_side(hand_frame_data[h_i]["left_wrist"], hand_frame_data[h_i]["right_wrist"])
                 wrist_y = wrist[1] if wrist is not None else float('inf')
                 if max_wrist_y is None or wrist_y > max_wrist_y:
@@ -419,16 +426,19 @@ def analyze_video(video_path):
                     hand_after_index = h_i
         max_hand_frame_data = hand_frame_data[hand_after_index] if hand_after_index is not None else None
     else:
-        latest_eye_frame = None
+        # latest_eye_frame = None
+        earlist_eye_frame = None
         waist_frame_before_eye = None
         max_hand_frame_data = None
 
-    if latest_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
-        return waist_frame_before_eye, latest_eye_frame, max_hand_frame_data
+    # if latest_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
+    if earlist_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
+        return waist_frame_before_eye, earlist_eye_frame, max_hand_frame_data
     else:
         return None, None, None
 
 if __name__ == "__main__":
+    '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_front_01.mp4")  
     print(f"steph_front_01 waist: {pose_data_waist}\nsteph_front_01 eye: {pose_data_eye}\nsteph_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -510,7 +520,7 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_side_ra_17.mp4")  
     print(f"steph_side_ra_17 waist: {pose_data_waist}\nsteph_side_ra_17 eye: {pose_data_eye}\nsteph_side_ra_17 max_hand: {pose_data_high_hand}")
     print('\n')
-
+    '''
     '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_front_01.mp4")  
     print(f"klay_front_01 waist: {pose_data_waist}\nklay_front_01 eye: {pose_data_eye}\nklay_front_01 max_hand: {pose_data_high_hand}")
@@ -596,7 +606,7 @@ if __name__ == "__main__":
     '''
 
 
-    '''
+    
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01.mp4")  
     print(f"lebron_front_01 waist: {pose_data_waist}\nlebron_front_01 eye: {pose_data_eye}\nlebron_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -645,6 +655,6 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_side_ra_06.mp4")  
     print(f"lebron_side_ra_06 waist: {pose_data_waist}\nlebron_side_ra_06 eye: {pose_data_eye}\nlebron_side_ra_06 max_hand: {pose_data_high_hand}")
     print('\n')
-    '''
+    
 
     pass
