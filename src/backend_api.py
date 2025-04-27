@@ -255,7 +255,7 @@ def process_videos():
     max_f_sew_la = json.loads(player_data[0]["max_f_sew_la"])
     max_f_ewa_ra = json.loads(player_data[0]["max_f_ewa_ra"])
     max_f_ewp_la = json.loads(player_data[0]["max_f_ewp_la"])
-    max_f_elbow_diff = json.loads(player_data[0]["max_F_ELBOW_DIFF"])
+    max_f_elbow_diff = json.loads(player_data[0]["max_f_elbow_diff"])
 
     max_s_ewp_ra = json.loads(player_data[0]["max_s_ewp_ra"])
     max_s_sew_ra = json.loads(player_data[0]["max_s_sew_ra"])
@@ -287,7 +287,7 @@ def process_videos():
     waist_f_sew_la = json.loads(player_data[0]["waist_f_sew_la"])
     waist_f_ewa_ra = json.loads(player_data[0]["waist_f_ewa_ra"])
     waist_f_ewp_la = json.loads(player_data[0]["waist_f_ewp_la"])
-    waist_f_elbow_diff = json.loads(player_data[0]["waist_F_ELBOW_DIFF"])
+    waist_f_elbow_diff = json.loads(player_data[0]["waist_f_elbow_diff"])
 
     waist_s_ewp_ra = json.loads(player_data[0]["waist_s_ewp_ra"])
     waist_s_sew_ra = json.loads(player_data[0]["waist_s_sew_ra"])
