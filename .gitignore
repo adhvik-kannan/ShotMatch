@@ -12,3 +12,4 @@ sbom-with-licenses.json
 sbom.json
 sbom.spdx.json
 frontend/ShotMatch/npm-sbom.json
+src/__pycache__/
