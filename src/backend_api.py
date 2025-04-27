@@ -8,6 +8,8 @@ import time
 from recognition_model import analyze_video
 from generate_front_statistics import compare_front
 from generate_side_statistics import compare_side_ra
+from compare_consistency_front import get_consistency_front
+from compare_consistency_side import get_consistency_side
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash, add_new_data
 import json
@@ -487,17 +489,23 @@ def process_consistency_videos():
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
 
-    
+    max_front_score = get_consistency_front(max_front_results)
+    eye_front_score = get_consistency_front(eye_front_results)
+    waist_front_score = get_consistency_front(waist_front_results)
+    max_side_score = get_consistency_side(max_side_results)
+    eye_side_score = get_consistency_side(eye_side_results)
+    waist_side_score = get_consistency_side(waist_side_results)
+
     return jsonify({
         "message": "Consistency videos processed successfully",
         "front_processed_count": len(front_videos),
         "side_processed_count": len(side_videos),
-        "max_front_data": max_front_results,
-        "eye_front_data": eye_front_results,
-        "waist_front_data": waist_front_results,
-        "max_side_data": max_side_results,
-        "eye_side_data": eye_side_results,
-        "waist_side_data": waist_side_results
+        "max_front_score": max_front_score,
+        "eye_front_score": eye_front_score,
+        "waist_front_score": waist_front_score,
+        "max_side_score": max_side_score,
+        "eye_side_score": eye_side_score,
+        "waist_side_score": waist_side_score
     }), 200
 
 @app.route("/player_data", methods=["POST"])

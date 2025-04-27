@@ -179,6 +179,9 @@ def get_steph_curry_s_la_data():
 
     return merged_dict
 
+def get_consistency_side(data):
+    return 0
+
 def main():
     sc_s_ra_data = get_steph_curry_s_ra_data()
     sc_s_la_data = get_steph_curry_s_la_data()
