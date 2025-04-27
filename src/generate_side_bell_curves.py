@@ -59,6 +59,7 @@ def generate_side_la_parameters(data):
 def generate_side_ra_parameters(data):
     sew_ra_list = []
     ewp_ra_list = []
+    hse_ra_list = []
     
     for i in range(len(data["ball"])):
         # shoulder-elbow-wrist right arm
@@ -70,13 +71,19 @@ def generate_side_ra_parameters(data):
         if ((data["right_elbow"][i] != None) and (data["right_wrist"][i] != None) and (data["right_pinky"][i] != None)):
             angle = calculate_angle(data["right_wrist"][i], data["right_elbow"][i], data["right_pinky"][i])
             ewp_ra_list.append(angle)
+
+        # hip-shoulder-elbow right arm     
+        if ((data["right_hip"][i] != None) and (data["right_shoulder"][i] != None) and (data["right_elbow"][i] != None)):
+            angle = calculate_angle(data["right_shoulder"][i], data["right_hip"][i], data["right_elbow"][i])
+            hse_ra_list.append(angle)       
     
     sew_ra = get_parameters(sew_ra_list)
     ewp_ra = get_parameters(ewp_ra_list)
+    hse_ra = get_parameters(hse_ra_list)
 
-    return sew_ra, ewp_ra
+    return sew_ra, ewp_ra, hse_ra
 
-def get_parameters(angles, max_val=360):
+def get_parameters(angles, max_val=180):
     """
     Calculates distribution parameters for a given set of angles by scaling
     them to the [0,1] interval and fitting a Beta distribution.
@@ -92,7 +99,10 @@ def get_parameters(angles, max_val=360):
             - alpha: Beta distribution alpha parameter
             - beta: Beta distribution beta parameter
     """
+    print(f"angles: {angles}")
     angles = np.array(angles)
+    if len(angles) == 0:
+        return {"mean": 0.0, "std": 0.0, "alpha": 100, "beta": 100}
     mean_val = float(np.mean(angles))
     std_val = float(np.std(angles))
     m_y = mean_val / max_val
@@ -192,11 +202,10 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position (e.g., steph_front_01 waist)
-            # Updated regex to match steph_front_## or steph_side_ra_## followed by position
-            match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position, only for klay_side_ra_ entries
+            match = re.match(r'(klay_side_ra_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
-                print(f"Skipping entry, no match: {entry[:50]}...")
+                # Skip entries that don't match the side pattern
                 continue
                 
             player_id, position, data_str = match.groups()
@@ -212,7 +221,7 @@ def parse_data(file_content):
                 print(f"Error parsing dictionary in entry: {entry[:50]}... Error: {e}")
                 continue
             
-            # Ensure data_dict is a dictionary, not None
+            # Ensure data_dict is a dictionary
             if not isinstance(data_dict, dict):
                 print(f"Skipping entry, data_dict is not a dictionary: {entry[:50]}...")
                 continue
@@ -225,7 +234,7 @@ def parse_data(file_content):
                 waist_data.append(data_dict)
             elif position.lower() == 'eye':
                 eye_data.append(data_dict)
-            elif position.lower() == 'max_hand':  # Updated to match data
+            elif position.lower() == 'max_hand':
                 hand_data.append(data_dict)
             else:
                 print(f"Unknown position '{position}' in entry: {entry[:50]}...")
@@ -237,36 +246,42 @@ def parse_data(file_content):
     return waist_data, eye_data, hand_data
 
 def main():
-    # parse data from data_steph.txt
-    with open('data_steph.txt', 'r') as file:
+    # parse data from data_klay.txt
+    with open('data_klay.txt', 'r') as file:
         file_content = file.read()
     
-    waist_data, eye_data, hand_data = parse_data(file_content)
+    waist_data, eye_data, max_data = parse_data(file_content)
         
     waist_data = prep_data(waist_data)
     eye_data = prep_data(eye_data)
-    max_data = prep_data(hand_data)
+    max_data = prep_data(max_data)
 
-    print("Waist Data:", len(waist_data), "entries")
-    print("Eye Data:", len(eye_data), "entries")
-    print("Hand Data:", len(hand_data), "entries")
+    print("Waist Data:", len(waist_data['left_shoulder']), "entries")
+    print("Eye Data:", len(eye_data['left_shoulder']), "entries")
+    print("Max Hand Data:", len(max_data['left_shoulder']), "entries")
 
     data = max_data
     name = "MAX"
 
     # generate parameters
-    s_sew_ra, s_ewp_ra = generate_side_ra_parameters(data)
-    s_sew_la, s_ewa_la = generate_side_la_parameters(data)
+    s_sew_ra, s_ewp_ra, s_hse_ra = generate_side_ra_parameters(data)
+    # s_sew_la, s_ewa_la = generate_side_la_parameters(data)
 
-    print(f"{name}_S_SEW_RA: {s_sew_ra}")
+    # right arm
     print(f"{name}_S_EWP_RA: {s_ewp_ra}")
-    print(f"{name}_S_SEW_LA: {s_sew_la}")
-    print(f"{name}_S_EWA_LA: {s_ewa_la}")
+    print(f"{name}_S_HSE_RA: {s_hse_ra}")
+    print(f"{name}_S_SEW_RA: {s_sew_ra}")
 
-    plot_beta_distribution(s_sew_ra, name + "_S_SEW_RA")
     plot_beta_distribution(s_ewp_ra, name + "_S_EWP_RA")
-    plot_beta_distribution(s_sew_la, name + "_F_SEW_LA")
-    plot_beta_distribution(s_ewa_la, name + "_F_EWA_LA")
+    plot_beta_distribution(s_hse_ra, name + "_S_HSE_RA")
+    plot_beta_distribution(s_sew_ra, name + "_S_SEW_RA")
+    
+
+    # left arm
+    # print(f"{name}_S_EWA_LA: {s_ewa_la}")
+    # print(f"{name}_S_SEW_LA: {s_sew_la}")
+    # plot_beta_distribution(s_ewa_la, name + "_F_EWA_LA")
+    # plot_beta_distribution(s_sew_la, name + "_F_SEW_LA")
     
 
 if __name__ == "__main__":
