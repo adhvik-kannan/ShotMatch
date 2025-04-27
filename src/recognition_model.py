@@ -444,8 +444,8 @@ def analyze_video(video_path):
 if __name__ == "__main__":
     subject = sys.argv[1] if len(sys.argv) > 1 else "steph"
     video_dir = f"/root/ShotMatch/video/{subject}"
-    pattern = os.path.join(video_dir, f"{subject}_*.mp4")
-    video_files = sorted(glob.glob(pattern))
+    videos = os.path.join(video_dir, f"{subject}_*.mp4")
+    video_files = sorted(glob.glob(videos))
     if not video_files:
         print(f"[!] No videos found for subject '{subject}' in {video_dir}")
         sys.exit(0)
