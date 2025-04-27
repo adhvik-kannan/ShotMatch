@@ -249,9 +249,9 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position (e.g., klay_front_01 waist)
-            # Updated regex to match klay_front_## or klay_side_ra_## followed by position
-            match = re.match(r'(klay_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., lebron_front_01 waist)
+            # Updated regex to match lebron_front_## or lebron_side_ra_## followed by position
+            match = re.match(r'(lebron_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
@@ -295,7 +295,7 @@ def parse_data(file_content):
 
 def main():
     # Parse data from data_steph.txt
-    with open('data_klay.txt', 'r') as file:
+    with open('data_lebron.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
@@ -303,14 +303,14 @@ def main():
         
     waist_data = prep_data(waist_data)
     eye_data = prep_data(eye_data)
-    hand_data = prep_data(hand_data)
+    max_data = prep_data(hand_data)
 
     print("Waist Data:", len(waist_data), "entries")
     print("Eye Data:", len(eye_data), "entries")
     print("Hand Data:", len(hand_data), "entries")
 
-    data = waist_data
-    name = "MAX"
+    data = eye_data
+    name = "EYE"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
