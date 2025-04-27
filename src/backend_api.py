@@ -466,29 +466,37 @@ def process_videos():
     # NEED TO CHANGE THIS PROCESSED RESULTS FOR EACH MAX_HAND, EYE, AND WAIST DATA processed_results[X]
     # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-    max_overall_score = (
+    max_front_overall_score = (
         max_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + max_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
         max_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + max_front_results["Elbow Alignment Score"] +
-        max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 8
-
-    eye_overall_score = (
+        max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + max_front_results["Elbow Alignment Score"]
+    ) / 6
+    eye_front_overall_score = (
         eye_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
         eye_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + eye_front_results["Elbow Alignment Score"] +
-        eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 8
-
-    waist_overall_score = (
+        eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + eye_front_results["Elbow Alignment Score"]
+    ) / 6
+    waist_front_overall_score = (
         waist_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
         waist_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + waist_front_results["Elbow Alignment Score"] +
-        waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 8
+        waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + waist_front_results["Elbow Alignment Score"]
+    ) / 6
 
-    overall_score = (0.4 * max_overall_score) + (0.5 * eye_overall_score) + (0.1 * waist_overall_score)
+    max_side_overall_score = (
+        max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
+    ) / 2
+    eye_side_overall_score = (
+        eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
+    ) / 2
+    waist_side_overall_score = (
+        waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
+    ) / 2
+
+    front_overall_score = (0.4 * max_front_overall_score) + (0.5 * eye_front_overall_score) + (0.1 * waist_front_overall_score)
+    side_overall_score = (0.4 * max_side_overall_score) + (0.5 * eye_side_overall_score) + (0.1 * waist_side_overall_score)
+    overall_score = (0.5 * front_overall_score) + (0.5 * side_overall_score)
     
+
     try:
         now = datetime.datetime.now()
         timestamp = {
@@ -509,8 +517,12 @@ def process_videos():
     return jsonify({
         "message": "Videos processed successfully",
         "processed_count": processed_count,
-        "frontMetrics": eye_front_results,
-        "sideMetrics": eye_side_results,
+        "max_front_metrics": max_front_results,
+        "eye_front_metrics": eye_front_results,
+        "waist_front_metrics": waist_front_results,
+        "max_side_metrics": max_side_results,
+        "eye_side_metrics": eye_side_results,
+        "waist_side_metrics": waist_side_results,
         "overallScore": overall_score
     }), 200
 
@@ -654,6 +666,12 @@ def process_consistency_videos():
     eye_side_score = get_consistency_side(eye_side_results)
     waist_side_score = get_consistency_side(waist_side_results)
 
+    overall_score = (
+        (0.2 * max_front_score) + (0.3 * eye_front_score) + 
+        (0.05 * waist_front_score) + (0.1 * max_side_score) + 
+        (0.3 * eye_side_score) + (0.05 * waist_side_score)
+    )
+    
     return jsonify({
         "message": "Consistency videos processed successfully",
         "front_processed_count": len(front_videos),
@@ -663,7 +681,8 @@ def process_consistency_videos():
         "waist_front_score": waist_front_score,
         "max_side_score": max_side_score,
         "eye_side_score": eye_side_score,
-        "waist_side_score": waist_side_score
+        "waist_side_score": waist_side_score,
+        "overall_score": overall_score
     }), 200
 
 @app.route("/player_data", methods=["POST"])
