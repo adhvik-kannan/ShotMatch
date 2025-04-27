@@ -173,7 +173,7 @@ def generate_elbow_parameters(data):
         mean_val = 0.0
         std_val = 0.0
     
-    return (std_val / mean_val) * 100
+    return (std_val / mean_val) * 100 # cv
 
 def get_steph_curry_front_data():
     nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'left_pinky': [198, 549], 'right_pinky': [159, 543], 'left_thumb': [197, 543], 'right_thumb': [156, 538], 'ball': None, 'Side': 'FRONT', 'frame': 63}
@@ -192,13 +192,28 @@ def get_steph_curry_front_data():
     
     return d
 
-def get_consistency_front(data):
-    return 0
-    print("data = ", data)
-    for i in range(len(data["left_elbow"])):
-        f_hew_ra, f_hew_la, f_sew_ra, f_sew_la, f_ewa_ra, f_ewp_la = generate_front_parameters(data)
-        f_elbow = generate_elbow_parameters(data)
-    return 0
+
+def prep_data(dict_list):
+    merged_dict = {
+        'left_shoulder': [], 'right_shoulder': [], 'left_elbow': [], 'right_elbow': [],
+        'left_wrist': [], 'right_wrist': [], 'left_hip': [], 'right_hip': [],
+        'left_pinky': [], 'right_pinky': [], 'left_thumb': [], 'right_thumb': [],
+        'ball': []
+    }
+    
+    for d in dict_list:
+        for key in merged_dict:
+            merged_dict[key].append(d.get(key, None))
+    
+    return merged_dict
+
+def get_consistency_front(dict_list):
+    data = prep_data(dict_list)
+    f_hew_ra, f_hew_la, f_sew_ra, f_sew_la, f_ewa_ra, f_ewp_la = generate_front_parameters(data)
+    f_elbow = generate_elbow_parameters(data)
+
+    weights = (f_hew_ra + f_hew_la + f_sew_ra + f_sew_la + f_ewa_ra + f_ewp_la + f_elbow) / 7
+    return weights
 
 
 def format_data(data_list):
@@ -216,7 +231,7 @@ def main():
     sc_f_data = get_steph_curry_front_data()
     sc_f_data = format_data(sc_f_data)
 
-    score = get_consistency(sc_f_data)
+    score = get_consistency_front(sc_f_data)
     print(f"consistency score: {score}")
 
 if __name__ == "__main__":
