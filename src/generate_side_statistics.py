@@ -57,7 +57,7 @@ def calculate_angle(vertex, a, b):
     cos_value = max(min(dot_product / (AV_magnitude * BV_magnitude), 1.0), -1.0)
     return math.degrees(math.acos(cos_value))
 
-def compare_side_ra(data, sew_ra_params, ewp_ra_params):
+def compare_side_ra(data, ewp_ra_params, hse_ra_params, sew_ra_params):
     # shoulder-elbow-wrist right arm
     if ((data["right_shoulder"] != None) and (data["right_elbow"] != None) and (data["right_wrist"] != None)):
         angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
@@ -66,6 +66,10 @@ def compare_side_ra(data, sew_ra_params, ewp_ra_params):
     if ((data["right_elbow"] != None) and (data["right_wrist"] != None) and (data["right_pinky"] != None)):
         angle_ewp_ra = calculate_angle(data["right_wrist"], data["right_elbow"], data["right_pinky"])
     
+    # hip-shoulder-elbow right arm     
+    if ((data["right_hip"] != None) and (data["right_shoulder"] != None) and (data["right_elbow"] != None)):
+        angle_hse_ra = calculate_angle(data["right_shoulder"], data["right_hip"], data["right_elbow"])
+
     # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
     pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
     pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
@@ -78,12 +82,22 @@ def compare_side_ra(data, sew_ra_params, ewp_ra_params):
     score_ewp_ra = (pdf_ewp_ra_new / pdf_ewp_ra_mean) * 100 if pdf_ewp_ra_mean != 0 else 0
     score_ewp_ra = math.ceil(max(0, min(100, score_ewp_ra)))
 
-    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
+    # hse: Angle of arm during release using points: right_hip, shoulder, elbow
+    pdf_hse_ra_new = beta.pdf(angle_hse_ra/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
+    pdf_hse_ra_mean = beta.pdf(angle_hse_ra["mean"]/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
+    score_hse_ra = (pdf_hse_ra_new / pdf_hse_ra_mean) * 100 if pdf_hse_ra_mean != 0 else 0
+    score_hse_ra = math.ceil(max(0, min(100, score_hse_ra)))
+
     plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
+    plot_beta_with_point(angle_hse_ra, hse_ra_params, label="HSE")
+    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
+    
 
     return {
-        "Shoulder->Elbow->Wrist Score (Right Arm)": score_sew_ra,
         "Elbow->Wrist->Fingers Score (Right Arm)": score_ewp_ra,
+        "Hip->Shoulder->Elbow Score (Right Arm)": score_hse_ra,
+        "Shoulder->Elbow->Wrist Score (Right Arm)": score_sew_ra
+        
     }
 
 def compare_side_la(data, sew_la_params, ewa_la_params):
@@ -112,23 +126,27 @@ def compare_side_la(data, sew_la_params, ewa_la_params):
     score_ewa_la = (pdf_ewa_la_new / pdf_ewa_la_mean) * 100 if pdf_ewa_la_mean != 0 else 0
     score_ewa_la = math.ceil(max(0, min(100, score_ewa_la)))
     
+    
     return {
-        "Shoulder->Elbow->Wrist Score (Left Arm)": score_sew_la,
-        "Elbow->Wrist->Fingers Score (Left Arm)": score_ewa_la
+        "Elbow->Wrist->Fingers Score (Left Arm)": score_ewa_la,
+        # "Hip->Shoulder->Elbow Score (Left Arm)": score_hse_la,
+        "Shoulder->Elbow->Wrist Score (Left Arm)": score_sew_la
+        
     }
 
 def get_klay_data():
     return {'left_shoulder': [805, 735], 'right_shoulder': [821, 737], 'left_elbow': None, 'right_elbow': [927, 758], 'left_wrist': None, 'right_wrist': [899, 838], 'left_hip': [779, 531], 'right_hip': [787, 533], 'left_pinky': None, 'right_pinky': [886, 862], 'left_thumb': None, 'right_thumb': [874, 847], 'ball': None, 'Side': 'RIGHT', 'frame': 52}
 
-def get_ra_params():
-    sew_ra_params = {'mean': 80.85076856368889, 'std': 15.340129920993972, 'alpha': 14.852084900953656, 'beta': 18.213466975226094}
-    ewp_ra_params = {'mean': 168.20268550842667, 'std': 7.730845782832074, 'alpha': 30.091304505321396, 'beta': 2.1105286258535343}
-    return sew_ra_params, ewp_ra_params
+def get_klay_eye_ra_params():
+    sew_ra_params = {'mean': 67.8329980250868, 'std': 11.932795336462059, 'alpha': 19.75994030124167, 'beta': 32.67455850873408}
+    hse_ra_params = {'mean': 73.96876290987862, 'std': 16.083094906019717, 'alpha': 12.049083728036942, 'beta': 17.271875359640312}
+    ewp_ra_params = {'mean': 168.6854940625231, 'std': 11.440140892054112, 'alpha': 12.729311563005165, 'beta': 0.8538130208530685}
+    return ewp_ra_params, hse_ra_params, sew_ra_params
 
 def main():
     side_ra_data = get_klay_data()
-    sew_ra_params, ewp_ra_params = get_ra_params()
-    side_ra_scores = compare_side_ra(side_ra_data, sew_ra_params, ewp_ra_params)
+    ewp_ra_params, hse_ra_params, sew_ra_params = get_klay_eye_ra_params()
+    side_ra_scores = compare_side_ra(side_ra_data, ewp_ra_params, hse_ra_params, sew_ra_params)
 
     print("Side View RA similarity scores:")
     print(side_ra_scores)

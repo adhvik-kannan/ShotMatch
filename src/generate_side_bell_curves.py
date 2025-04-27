@@ -202,8 +202,8 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position, only for klay_side_ra_ entries
-            match = re.match(r'(klay_side_ra_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position, only for lebron_side_ra_ entries
+            match = re.match(r'(lebron_side_ra_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 # Skip entries that don't match the side pattern
                 continue
@@ -246,8 +246,8 @@ def parse_data(file_content):
     return waist_data, eye_data, hand_data
 
 def main():
-    # parse data from data_klay.txt
-    with open('data_klay.txt', 'r') as file:
+    # parse data from data_lebron.txt
+    with open('data_lebron.txt', 'r') as file:
         file_content = file.read()
     
     waist_data, eye_data, max_data = parse_data(file_content)
@@ -260,8 +260,8 @@ def main():
     print("Eye Data:", len(eye_data['left_shoulder']), "entries")
     print("Max Hand Data:", len(max_data['left_shoulder']), "entries")
 
-    data = max_data
-    name = "MAX"
+    data = eye_data
+    name = "EYE"
 
     # generate parameters
     s_sew_ra, s_ewp_ra, s_hse_ra = generate_side_ra_parameters(data)
