@@ -203,24 +203,19 @@ def plot_beta_distribution(params, title):
     # print(f"params: {params}")
     alpha = params["alpha"]
     beta_val = params["beta"]
+    
+    x = np.linspace(0, 1, 100)          # Generate x values between 0 and 1=
+    y = beta.pdf(x, alpha, beta_val)    # Compute the Beta probability density function (PDF)
 
-    # Generate x values between 0 and 1
-    x = np.linspace(0, 1, 100)
-
-    # Compute the Beta probability density function (PDF)
-    y = beta.pdf(x, alpha, beta_val)
-
-    # Plot the distribution
+    # plot
     plt.figure(figsize=(8, 5))
     plt.plot(x, y, label=f'Beta({alpha:.2f}, {beta_val:.2f})', color='b')
-    plt.fill_between(x, y, alpha=0.3, color='blue')  # Fill under the curve
+    plt.fill_between(x, y, alpha=0.3, color='blue')  
     plt.xlabel('x')
     plt.ylabel('Density')
     plt.title(title)
     plt.legend()
     plt.grid()
-
-    # Show the plot
     plt.show()
 
 def prep_data(dict_list):
@@ -249,9 +244,9 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position (e.g., lebron_front_01 waist)
-            # Updated regex to match lebron_front_## or lebron_side_ra_## followed by position
-            match = re.match(r'(lebron_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., steph_front_01 waist)
+            # Updated regex to match steph_front_## or steph_side_ra_## followed by position
+            match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
@@ -295,7 +290,7 @@ def parse_data(file_content):
 
 def main():
     # Parse data from data_steph.txt
-    with open('data_lebron.txt', 'r') as file:
+    with open('data_steph.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
@@ -309,8 +304,8 @@ def main():
     print("Eye Data:", len(eye_data), "entries")
     print("Hand Data:", len(hand_data), "entries")
 
-    data = eye_data
-    name = "EYE"
+    data = max_data
+    name = "MAX"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
