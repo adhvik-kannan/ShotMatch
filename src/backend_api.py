@@ -305,7 +305,7 @@ def process_videos():
     waist_side_results = compare_side_ra(processed_results[1], waist_s_ewp_ra, waist_s_hse_ra, waist_s_sew_ra)
     # NEED TO CHANGE THIS PROCESSED RESULTS FOR EACH MAX_HAND, EYE, AND WAIST DATA processed_results[X]
     # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-    
+
     max_overall_score = (
         max_front_results["hew_ra_score"] + max_front_results["hew_la_score"] +
         max_front_results["sew_ra_score"] + max_front_results["ewa_ra_score"] +
@@ -339,7 +339,7 @@ def process_videos():
             "minute": now.minute,
             "second": now.second
         }
-        added, inserted_data = add_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", timestamp)
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_results, eye_side_results, overall_score, "Compare", timestamp)
     except Exception as e:
         print(f"Error inserting data into MongoDB: {e}")
         return jsonify({"message": "Error inserting data into MongoDB"}), 50
@@ -349,8 +349,8 @@ def process_videos():
     return jsonify({
         "message": "Videos processed successfully",
         "processed_count": processed_count,
-        "frontMetrics": front_results,
-        "sideMetrics": side_results,
+        "frontMetrics": eye_front_results,
+        "sideMetrics": eye_side_results,
         "overallScore": overall_score
     }), 200
 
