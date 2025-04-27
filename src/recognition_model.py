@@ -105,7 +105,8 @@ def eye_level_measurement(eye, wrist, mouth, frame_height):
         mouth_x, mouth_y = mouth
         if wrist is not None:
             wrist_x, wrist_y = wrist
-            if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+            # if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+            if wrist_y < (2 * eye_y) - mouth_y and wrist_y > mouth_y:
                 frame_flag = True
     return frame_flag
 
@@ -438,7 +439,7 @@ def analyze_video(video_path):
         return None, None, None
 
 if __name__ == "__main__":
-    '''
+    
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_front_01.mp4")  
     print(f"steph_front_01 waist: {pose_data_waist}\nsteph_front_01 eye: {pose_data_eye}\nsteph_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -520,7 +521,7 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_side_ra_17.mp4")  
     print(f"steph_side_ra_17 waist: {pose_data_waist}\nsteph_side_ra_17 eye: {pose_data_eye}\nsteph_side_ra_17 max_hand: {pose_data_high_hand}")
     print('\n')
-    '''
+    
     '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_front_01.mp4")  
     print(f"klay_front_01 waist: {pose_data_waist}\nklay_front_01 eye: {pose_data_eye}\nklay_front_01 max_hand: {pose_data_high_hand}")
@@ -606,7 +607,7 @@ if __name__ == "__main__":
     '''
 
 
-    
+    '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01.mp4")  
     print(f"lebron_front_01 waist: {pose_data_waist}\nlebron_front_01 eye: {pose_data_eye}\nlebron_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -655,6 +656,6 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_side_ra_06.mp4")  
     print(f"lebron_side_ra_06 waist: {pose_data_waist}\nlebron_side_ra_06 eye: {pose_data_eye}\nlebron_side_ra_06 max_hand: {pose_data_high_hand}")
     print('\n')
-    
+    '''
 
     pass
