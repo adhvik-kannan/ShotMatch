@@ -103,6 +103,16 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     Output:
         dictionary with similarity scores for each input
     """
+    if(data == None):
+        return {
+            "Hip->Elbow->Wrist Score (Right Arm)": 0,
+            "Hip->Elbow->Wrist Score (Left Arm)": 0,
+            "Shoulder->Elbow->Wrist Score (Right Arm)": 0,
+            "Shoulder->Elbow->Wrist Score (Left Arm)": 0,
+            "Elbow->Wrist->Fingers Score (Right Arm)": 0,
+            "Elbow->Wrist->Pinky Score (Left Arm)": 0,
+            "Elbow Alignment Score": 0
+        }
     # hip-elbow-wrist right arm
     if ((data["right_hip"] != None) and (data["right_wrist"] != None) and (data["right_elbow"] != None)):
         angle_hew_ra = calculate_angle(data["right_elbow"], data["right_hip"], data["right_wrist"])

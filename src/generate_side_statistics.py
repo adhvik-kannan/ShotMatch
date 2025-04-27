@@ -59,6 +59,12 @@ def calculate_angle(vertex, a, b):
 
 def compare_side_ra(data, ewp_ra_params, hse_ra_params, sew_ra_params):
     # shoulder-elbow-wrist right arm
+    if(data == None):
+        return {
+            "Elbow->Wrist->Fingers Score (Right Arm)": 0,
+            "Hip->Shoulder->Elbow Score (Right Arm)": 0,
+            "Shoulder->Elbow->Wrist Score (Right Arm)": 0
+        }
     if ((data["right_shoulder"] != None) and (data["right_elbow"] != None) and (data["right_wrist"] != None)):
         angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
 
@@ -70,6 +76,7 @@ def compare_side_ra(data, ewp_ra_params, hse_ra_params, sew_ra_params):
     if ((data["right_hip"] != None) and (data["right_shoulder"] != None) and (data["right_elbow"] != None)):
         angle_hse_ra = calculate_angle(data["right_shoulder"], data["right_hip"], data["right_elbow"])
 
+    # print(f"Angle SEW RA: {angle_sew_ra}")
     # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
     pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
     pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
@@ -84,7 +91,7 @@ def compare_side_ra(data, ewp_ra_params, hse_ra_params, sew_ra_params):
 
     # hse: Angle of arm during release using points: right_hip, shoulder, elbow
     pdf_hse_ra_new = beta.pdf(angle_hse_ra/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
-    pdf_hse_ra_mean = beta.pdf(angle_hse_ra["mean"]/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
+    pdf_hse_ra_mean = beta.pdf(hse_ra_params["mean"]/180.0, hse_ra_params["alpha"], hse_ra_params["beta"])
     score_hse_ra = (pdf_hse_ra_new / pdf_hse_ra_mean) * 100 if pdf_hse_ra_mean != 0 else 0
     score_hse_ra = math.ceil(max(0, min(100, score_hse_ra)))
 

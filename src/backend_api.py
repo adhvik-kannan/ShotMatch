@@ -12,7 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash, add_new_data
 import json
 import time
-
+import ast
 # Swagger imports
 from flasgger import Swagger
 
@@ -208,7 +208,7 @@ def process_videos():
         if not base64_data:
             return jsonify({"message": "Missing base64 data for video", "video": video_uri}), 400
 
-        print(f"Processing video {video_uri}", flush=True)
+        # print(f"Processing video {video_uri}", flush=True)
         try:
             # Decode the base64 video and write to a temporary file.
             temp_file_path = f"/tmp/{os.path.basename(video_uri)}"
@@ -216,9 +216,9 @@ def process_videos():
                 f.write(base64.b64decode(base64_data))
             
             # Run OCR analysis on the temporary file.
-            print(temp_file_path)
+            # print(temp_file_path)
             ocr_result = analyze_video(temp_file_path)
-            print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
+            # print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
 
             if not ocr_result:
                 print(f"Failed to process video {video_uri}", flush=True)
@@ -245,86 +245,244 @@ def process_videos():
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
+    # # -----------------------------------------------------
+    # # LOADING MAX PARAMS
+    # # -----------------------------------------------------
+    # max_f_hew_ra = ast.literal_eval(player_data[0]["max_f_hew_ra"])
+    # max_f_hew_la = ast.literal_eval(player_data[0]["max_f_hew_la"])
+    # max_f_sew_ra = ast.literal_eval(player_data[0]["max_f_sew_ra"]) 
+    # max_f_sew_la = ast.literal_eval(player_data[0]["max_f_sew_la"])
+    # max_f_ewa_ra = ast.literal_eval(player_data[0]["max_f_ewa_ra"])
+    # max_f_ewp_la = ast.literal_eval(player_data[0]["max_f_ewp_la"])
+    # max_f_elbow_diff = ast.literal_eval(player_data[0]["max_f_elbow_diff"])
+
+    # max_s_ewp_ra = ast.literal_eval(player_data[0]["max_s_ewp_ra"])
+    # max_s_sew_ra = ast.literal_eval(player_data[0]["max_s_sew_ra"])
+    # max_s_hse_ra = ast.literal_eval(player_data[0]["max_s_hse_ra"])
+
+
+    # # -----------------------------------------------------
+    # # LOADING EYE PARAMS
+    # # -----------------------------------------------------
+    # eye_f_hew_ra = ast.literal_eval(player_data[0]["eye_f_hew_ra"])
+    # eye_f_hew_la = ast.literal_eval(player_data[0]["eye_f_hew_la"])
+    # eye_f_sew_ra = ast.literal_eval(player_data[0]["eye_f_sew_ra"]) 
+    # eye_f_sew_la = ast.literal_eval(player_data[0]["eye_f_sew_la"])
+    # eye_f_ewa_ra = ast.literal_eval(player_data[0]["eye_f_ewa_ra"])
+    # eye_f_ewp_la = ast.literal_eval(player_data[0]["eye_f_ewp_la"])
+    # eye_f_elbow_diff = ast.literal_eval(player_data[0]["eye_f_elbow_diff"])
+
+    # eye_s_ewp_ra = ast.literal_eval(player_data[0]["eye_s_ewp_ra"])
+    # eye_s_sew_ra = ast.literal_eval(player_data[0]["eye_s_sew_ra"])
+    # eye_s_hse_ra = ast.literal_eval(player_data[0]["eye_s_hse_ra"])
+
+
+    # # -----------------------------------------------------
+    # # LOADING WAIST PARAMS
+    # # -----------------------------------------------------
+    # waist_f_hew_ra = ast.literal_eval(player_data[0]["waist_f_hew_ra"])
+    # waist_f_hew_la = ast.literal_eval(player_data[0]["waist_f_hew_la"])
+    # waist_f_sew_ra = ast.literal_eval(player_data[0]["waist_f_sew_ra"]) 
+    # waist_f_sew_la = ast.literal_eval(player_data[0]["waist_f_sew_la"])
+    # waist_f_ewa_ra = ast.literal_eval(player_data[0]["waist_f_ewa_ra"])
+    # waist_f_ewp_la = ast.literal_eval(player_data[0]["waist_f_ewp_la"])
+    # waist_f_elbow_diff = ast.literal_eval(player_data[0]["waist_f_elbow_diff"])
+
+    # waist_s_ewp_ra = ast.literal_eval(player_data[0]["waist_s_ewp_ra"])
+    # waist_s_sew_ra = ast.literal_eval(player_data[0]["waist_s_sew_ra"])
+    # waist_s_hse_ra = ast.literal_eval(player_data[0]["waist_s_hse_ra"])
 
     # -----------------------------------------------------
     # LOADING MAX PARAMS
     # -----------------------------------------------------
-    max_f_hew_ra = json.loads(player_data[0]["max_f_hew_ra"])
-    max_f_hew_la = json.loads(player_data[0]["max_f_hew_la"])
-    max_f_sew_ra = json.loads(player_data[0]["max_f_sew_ra"]) 
-    max_f_sew_la = json.loads(player_data[0]["max_f_sew_la"])
-    max_f_ewa_ra = json.loads(player_data[0]["max_f_ewa_ra"])
-    max_f_ewp_la = json.loads(player_data[0]["max_f_ewp_la"])
-    max_f_elbow_diff = json.loads(player_data[0]["max_F_ELBOW_DIFF"])
+    if player_data[0]["max_f_hew_ra"]:
+        max_f_hew_ra = ast.literal_eval(player_data[0]["max_f_hew_ra"])
+    else:
+        max_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
-    max_s_ewp_ra = json.loads(player_data[0]["max_s_ewp_ra"])
-    max_s_sew_ra = json.loads(player_data[0]["max_s_sew_ra"])
-    max_s_hse_ra = json.loads(player_data[0]["max_s_hse_ra"])
+    if player_data[0]["max_f_hew_la"]:
+        max_f_hew_la = ast.literal_eval(player_data[0]["max_f_hew_la"])
+    else:
+        max_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
+    if player_data[0]["max_f_sew_ra"]:
+        max_f_sew_ra = ast.literal_eval(player_data[0]["max_f_sew_ra"])
+    else:
+        max_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_sew_la"]:
+        max_f_sew_la = ast.literal_eval(player_data[0]["max_f_sew_la"])
+    else:
+        max_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_ewa_ra"]:
+        max_f_ewa_ra = ast.literal_eval(player_data[0]["max_f_ewa_ra"])
+    else:
+        max_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_ewp_la"]:
+        max_f_ewp_la = ast.literal_eval(player_data[0]["max_f_ewp_la"])
+    else:
+        max_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_elbow_diff"]:
+        max_f_elbow_diff = ast.literal_eval(player_data[0]["max_f_elbow_diff"])
+    else:
+        max_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_ewp_ra"]:
+        max_s_ewp_ra = ast.literal_eval(player_data[0]["max_s_ewp_ra"])
+    else:
+        max_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_sew_ra"]:
+        max_s_sew_ra = ast.literal_eval(player_data[0]["max_s_sew_ra"])
+    else:
+        max_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_hse_ra"]:
+        max_s_hse_ra = ast.literal_eval(player_data[0]["max_s_hse_ra"])
+    else:
+        max_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
     # -----------------------------------------------------
     # LOADING EYE PARAMS
     # -----------------------------------------------------
-    eye_f_hew_ra = json.loads(player_data[0]["eye_f_hew_ra"])
-    eye_f_hew_la = json.loads(player_data[0]["eye_f_hew_la"])
-    eye_f_sew_ra = json.loads(player_data[0]["eye_f_sew_ra"]) 
-    eye_f_sew_la = json.loads(player_data[0]["eye_f_sew_la"])
-    eye_f_ewa_ra = json.loads(player_data[0]["eye_f_ewa_ra"])
-    eye_f_ewp_la = json.loads(player_data[0]["eye_f_ewp_la"])
-    eye_f_elbow_diff = json.loads(player_data[0]["eye_f_elbow_diff"])
+    if player_data[0]["eye_f_hew_ra"]:
+        eye_f_hew_ra = ast.literal_eval(player_data[0]["eye_f_hew_ra"])
+    else:
+        eye_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
-    eye_s_ewp_ra = json.loads(player_data[0]["eye_s_ewp_ra"])
-    eye_s_sew_ra = json.loads(player_data[0]["eye_s_sew_ra"])
-    eye_s_hse_ra = json.loads(player_data[0]["eye_s_hse_ra"])
+    if player_data[0]["eye_f_hew_la"]:
+        eye_f_hew_la = ast.literal_eval(player_data[0]["eye_f_hew_la"])
+    else:
+        eye_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
+    if player_data[0]["eye_f_sew_ra"]:
+        eye_f_sew_ra = ast.literal_eval(player_data[0]["eye_f_sew_ra"])
+    else:
+        eye_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_sew_la"]:
+        eye_f_sew_la = ast.literal_eval(player_data[0]["eye_f_sew_la"])
+    else:
+        eye_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_ewa_ra"]:
+        eye_f_ewa_ra = ast.literal_eval(player_data[0]["eye_f_ewa_ra"])
+    else:
+        eye_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_ewp_la"]:
+        eye_f_ewp_la = ast.literal_eval(player_data[0]["eye_f_ewp_la"])
+    else:
+        eye_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_elbow_diff"]:
+        eye_f_elbow_diff = ast.literal_eval(player_data[0]["eye_f_elbow_diff"])
+    else:
+        eye_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_ewp_ra"]:
+        eye_s_ewp_ra = ast.literal_eval(player_data[0]["eye_s_ewp_ra"])
+    else:
+        eye_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_sew_ra"]:
+        eye_s_sew_ra = ast.literal_eval(player_data[0]["eye_s_sew_ra"])
+    else:
+        eye_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_hse_ra"]:
+        eye_s_hse_ra = ast.literal_eval(player_data[0]["eye_s_hse_ra"])
+    else:
+        eye_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
     # -----------------------------------------------------
     # LOADING WAIST PARAMS
     # -----------------------------------------------------
-    waist_f_hew_ra = json.loads(player_data[0]["waist_f_hew_ra"])
-    waist_f_hew_la = json.loads(player_data[0]["waist_f_hew_la"])
-    waist_f_sew_ra = json.loads(player_data[0]["waist_f_sew_ra"]) 
-    waist_f_sew_la = json.loads(player_data[0]["waist_f_sew_la"])
-    waist_f_ewa_ra = json.loads(player_data[0]["waist_f_ewa_ra"])
-    waist_f_ewp_la = json.loads(player_data[0]["waist_f_ewp_la"])
-    waist_f_elbow_diff = json.loads(player_data[0]["waist_F_ELBOW_DIFF"])
+    if player_data[0]["waist_f_hew_ra"]:
+        waist_f_hew_ra = ast.literal_eval(player_data[0]["waist_f_hew_ra"])
+    else:
+        waist_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
-    waist_s_ewp_ra = json.loads(player_data[0]["waist_s_ewp_ra"])
-    waist_s_sew_ra = json.loads(player_data[0]["waist_s_sew_ra"])
-    waist_s_hse_ra = json.loads(player_data[0]["waist_s_hse_ra"])
+    if player_data[0]["waist_f_hew_la"]:
+        waist_f_hew_la = ast.literal_eval(player_data[0]["waist_f_hew_la"])
+    else:
+        waist_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
+    if player_data[0]["waist_f_sew_ra"]:
+        waist_f_sew_ra = ast.literal_eval(player_data[0]["waist_f_sew_ra"])
+    else:
+        waist_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_sew_la"]:
+        waist_f_sew_la = ast.literal_eval(player_data[0]["waist_f_sew_la"])
+    else:
+        waist_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_ewa_ra"]:
+        waist_f_ewa_ra = ast.literal_eval(player_data[0]["waist_f_ewa_ra"])
+    else:
+        waist_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_ewp_la"]:
+        waist_f_ewp_la = ast.literal_eval(player_data[0]["waist_f_ewp_la"])
+    else:
+        waist_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_elbow_diff"]:
+        waist_f_elbow_diff = ast.literal_eval(player_data[0]["waist_f_elbow_diff"])
+    else:
+        waist_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_ewp_ra"]:
+        waist_s_ewp_ra = ast.literal_eval(player_data[0]["waist_s_ewp_ra"])
+    else:
+        waist_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_sew_ra"]:
+        waist_s_sew_ra = ast.literal_eval(player_data[0]["waist_s_sew_ra"])
+    else:
+        waist_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_hse_ra"]:
+        waist_s_hse_ra = ast.literal_eval(player_data[0]["waist_s_hse_ra"])
+    else:
+        waist_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
 
     # -----------------------------------------------------
     # COMPARISON 
     # -----------------------------------------------------
-    max_front_results = compare_front(processed_results[0], max_f_hew_ra, max_f_hew_la, max_f_sew_ra, max_f_sew_la, max_f_ewa_ra, max_f_ewp_la, max_f_elbow_diff)
-    max_side_results = compare_side_ra(processed_results[1], max_s_ewp_ra, max_s_hse_ra, max_s_sew_ra)
-    eye_front_results = compare_front(processed_results[0], eye_f_hew_ra, eye_f_hew_la, eye_f_sew_ra, eye_f_sew_la, eye_f_ewa_ra, eye_f_ewp_la, eye_f_elbow_diff)
-    eye_side_results = compare_side_ra(processed_results[1], eye_s_ewp_ra, eye_s_hse_ra, eye_s_sew_ra)
-    waist_front_results = compare_front(processed_results[0], waist_f_hew_ra, waist_f_hew_la, waist_f_sew_ra, waist_f_sew_la, waist_f_ewa_ra, waist_f_ewp_la, waist_f_elbow_diff)
-    waist_side_results = compare_side_ra(processed_results[1], waist_s_ewp_ra, waist_s_hse_ra, waist_s_sew_ra)
+    # print("Hello: ", processed_results[0], flush=True)
+    max_front_results = compare_front(processed_results[0][2], max_f_hew_ra, max_f_hew_la, max_f_sew_ra, max_f_sew_la, max_f_ewa_ra, max_f_ewp_la, max_f_elbow_diff)
+    max_side_results = compare_side_ra(processed_results[1][2], max_s_ewp_ra, max_s_hse_ra, max_s_sew_ra)
+    eye_front_results = compare_front(processed_results[0][1], eye_f_hew_ra, eye_f_hew_la, eye_f_sew_ra, eye_f_sew_la, eye_f_ewa_ra, eye_f_ewp_la, eye_f_elbow_diff)
+    eye_side_results = compare_side_ra(processed_results[1][1], eye_s_ewp_ra, eye_s_hse_ra, eye_s_sew_ra)
+    waist_front_results = compare_front(processed_results[0][0], waist_f_hew_ra, waist_f_hew_la, waist_f_sew_ra, waist_f_sew_la, waist_f_ewa_ra, waist_f_ewp_la, waist_f_elbow_diff)
+    waist_side_results = compare_side_ra(processed_results[1][0], waist_s_ewp_ra, waist_s_hse_ra, waist_s_sew_ra)
     # NEED TO CHANGE THIS PROCESSED RESULTS FOR EACH MAX_HAND, EYE, AND WAIST DATA processed_results[X]
     # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
     max_overall_score = (
-        max_front_results["hew_ra_score"] + max_front_results["hew_la_score"] +
-        max_front_results["sew_ra_score"] + max_front_results["ewa_ra_score"] +
-        max_front_results["ewp_la_score"] + max_front_results["ec_score"] +
-        max_side_results["sew_ra_score"] + max_side_results["ewp_ra_score"]
+        max_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + max_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        max_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + max_front_results["Elbow Alignment Score"] +
+        max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
     ) / 8
 
     eye_overall_score = (
-        eye_front_results["hew_ra_score"] + eye_front_results["hew_la_score"] +
-        eye_front_results["sew_ra_score"] + eye_front_results["ewa_ra_score"] +
-        eye_front_results["ewp_la_score"] + eye_front_results["ec_score"] +
-        eye_side_results["sew_ra_score"] + eye_side_results["ewp_ra_score"]
+        eye_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        eye_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + eye_front_results["Elbow Alignment Score"] +
+        eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
     ) / 8
 
     waist_overall_score = (
-        waist_front_results["hew_ra_score"] + waist_front_results["hew_la_score"] +
-        waist_front_results["sew_ra_score"] + waist_front_results["ewa_ra_score"] +
-        waist_front_results["ewp_la_score"] + waist_front_results["ec_score"] +
-        waist_side_results["sew_ra_score"] + waist_side_results["ewp_ra_score"]
+        waist_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        waist_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + waist_front_results["Elbow Alignment Score"] +
+        waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
     ) / 8
 
     overall_score = (0.4 * max_overall_score) + (0.5 * eye_overall_score) + (0.1 * waist_overall_score)
