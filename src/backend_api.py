@@ -482,10 +482,6 @@ def process_videos():
         waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + waist_front_results["Elbow Alignment Score"]
     ) / 6
 
-<<<<<<< HEAD
-
-    overall_score = (0.4 * max_overall_score) + (0.5 * eye_overall_score) + (0.1 * waist_overall_score)
-=======
     max_side_overall_score = (
         max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
     ) / 2
@@ -499,7 +495,6 @@ def process_videos():
     front_overall_score = (0.4 * max_front_overall_score) + (0.5 * eye_front_overall_score) + (0.1 * waist_front_overall_score)
     side_overall_score = (0.4 * max_side_overall_score) + (0.5 * eye_side_overall_score) + (0.1 * waist_side_overall_score)
     overall_score = (0.5 * front_overall_score) + (0.5 * side_overall_score)
->>>>>>> integration/adam/stat-models
     
 
     try:
@@ -604,12 +599,12 @@ def process_consistency_videos():
             waist_data, eye_data, max_data = analyze_video(temp_file_path)
             print(f"Processed front video {video_uri}")
             
-            if not waist_data or not eye_data or not max_data:
-                return jsonify({
-                    "message": "Failed to process front video",
-                    "video": video_uri,
-                    "data": None
-                }), 500
+            # if not waist_data or not eye_data or not max_data:
+            #   return jsonify({
+            #       "message": "Failed to process front video",
+            #       "video": video_uri,
+            #       "data": None
+            #   }), 500
             
             max_front_results.append(max_data)
             eye_front_results.append(eye_data)
@@ -640,14 +635,15 @@ def process_consistency_videos():
                 f.write(base64.b64decode(base64_data))
             
             waist_data, eye_data, max_data = analyze_video(temp_file_path)
-            print(f"Processed front video {video_uri}")
+            print(f"Processed side video {video_uri}")
             
-            if not waist_data or not eye_data or not max_data:
-                return jsonify({
-                    "message": "Failed to process side video",
-                    "video": video_uri,
-                    "data": None
-                }), 500
+            # if not waist_data or not eye_data or not max_data:
+            #   print(f"Failed to process side video {video_uri}")
+            #   return jsonify({
+            #       "message": "Failed to process side video",
+            #       "video": video_uri,
+            #       "data": None
+            #   }), 500
             
             max_side_results.append(max_data)
             eye_side_results.append(eye_data)
@@ -670,7 +666,7 @@ def process_consistency_videos():
     max_side_score = get_consistency_side(max_side_results)
     eye_side_score = get_consistency_side(eye_side_results)
     waist_side_score = get_consistency_side(waist_side_results)
-
+    print(max_front_score, eye_front_score, waist_front_score, max_side_score, eye_side_score, waist_side_score)
     overall_score = (
         (0.2 * max_front_score) + (0.3 * eye_front_score) + 
         (0.05 * waist_front_score) + (0.1 * max_side_score) + 

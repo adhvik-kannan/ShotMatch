@@ -150,29 +150,29 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
           overall_score,
         } = data;
         const frontData = [
-          { name: 'Max Front Score', value: max_front_score },
-          { name: 'Eye Front Score', value: eye_front_score },
-          { name: 'Waist Front Score', value: waist_front_score }
-        ]
+          { name: 'Release Score', value: max_front_score },
+          { name: 'Eye Level Score', value: eye_front_score },
+          { name: 'Waist Score', value: waist_front_score }
+        ];
         const sideData = [
-          { name: 'Max Side Score', value: max_side_score },
-          { name: 'Eye Side Score', value: eye_side_score },
-          { name: 'Waist Side Score', value: waist_side_score }
-        ]
+          { name: 'Release Score', value: max_side_score },
+          { name: 'Eye Level Score', value: eye_side_score },
+          { name: 'Waist Score', value: waist_side_score }
+        ];
         const overallScore = overall_score;
 
         Alert.alert('Success', 'Consistency videos processed successfully!');
         navigation.navigate('ConsistencyResults', { frontData: frontData, sideData: sideData, overallScore: overallScore, user: user });
       } else {
         Alert.alert('Error', 'Failed to process consistency videos.');
-        navigation.navigate('Consistency');
+        navigation.navigate('Consistency', { user: user });
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while uploading videos.');
       navigation.navigate('Consistency', { user: user });
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
   };
 

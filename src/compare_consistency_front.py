@@ -193,6 +193,8 @@ def get_steph_curry_front_data():
     return d
 
 def get_consistency_front(data):
+    return 0
+    print("data = ", data)
     for i in range(len(data["left_elbow"])):
         f_hew_ra, f_hew_la, f_sew_ra, f_sew_la, f_ewa_ra, f_ewp_la = generate_front_parameters(data)
         f_elbow = generate_elbow_parameters(data)
