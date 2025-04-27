@@ -404,8 +404,12 @@ def process_consistency_videos():
     if not side_videos or not isinstance(side_videos, list):
         return jsonify({"message": "No side videos provided or invalid format"}), 400
 
-    front_results = []
-    side_results = []
+    max_front_results = []
+    eye_front_results = []
+    waist_front_results = []
+    max_side_results = []
+    eye_side_results = []
+    waist_side_results = []
 
     # Process front videos
     for video in front_videos:
@@ -420,17 +424,20 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = analyze_video(temp_file_path)
-            print(f"Processed front video {video_uri} with data: {ocr_result}")
+            waist_data, eye_data, max_data = analyze_video(temp_file_path)
+            print(f"Processed front video {video_uri}")
             
-            if not ocr_result:
+            if not waist_data or not eye_data or not max_data:
                 return jsonify({
                     "message": "Failed to process front video",
                     "video": video_uri,
                     "data": None
                 }), 500
             
-            front_results.append(ocr_result)
+            max_front_results.append(max_data)
+            eye_front_results.append(eye_data)
+            waist_front_results.append(waist_data)
+
         except Exception as e:
             print(f"Error processing front video {video_uri}: {e}")
             return jsonify({
@@ -455,17 +462,20 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = analyze_video(temp_file_path)
-            print(f"Processed side video {video_uri} with data: {ocr_result}")
+            waist_data, eye_data, max_data = analyze_video(temp_file_path)
+            print(f"Processed front video {video_uri}")
             
-            if not ocr_result:
+            if not waist_data or not eye_data or not max_data:
                 return jsonify({
                     "message": "Failed to process side video",
                     "video": video_uri,
                     "data": None
                 }), 500
             
-            side_results.append(ocr_result)
+            max_side_results.append(max_data)
+            eye_side_results.append(eye_data)
+            waist_side_results.append(waist_data)
+
         except Exception as e:
             print(f"Error processing side video {video_uri}: {e}")
             return jsonify({
@@ -477,12 +487,17 @@ def process_consistency_videos():
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
 
+    
     return jsonify({
         "message": "Consistency videos processed successfully",
         "front_processed_count": len(front_videos),
         "side_processed_count": len(side_videos),
-        "front_data": front_results,
-        "side_data": side_results
+        "max_front_data": max_front_results,
+        "eye_front_data": eye_front_results,
+        "waist_front_data": waist_front_results,
+        "max_side_data": max_side_results,
+        "eye_side_data": eye_side_results,
+        "waist_side_data": waist_side_results
     }), 200
 
 @app.route("/player_data", methods=["POST"])
