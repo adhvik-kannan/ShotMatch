@@ -116,18 +116,21 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     # hip-elbow-wrist right arm
     if ((data["right_hip"] != None) and (data["right_wrist"] != None) and (data["right_elbow"] != None)):
         angle_hew_ra = calculate_angle(data["right_elbow"], data["right_hip"], data["right_wrist"])
-    
+        angle_hew_ra = 180 - angle_hew_ra if angle_hew_ra < 90.0 else angle_hew_ra
+
     # hip-elbow-wrist left arm
     if ((data["left_hip"] != None) and (data["left_wrist"] != None) and (data["left_elbow"] != None)):
         angle_hew_la = calculate_angle(data["left_elbow"], data["left_hip"], data["left_wrist"])
+        angle_hew_la = 180 - angle_hew_la if angle_hew_la < 90.0 else angle_hew_la
 
     # shoulder-elbow-wrist right arm
     if ((data["right_shoulder"] != None) and (data["right_elbow"] != None) and (data["right_wrist"] != None)):
         angle_sew_ra = calculate_angle(data["right_elbow"], data["right_shoulder"], data["right_wrist"])
-    
+        angle_sew_ra = 180 - angle_sew_ra if angle_sew_ra > 90.0 else angle_sew_ra
     # shoulder-elbow-wrist left arm
     if ((data["left_shoulder"] != None) and (data["left_elbow"] != None) and (data["left_wrist"] != None)):
         angle_sew_la = calculate_angle(data["left_elbow"], data["left_shoulder"], data["left_wrist"])
+        angle_sew_la = 180 - angle_sew_la if angle_sew_la > 90.0 else angle_sew_la
     
     # elbow-wrist-average right arm (avg = thumb and pinky)
     if ((data["right_elbow"] != None) and (data["right_wrist"] != None)):
@@ -234,7 +237,7 @@ def main():
     # Compute similarity scores for front view.
     max_f, eye_f, waist_f, max_s, eye_s, waist_s = get_klay_data()
     klay_data = [max_f, eye_f, waist_f]
-    klay_data = [eye_f]
+    # klay_data = [eye_f]
     hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params = get_params()
 
     for d in klay_data:
