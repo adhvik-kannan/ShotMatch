@@ -129,6 +129,7 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
       const payload = {
         frontVideos: convertedFrontVideos,
         sideVideos: convertedSideVideos,
+        user: user
       };
 
       const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;

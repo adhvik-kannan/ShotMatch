@@ -58,7 +58,7 @@ def generate_side_ra_parameters(data):
     sew_ra_list = []
     ewp_ra_list = []
     hse_ra_list = []
-    
+    print(data)
     for i in range(len(data["ball"])):
         # shoulder-elbow-wrist right arm
         if ((data["right_shoulder"][i] != None) and (data["right_elbow"][i] != None) and (data["right_wrist"][i] != None)):
@@ -99,10 +99,12 @@ def get_parameters(angles, max_val=180):
     """
     angles = np.array(angles)
     mean_val = float(np.mean(angles))
+    if(mean_val == 0):
+        mean_val = 1e-10
     std_val = float(np.std(angles))
     cv = (std_val / mean_val) * 100     # coefficient of variation normalizes consistency regardless of magnitude
     
-    return cv
+    return 100-cv
 
 def generate_plot(dist_params_sew, dist_params_ewa, arm_name, save_plot=True):
     """
@@ -152,7 +154,10 @@ def prep_data(dict_list):
     
     for d in dict_list:
         for key in merged_dict:
-            merged_dict[key].append(d.get(key, None))
+            if(d == None):
+                merged_dict[key].append([0.0, 0.0])
+            else:
+                merged_dict[key].append(d.get(key, None))
     
     return merged_dict
 
@@ -160,7 +165,7 @@ def get_consistency_side(dict_list):
     data = prep_data(dict_list)
     sew_ra, ewp_ra, hse_ra = generate_side_ra_parameters(data)
 
-    weights = (sew_ra, ewp_ra, hse_ra) / 3
+    weights = (sew_ra + ewp_ra + hse_ra) / 3
     return weights
 
 

@@ -507,7 +507,7 @@ def process_videos():
             "minute": now.minute,
             "second": now.second
         }
-        added, inserted_data = add_new_data(player_data_collection, user, eye_front_results, eye_side_results, overall_score, "Compare", timestamp)
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_results, eye_side_results, max_front_results, max_side_results, waist_front_results, waist_side_results, overall_score, "Compare", timestamp)
     except Exception as e:
         print(f"Error inserting data into MongoDB: {e}")
         return jsonify({"message": "Error inserting data into MongoDB"}), 50
@@ -570,7 +570,7 @@ def process_consistency_videos():
     data_json = request.get_json()
     front_videos = data_json.get("frontVideos")
     side_videos = data_json.get("sideVideos")
-    
+    user = data_json.get("user")
     if not front_videos or not isinstance(front_videos, list):
         return jsonify({"message": "No front videos provided or invalid format"}), 400
     if not side_videos or not isinstance(side_videos, list):
@@ -666,13 +666,26 @@ def process_consistency_videos():
     max_side_score = get_consistency_side(max_side_results)
     eye_side_score = get_consistency_side(eye_side_results)
     waist_side_score = get_consistency_side(waist_side_results)
-    print(max_front_score, eye_front_score, waist_front_score, max_side_score, eye_side_score, waist_side_score)
     overall_score = (
         (0.2 * max_front_score) + (0.3 * eye_front_score) + 
         (0.05 * waist_front_score) + (0.1 * max_side_score) + 
         (0.3 * eye_side_score) + (0.05 * waist_side_score)
     )
     
+    try:
+        now = datetime.datetime.now()
+        timestamp = {
+            "year": now.year,
+            "month": now.month,
+            "day": now.day,
+            "hour": now.hour,
+            "minute": now.minute,
+            "second": now.second
+        }
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_score, eye_side_score, max_front_score, max_side_score, waist_front_score, waist_side_score, overall_score, "Consistency", timestamp)
+    except Exception as e:
+        print(f"Error inserting data into MongoDB: {e}")
+        return jsonify({"message": "Error inserting data into MongoDB"}), 50
     return jsonify({
         "message": "Consistency videos processed successfully",
         "front_processed_count": len(front_videos),
@@ -722,6 +735,7 @@ def get_player_data_by_user():
         data = list(player_data_collection.find({"name": user}))
         for record in data:
             record["_id"] = str(record["_id"])  # Convert ObjectId to string for JSON serialization.
+        print(data)
         return jsonify({"player_data": data}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

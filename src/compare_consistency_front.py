@@ -143,12 +143,14 @@ def get_parameters(angles, max_val=180):
     """
     angles = np.array(angles)
     mean_val = float(np.mean(angles))
+    if(mean_val == 0):
+        mean_val = 1e-10
     std_val = float(np.std(angles))
     cv = (std_val / mean_val) * 100     # coefficient of variation normalizes consistency regardless of magnitude
     print(angles)
     # print(f"s_y_sq: {s_y_sq}")
     
-    return cv
+    return 100-cv
 
 def generate_elbow_parameters(data):
     elbows_list = []
@@ -170,10 +172,10 @@ def generate_elbow_parameters(data):
         mean_val = float(np.mean(elbows))
         std_val = float(np.std(elbows))
     else:
-        mean_val = 0.0
+        mean_val = 1e-10
         std_val = 0.0
     
-    return (std_val / mean_val) * 100 # cv
+    return (1 - (std_val / mean_val)) * 100 # cv
 
 def get_steph_curry_front_data():
     nba_18 = {'left_shoulder': [191, 466], 'right_shoulder': [125, 468], 'left_elbow': [215, 472], 'right_elbow': [136, 459], 'left_wrist': [205, 535], 'right_wrist': [152, 527], 'left_hip': [182, 326], 'right_hip': [140, 327], 'left_pinky': [198, 549], 'right_pinky': [159, 543], 'left_thumb': [197, 543], 'right_thumb': [156, 538], 'ball': None, 'Side': 'FRONT', 'frame': 63}
@@ -203,7 +205,10 @@ def prep_data(dict_list):
     
     for d in dict_list:
         for key in merged_dict:
-            merged_dict[key].append(d.get(key, None))
+            if(d == None):
+                merged_dict[key].append([0.0, 0.0])
+            else:
+                merged_dict[key].append(d.get(key, None))
     
     return merged_dict
 
