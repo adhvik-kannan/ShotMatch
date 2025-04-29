@@ -243,7 +243,7 @@ def process_videos():
                 os.remove(temp_file_path)
     
     # Generate statistics for the videos.
-    found, player_data = get_data_by_name_or_hash(nba_players_collection, player["name"])
+    found, player_data = get_data_by_name_or_hash(nba_players_collection, "new_klay")
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
@@ -457,6 +457,13 @@ def process_videos():
     # COMPARISON 
     # -----------------------------------------------------
     # print("Hello: ", processed_results[0], flush=True)
+    print("Max Front: ", processed_results[0][2], flush=True)
+    print("Eye Front: ", processed_results[0][1], flush=True)
+    print("Waist Front: ", processed_results[0][0], flush=True)
+    print("Max Side: ", processed_results[1][2], flush=True)
+    print("Eye Side: ", processed_results[1][1], flush=True)
+    print("Waist Side: ", processed_results[1][0], flush=True)
+
     max_front_results = compare_front(processed_results[0][2], max_f_hew_ra, max_f_hew_la, max_f_sew_ra, max_f_sew_la, max_f_ewa_ra, max_f_ewp_la, max_f_elbow_diff)
     max_side_results = compare_side_ra(processed_results[1][2], max_s_ewp_ra, max_s_hse_ra, max_s_sew_ra)
     eye_front_results = compare_front(processed_results[0][1], eye_f_hew_ra, eye_f_hew_la, eye_f_sew_ra, eye_f_sew_la, eye_f_ewa_ra, eye_f_ewp_la, eye_f_elbow_diff)
