@@ -246,7 +246,8 @@ def parse_data(file_content):
         try:
             # Extract player ID and position (e.g., steph_front_01 waist)
             # Updated regex to match steph_front_## or steph_side_ra_## followed by position
-            match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            # match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            match = re.match(r'(steph_front_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
@@ -290,7 +291,7 @@ def parse_data(file_content):
 
 def main():
     # Parse data from data_steph.txt
-    with open('data_steph.txt', 'r') as file:
+    with open('data_steph_test.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
@@ -300,9 +301,9 @@ def main():
     eye_data = prep_data(eye_data)
     max_data = prep_data(hand_data)
 
-    print("Waist Data:", len(waist_data), "entries")
-    print("Eye Data:", len(eye_data), "entries")
-    print("Hand Data:", len(hand_data), "entries")
+    print("Waist Data:", len(waist_data['left_shoulder']), "entries")
+    print("Eye Data:", len(eye_data['left_shoulder']), "entries")
+    print("Hand Data:", len(max_data['left_shoulder']), "entries")
 
     data = max_data
     name = "MAX"
@@ -320,14 +321,14 @@ def main():
     print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
     
     # plot
-    plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
-    plot_beta_distribution(sc_f_ewp_la, name + "_F_EWP_LA")
-    plot_beta_distribution(sc_f_hew_ra, name + "_F_HEW_RA")
-    plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
-    plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
-    plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
+    # plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
+    # plot_beta_distribution(sc_f_ewp_la, name + "_F_EWP_LA")
+    # plot_beta_distribution(sc_f_hew_ra, name + "_F_HEW_RA")
+    # plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
+    # plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
+    # plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
 
-    plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
+    # plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
 
 if __name__ == "__main__":
     main()
