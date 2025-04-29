@@ -234,7 +234,7 @@ def main():
     # Compute similarity scores for front view.
     max_f, eye_f, waist_f, max_s, eye_s, waist_s = get_klay_data()
     klay_data = [max_f, eye_f, waist_f]
-    klay_data = [eye_f]
+    # klay_data = [eye_f]
     hew_ra_params, hew_la_params, sew_ra_params, sew_la_params, ewa_ra_params, ewp_la_params, elbow_params = get_params()
 
     for d in klay_data:
