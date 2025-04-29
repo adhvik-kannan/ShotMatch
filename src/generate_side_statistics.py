@@ -95,9 +95,9 @@ def compare_side_ra(data, ewp_ra_params, hse_ra_params, sew_ra_params):
     score_hse_ra = (pdf_hse_ra_new / pdf_hse_ra_mean) * 100 if pdf_hse_ra_mean != 0 else 0
     score_hse_ra = math.ceil(max(0, min(100, score_hse_ra)))
 
-    plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
-    plot_beta_with_point(angle_hse_ra, hse_ra_params, label="HSE")
-    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
+    # plot_beta_with_point(angle_ewp_ra, ewp_ra_params, label="EWP")
+    # plot_beta_with_point(angle_hse_ra, hse_ra_params, label="HSE")
+    # plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW")
     
 
     return {
