@@ -118,7 +118,7 @@ def waist_level_measurement(hip, wrist, shoulder, frame_height):
     Returns True if wrist is near the hip (within 5% of frame height).
     '''
     if wrist and hip:
-        if abs(wrist[1] - hip[1]) < (0.1 * frame_height):
+        if (wrist[1] - hip[1]) < (0.1 * frame_height):
             return True
     return False
 
