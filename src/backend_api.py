@@ -467,30 +467,45 @@ def process_videos():
     # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
     max_front_overall_score = (
-        max_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + max_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
-        max_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + max_front_results["Elbow Alignment Score"]
-    ) / 6
+        0.30 * max_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        0.20 * max_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        0.20 * max_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.10 * max_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.10 * max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + 
+        0.10 * max_front_results["Elbow Alignment Score"]
+    ) 
     eye_front_overall_score = (
-        eye_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
-        eye_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + eye_front_results["Elbow Alignment Score"]
-    ) / 6
+        0.25 * eye_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        0.25 * eye_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        0.05 * eye_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.10 * eye_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.10 * eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + 
+        0.25 * eye_front_results["Elbow Alignment Score"]
+    ) 
     waist_front_overall_score = (
-        waist_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
-        waist_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
-        waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + waist_front_results["Elbow Alignment Score"]
+        1.00 * waist_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        1.00 * waist_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        1.00 * waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] +
+        1.00 * waist_front_results["Elbow Alignment Score"]
     ) / 6
 
     max_side_overall_score = (
-        max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 2
+        0.40 * max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.50 * max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] + 
+        0.10 * max_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) 
     eye_side_overall_score = (
-        eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 2
+        0.40 * eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.30 * eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.30 * eye_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) 
     waist_side_overall_score = (
-        waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"]
-    ) / 2
+        1.00 * waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        1.00 * waist_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) / 3
 
     front_overall_score = (0.4 * max_front_overall_score) + (0.5 * eye_front_overall_score) + (0.1 * waist_front_overall_score)
     side_overall_score = (0.4 * max_side_overall_score) + (0.5 * eye_side_overall_score) + (0.1 * waist_side_overall_score)
