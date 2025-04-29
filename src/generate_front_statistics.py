@@ -116,10 +116,12 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
     # hip-elbow-wrist right arm
     if ((data["right_hip"] != None) and (data["right_wrist"] != None) and (data["right_elbow"] != None)):
         angle_hew_ra = calculate_angle(data["right_elbow"], data["right_hip"], data["right_wrist"])
-    
+        angle_hew_ra = 180 - angle_hew_ra if angle_hew_ra > 90.0 else angle_hew_ra
+
     # hip-elbow-wrist left arm
     if ((data["left_hip"] != None) and (data["left_wrist"] != None) and (data["left_elbow"] != None)):
         angle_hew_la = calculate_angle(data["left_elbow"], data["left_hip"], data["left_wrist"])
+        angle_hew_la = 180 - angle_hew_la if angle_hew_la > 90.0 else angle_hew_la
 
     # shoulder-elbow-wrist right arm
     if ((data["right_shoulder"] != None) and (data["right_elbow"] != None) and (data["right_wrist"] != None)):
@@ -191,12 +193,12 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
 
 
     
-    # plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
+    plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
     plot_beta_with_point(angle_hew_la, hew_la_params, label="HEW_LA")
-    # plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
-    # plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
-    # plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
-    # plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
+    plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
+    plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
+    plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")
+    plot_beta_with_point(angle_ewp_la, ewp_la_params, label="EWP_LA")
     
     return {
         "Hip->Elbow->Wrist Score (Right Arm)": score_hew_ra,
