@@ -134,7 +134,7 @@ def get_parameters(angles, max_val=360):
     
     Inputs:
         angles  = numpy array of values (in degrees by default; for ratios, adjust max_val)
-        max_val = maximum value (default is 180 for angles; for ratios use 1)
+        max_val = maximum value (default is 360 for angles; for ratios use 1)
     
     Outputs:
         A dictionary containing:
@@ -244,10 +244,10 @@ def parse_data(file_content):
             continue
             
         try:
-            # Extract player ID and position (e.g., steph_front_01 waist)
-            # Updated regex to match steph_front_## or steph_side_ra_## followed by position
-            # match = re.match(r'(steph_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
-            match = re.match(r'(steph_front_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., klay_front_01 waist)
+            # Updated regex to match klay_front_## or klay_side_ra_## followed by position
+            # match = re.match(r'(klay_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            match = re.match(r'(klay_front_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
                 print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
@@ -290,8 +290,8 @@ def parse_data(file_content):
     return waist_data, eye_data, hand_data
 
 def main():
-    # Parse data from data_steph.txt
-    with open('data_steph_test.txt', 'r') as file:
+    # Parse data from data_klay.txt
+    with open('data_klay.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
