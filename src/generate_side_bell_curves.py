@@ -260,7 +260,7 @@ def main():
     print("Eye Data:", len(eye_data['left_shoulder']), "entries")
     print("Max Hand Data:", len(max_data['left_shoulder']), "entries")
 
-    data = eye_data
+    data = waist_data
     name = "dat"
 
     # generate parameters

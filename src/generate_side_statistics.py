@@ -150,23 +150,37 @@ def get_klay_data():
     Waist_Side = {'nose': [587, 382], 'left_eye_inner': [581, 390], 'left_eye': [580, 391], 'left_eye_outer': [578, 391], 'right_eye_inner': [581, 390], 'right_eye': [580, 390], 'right_eye_outer': [579, 390], 'left_ear': [568, 386], 'right_ear': [570, 384], 'left_mouth': [584, 373], 'right_mouth': [583, 373], 'left_shoulder': [528, 339], 'right_shoulder': [574, 343], 'left_elbow': None, 'right_elbow': [558, 271], 'left_wrist': None, 'right_wrist': [610, 251], 'left_pinky': None, 'right_pinky': [622, 244], 'left_index': None, 'right_index': [627, 255], 'left_thumb': None, 'right_thumb': [622, 258], 'left_hip': [512, 219], 'right_hip': [539, 217], 'left_knee': None, 'right_knee': [583, 135], 'left_ankle': [518, 53], 'right_ankle': [568, 30], 'left_heel': [508, 46], 'right_heel': [558, 18], 'left_foot_index': [547, 37], 'right_foot_index': [608, 20], 'frame': 9, 'time': 0.29014285714285715, 'postion': 'WAIST'}
     return Max_Front, Eye_Front, Waist_Front, Max_Side, Eye_Side, Waist_Side
 
-def get_klay_eye_ra_params():
+def get_klay_max_ra_params():
     ewp_ra_params = {'mean': 150.04247767121387, 'std': 12.043310904035549, 'alpha': 24.999145211051367, 'beta': 4.991336203483126}
     hse_ra_params = {'mean': 137.49535255571425, 'std': 6.152654734459472, 'alpha': 117.16357443768788, 'beta': 36.219380016995984}
     sew_ra_params = {'mean': 159.0630767335418, 'std': 5.07095137744814, 'alpha': 113.56221153590216, 'beta': 14.947801574839653}
     return ewp_ra_params, hse_ra_params, sew_ra_params
 
+def get_klay_eye_ra_params():
+    ewp_ra_params = {'mean': 162.79243451640704, 'std': 11.707145326763976, 'alpha': 17.58033743513769, 'beta': 1.858285420556836}
+    hse_ra_params = {'mean': 90.37181433977483, 'std': 8.369376881648048, 'alpha': 57.554568372996485, 'beta': 57.080977928963264}
+    sew_ra_params = {'mean': 78.60699805803836, 'std': 4.34617551815837, 'alpha': 183.82851721109964, 'beta': 237.115341674938}
+    return ewp_ra_params, hse_ra_params, sew_ra_params
+
+def get_klay_waist_ra_params():
+    ewp_ra_params = {'mean': 172.0228012361289, 'std': 1.2192230676341782, 'alpha': 881.2779247048371, 'beta': 40.867426417108035}
+    hse_ra_params = {'mean': 11.052724169849226, 'std': 6.275518007818859, 'alpha': 2.85010534601943, 'beta': 43.565507167225405}
+    sew_ra_params = {'mean': 99.36451583505773, 'std': 5.589010428718502, 'alpha': 141.04251081194644, 'beta': 114.45767185178374}
+    return ewp_ra_params, hse_ra_params, sew_ra_params
+
 def main():
     max_f, eye_f, waist_f, max_s, eye_s, waist_s = get_klay_data()
-    klay_data = [max_s, eye_s, waist_s]
-    klay_data = [max_s]
 
-    ewp_ra_params, hse_ra_params, sew_ra_params = get_klay_eye_ra_params()
+    m_ewp_ra_params, m_hse_ra_params, m_sew_ra_params = get_klay_max_ra_params()
+    e_ewp_ra_params, e_hse_ra_params, e_sew_ra_params = get_klay_eye_ra_params()
+    w_ewp_ra_params, w_hse_ra_params, w_sew_ra_params = get_klay_waist_ra_params()
 
-    for d in klay_data:
-        side_ra_scores = compare_side_ra(d, ewp_ra_params, hse_ra_params, sew_ra_params)
-        print(f"side view similarity scores:")
-        print(side_ra_scores)
+    print(f"side view similarity scores:")
+    print(compare_side_ra(max_s, m_ewp_ra_params, m_hse_ra_params, m_sew_ra_params))
+    print(compare_side_ra(eye_s, e_ewp_ra_params, e_hse_ra_params, e_sew_ra_params))
+    print(compare_side_ra(waist_s, w_ewp_ra_params, w_hse_ra_params, w_sew_ra_params))
+    
+  
     
 if __name__ == "__main__":
     main()
