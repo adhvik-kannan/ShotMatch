@@ -192,7 +192,7 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
 
     
     # plot_beta_with_point(angle_hew_ra, hew_ra_params, label="HEW_RA")
-    plot_beta_with_point(angle_hew_la, hew_la_params, label="HEW_LA")
+    # plot_beta_with_point(angle_hew_la, hew_la_params, label="HEW_LA")
     # plot_beta_with_point(angle_sew_ra, sew_ra_params, label="SEW_RA")
     # plot_beta_with_point(angle_sew_la, sew_la_params, label="SEW_LA")
     # plot_beta_with_point(angle_ewa_ra, ewa_ra_params, label="EWA_RA")

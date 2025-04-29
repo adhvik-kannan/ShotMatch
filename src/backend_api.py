@@ -243,7 +243,7 @@ def process_videos():
                 os.remove(temp_file_path)
     
     # Generate statistics for the videos.
-    found, player_data = get_data_by_name_or_hash(nba_players_collection, "new_klay")
+    found, player_data = get_data_by_name_or_hash(nba_players_collection, player["name"])
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
