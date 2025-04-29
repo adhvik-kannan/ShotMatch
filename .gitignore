@@ -13,3 +13,5 @@ sbom.json
 sbom.spdx.json
 frontend/ShotMatch/npm-sbom.json
 src/__pycache__/
+backend_api.log
+adam*.mp4
