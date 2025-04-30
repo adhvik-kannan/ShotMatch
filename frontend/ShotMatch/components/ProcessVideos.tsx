@@ -76,6 +76,7 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
           }, 1000);
         } else {
           setMessage('Failed to process videos.');
+          console.error('Error response from backend:', response.status, response.statusText);
           setTimeout(() => {
             navigation.navigate('UploadVideos', { selectedPlayer: selectedPlayer, user: user });
           }, 1500);
