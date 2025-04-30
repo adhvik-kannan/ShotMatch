@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,8 @@ interface PlayerData {
     minute: number;
     second: number;
   };
+  // In Compare mode you might have nested objects,
+  // but in Consistency mode these keys are directly stored as numbers.
   front_results?: { [key: string]: number };
   side_results?: { [key: string]: number };
   overall_score?: number;
@@ -56,9 +58,20 @@ interface SelectedPoint {
   value: number;
 }
 
+// Mapping objects for Consistency mode display names.
+const consistencyMappingFront: { [key: string]: string } = {
+  "max_front_results": "Release Score",
+  "eye_front_results": "Eye Level Score",
+  "waist_front_results": "Waist Score"
+};
+const consistencyMappingSide: { [key: string]: string } = {
+  "max_side_results": "Release Score",
+  "eye_side_results": "Eye Level Score",
+  "waist_side_results": "Waist Score"
+};
+
 const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
   const isFocused = useIsFocused();
-  console.log('isFocused:', isFocused);
   const route = useRoute<HistoricalGraphRouteProp>();
   const { user } = route.params;
   const [playerData, setPlayerData] = useState<PlayerData[]>([]);
@@ -66,25 +79,25 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
+  const [mode, setMode] = useState<'Compare' | 'Consistency'>('Compare');
 
-  // Only these time range options are allowed.
+  // Time Range State
   const [timeRange, setTimeRange] = useState<string>('2 Days');
   const timeRangeOptions = ['1 Day', '2 Days', '1 Week', '1 Month'];
 
-  // State for the selected data point pop out.
-  const [selectedPoint, setSelectedPoint] = useState<SelectedPoint | null>(null);
-  // Mode toggle state.
-  const [mode, setMode] = useState<'Compare' | 'Consistency'>('Compare');
+  // Group selection only applies in Compare mode.
+  const groups = ['max', 'eye', 'waist'];
+  const [selectedGroup, setSelectedGroup] = useState<string>('max');
 
+  const [selectedPoint, setSelectedPoint] = useState<SelectedPoint | null>(null);
+
+  // Fetch data on focus.
   useFocusEffect(
     useCallback(() => {
       const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
       const backendPort: string = Constants.expoConfig?.extra?.backendPort;
-      console.log("Backend URL:", backendUrl);
       const fetchData = async () => {
-        console.log('Fetching data for user:', user);
         try {
-          // Note: We now only send the user so all records (for both modes) are returned.
           const response = await fetch(`http://${backendUrl}:${backendPort}/player_data`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -94,13 +107,18 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
           const data: PlayerData[] = json.player_data || [];
           setPlayerData(data);
           if (data.length > 0) {
-            // Initialize with the default mode's (Compare) data.
-            const compareData = data.filter(item => item.mode === "Compare");
-            const frontKeys = compareData[0]?.front_results ? Object.keys(compareData[0].front_results) : [];
-            setSection('front');
-            setCategories(frontKeys);
-            if (frontKeys.length > 0) {
-              setSelectedCategory(frontKeys[0]);
+            if (data[0].mode === "Compare") {
+              // For Compare mode, use dynamic keys from front_results.
+              const frontKeys = data[0]?.front_results ? Object.keys(data[0].front_results) : [];
+              setSection('front');
+              setCategories(frontKeys);
+              if (frontKeys.length > 0) setSelectedCategory(frontKeys[0]);
+            } else {
+              // In Consistency mode, set default categories for front.
+              setSection('front');
+              const consFront = ["max_front_results", "eye_front_results", "waist_front_results"];
+              setCategories(consFront);
+              setSelectedCategory(consFront[0]);
             }
           }
         } catch (error) {
@@ -113,7 +131,7 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
     }, [user])
   );
 
-  // Helper: extract a valid Date from a record.
+  // Helper: extract a Date from the record.
   const getRecordDate = (item: PlayerData): Date | null => {
     if (item.date) {
       if (typeof item.date === 'string') {
@@ -132,32 +150,26 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
     return null;
   };
 
-  // console.log('playerData:', playerData);
-  // Filter records by mode locally.
-  const modeData = playerData.filter(item => item.mode === mode);
-  
-  // Validate and sort data chronologically.
-  const validData = modeData
-    .filter(item => getRecordDate(item) !== null)
-    .sort((a, b) => {
-      const dateA = getRecordDate(a);
-      const dateB = getRecordDate(b);
-      if (!dateA || !dateB) return 0;
-      return dateA.getTime() - dateB.getTime();
-    });
+  // Compute validData using useMemo.
+  const validData = useMemo(() => {
+    const modeData = playerData.filter(item => item.mode === mode);
+    return modeData
+      .filter(item => getRecordDate(item) !== null)
+      .sort((a, b) => {
+        const dateA = getRecordDate(a);
+        const dateB = getRecordDate(b);
+        if (!dateA || !dateB) return 0;
+        return dateA.getTime() - dateB.getTime();
+      });
+  }, [playerData, mode]);
 
-  let chartLabels: string[] = [];
-  let chartDataPoints: number[] = [];
-  let chartDates: Date[] = [];
-
-  // Helper: format a date as "Mar 28"
+  // Format helpers.
   const formatShortDate = (date: Date) => {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return `${monthNames[date.getMonth()]} ${date.getDate()}`;
   };
 
-  // Helper: format full date/time for the modal.
   const formatFullDateTime = (date: Date) => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -168,6 +180,11 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
     return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  let chartLabels: string[] = [];
+  let chartDataPoints: number[] = [];
+  let chartDates: Date[] = [];
+
+  // Build chart data based on time range.
   if (timeRange === '1 Month') {
     const referenceDate =
       validData.length > 0 ? getRecordDate(validData[validData.length - 1]) || new Date() : new Date();
@@ -183,8 +200,12 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
         const value = section === 'overall'
           ? Number(item.overall_score)
           : section === 'front'
-            ? Number(item.front_results?.[selectedCategory])
-            : Number(item.side_results?.[selectedCategory]);
+            ? (mode === 'Consistency'
+                ? Number(item[selectedCategory])
+                : Number(item[`${selectedGroup}_front_results`]?.[selectedCategory]))
+            : (mode === 'Consistency'
+                ? Number(item[selectedCategory])
+                : Number(item[`${selectedGroup}_side_results`]?.[selectedCategory]));
         const key = d.toDateString();
         if (!dailyMap.has(key) || value > (dailyMap.get(key)?.value ?? 0)) {
           dailyMap.set(key, { date: d, value });
@@ -198,16 +219,13 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
     const desiredLabelsCount = 4;
     const step = Math.max(1, Math.floor(total / desiredLabelsCount));
     chartLabels = dailyArray.map((item, index) => {
-      if (index % step === 0 || index === total - 1) {
-        return formatShortDate(item.date);
-      }
-      return "";
+      return (index % step === 0 || index === total - 1) ? formatShortDate(item.date) : "";
     });
-    const referenceMonth = referenceDate.getMonth();
+    const refMonth = referenceDate.getMonth();
     for (let i = 0; i < dailyArray.length - 1; i++) {
       const currentMonth = dailyArray[i].date.getMonth();
       const nextMonth = dailyArray[i + 1].date.getMonth();
-      if (currentMonth !== referenceMonth && nextMonth === referenceMonth) {
+      if (currentMonth !== refMonth && nextMonth === refMonth) {
         chartLabels[i] = "";
       }
     }
@@ -222,13 +240,27 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
       const d = getRecordDate(item);
       return d && d >= cutoffDate;
     });
-    chartDataPoints = recentData.map(item =>
-      section === 'overall'
-        ? Number(item.overall_score)
-        : section === 'front'
-          ? Number(item.front_results?.[selectedCategory])
-          : Number(item.side_results?.[selectedCategory])
-    );
+    // console.log('recentData:', recentData);
+    chartDataPoints = recentData.map(item => {
+      let value = 0;
+      if (section === 'overall') {
+        value = Number(item.overall_score);
+      } else if (mode === 'Consistency') {
+        // In Consistency mode, data is stored directly as numbers under the key.
+        // For front or side, simply use the selectedCategory key.
+        if (section === 'front' || section === 'side') {
+          value = Number(item[selectedCategory]);
+        }
+      } else {
+        // Compare mode: use the selectedGroup to look up nested data.
+        if (section === 'front') {
+          value = Number(item[`${selectedGroup}_front_results`]?.[selectedCategory]);
+        } else if (section === 'side') {
+          value = Number(item[`${selectedGroup}_side_results`]?.[selectedCategory]);
+        }
+      }
+      return isNaN(value) ? 0 : value;
+    });
     chartDates = recentData.map(item => getRecordDate(item) || new Date());
     if (timeRange === '1 Day' || timeRange === '2 Days') {
       const distinctDays: string[] = [];
@@ -271,6 +303,44 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
     }
   }
 
+  // Update available categories when section, validData, or mode changes.
+  useEffect(() => {
+    if (validData.length > 0) {
+      if (mode === 'Consistency') {
+        // In Consistency mode, we no longer use group selection.
+        if (section === 'overall') {
+          setCategories(['Overall Score']);
+          setSelectedCategory('Overall Score');
+        } else if (section === 'front') {
+          // Set the keys as stored in your consistency data.
+          const consFront = ["max_front_results", "eye_front_results", "waist_front_results"];
+          setCategories(consFront);
+          setSelectedCategory(consFront[0]);
+        } else if (section === 'side') {
+          const consSide = ["max_side_results", "eye_side_results", "waist_side_results"];
+          setCategories(consSide);
+          setSelectedCategory(consSide[0]);
+        }
+      } else {
+        // In Compare mode, use the dynamic group approach.
+        if (section === 'overall') {
+          setCategories(['overall_score']);
+          setSelectedCategory('overall_score');
+        } else if (section === 'front') {
+          const groupProp = `${selectedGroup}_front_results`;
+          const frontKeys = validData[0]?.[groupProp] ? Object.keys(validData[0][groupProp]) : [];
+          setCategories(frontKeys);
+          if (frontKeys.length > 0) setSelectedCategory(frontKeys[0]);
+        } else if (section === 'side') {
+          const groupProp = `${selectedGroup}_side_results`;
+          const sideKeys = validData[0]?.[groupProp] ? Object.keys(validData[0][groupProp]) : [];
+          setCategories(sideKeys);
+          if (sideKeys.length > 0) setSelectedCategory(sideKeys[0]);
+        }
+      }
+    }
+  }, [section, validData, selectedGroup, mode]);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {loading ? (
@@ -281,31 +351,17 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
           <View style={styles.sectionToggle}>
             <Button
               title="Front Results"
-              onPress={() => {
-                setSection('front');
-                const frontKeys = validData[0]?.front_results ? Object.keys(validData[0].front_results) : [];
-                setCategories(frontKeys);
-                if (frontKeys.length > 0) setSelectedCategory(frontKeys[0]);
-              }}
+              onPress={() => setSection('front')}
               color={section === 'front' ? '#007AFF' : '#8e8e93'}
             />
             <Button
               title="Side Results"
-              onPress={() => {
-                setSection('side');
-                const sideKeys = validData[0]?.side_results ? Object.keys(validData[0].side_results) : [];
-                setCategories(sideKeys);
-                if (sideKeys.length > 0) setSelectedCategory(sideKeys[0]);
-              }}
+              onPress={() => setSection('side')}
               color={section === 'side' ? '#007AFF' : '#8e8e93'}
             />
             <Button
               title="Overall Score"
-              onPress={() => {
-                setSection('overall');
-                setCategories(['overall_score']);
-                setSelectedCategory('overall_score');
-              }}
+              onPress={() => setSection('overall')}
               color={section === 'overall' ? '#007AFF' : '#8e8e93'}
             />
           </View>
@@ -321,6 +377,40 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
               color={mode === 'Consistency' ? '#007AFF' : '#8e8e93'}
             />
           </View>
+          {/* Only show group picker in Compare mode */}
+          {mode === 'Compare' && (section === 'front' || section === 'side') && (
+            <View style={styles.pickerContainer}>
+              <Text style={styles.subheader}>Select Group:</Text>
+              <Picker
+                selectedValue={selectedGroup}
+                style={styles.picker}
+                onValueChange={(itemValue) => setSelectedGroup(itemValue)}
+              >
+                {groups.map(group => (
+                  <Picker.Item key={group} label={group.toUpperCase()} value={group} />
+                ))}
+              </Picker>
+            </View>
+          )}
+          <View style={styles.pickerContainer}>
+            <Text style={styles.subheader}>Select Category:</Text>
+            <Picker
+              selectedValue={selectedCategory}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+            >
+              {categories.map(category => {
+                let label = category;
+                if (mode === 'Consistency' && section !== 'overall') {
+                  // Use friendly display names from the mapping objects.
+                  label = section === 'front'
+                    ? (consistencyMappingFront[category] || category)
+                    : (consistencyMappingSide[category] || category);
+                }
+                return <Picker.Item key={category} label={label} value={category} />;
+              })}
+            </Picker>
+          </View>
           <View style={styles.pickerContainer}>
             <Text style={styles.subheader}>Select Time Range:</Text>
             <Picker
@@ -330,18 +420,6 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
             >
               {timeRangeOptions.map(option => (
                 <Picker.Item key={option} label={option} value={option} />
-              ))}
-            </Picker>
-          </View>
-          <View style={styles.pickerContainer}>
-            <Text style={styles.subheader}>Select Category:</Text>
-            <Picker
-              selectedValue={selectedCategory}
-              style={styles.picker}
-              onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-            >
-              {categories.map(category => (
-                <Picker.Item key={category} label={category} value={category} />
               ))}
             </Picker>
           </View>
@@ -392,7 +470,9 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
               <View style={styles.modalContent}>
                 {selectedPoint && (
                   <>
-                    <Text style={styles.modalText}>Date: {formatFullDateTime(selectedPoint.date)}</Text>
+                    <Text style={styles.modalText}>
+                      Date: {formatFullDateTime(selectedPoint.date)}
+                    </Text>
                     <Text style={styles.modalText}>Value: {selectedPoint.value}</Text>
                   </>
                 )}
@@ -409,69 +489,18 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    alignItems: 'center'
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 10
-  },
-  sectionToggle: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginVertical: 10
-  },
-  pickerContainer: {
-    width: '90%',
-    marginVertical: 10
-  },
-  subheader: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 5
-  },
-  picker: {
-    height: 50,
-    width: '100%'
-  },
-  chartContainer: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 16,
-    overflow: 'hidden'
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center'
-  },
-  modalText: {
-    fontSize: 16,
-    marginVertical: 5
-  },
-  closeButton: {
-    marginTop: 15,
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontWeight: '600'
-  }
+  container: { padding: 10, alignItems: 'center' },
+  header: { fontSize: 24, fontWeight: '700', marginBottom: 10 },
+  sectionToggle: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginVertical: 10 },
+  pickerContainer: { width: '90%', marginVertical: 10 },
+  subheader: { fontSize: 16, fontWeight: '600', marginBottom: 5 },
+  picker: { height: 50, width: '100%' },
+  chartContainer: { marginTop: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 16, overflow: 'hidden' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '80%', alignItems: 'center' },
+  modalText: { fontSize: 16, marginVertical: 5 },
+  closeButton: { marginTop: 15, backgroundColor: '#007AFF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 5 },
+  closeButtonText: { color: '#fff', fontWeight: '600' }
 });
 
 export default HistoricalGraph;

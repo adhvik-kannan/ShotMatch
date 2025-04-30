@@ -129,6 +129,7 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
       const payload = {
         frontVideos: convertedFrontVideos,
         sideVideos: convertedSideVideos,
+        user: user
       };
 
       const backendUrl: string = Constants.expoConfig?.extra?.backendUrl;
@@ -139,28 +140,40 @@ const Consistency: React.FC<ConsistencyUploadProps> = ({ navigation }) => {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (true) {
-        const dummyFrontData = [
-          { metric: 'Accuracy', score: 85 },
-          { metric: 'Precision', score: 90 },
+      if (response.ok) {
+        const { 
+          max_front_score,
+          eye_front_score,
+          waist_front_score,
+          max_side_score,
+          eye_side_score,
+          waist_side_score,
+          overall_score,
+        } = data;
+        const frontData = [
+          { name: 'Release Score', value: max_front_score },
+          { name: 'Eye Level Score', value: eye_front_score },
+          { name: 'Waist Score', value: waist_front_score }
         ];
-        const dummySideData = [
-          { metric: 'Stability', score: 80 },
-          { metric: 'Consistency', score: 88 },
+        const sideData = [
+          { name: 'Release Score', value: max_side_score },
+          { name: 'Eye Level Score', value: eye_side_score },
+          { name: 'Waist Score', value: waist_side_score }
         ];
-        const overallScore = 87;
+        const overallScore = overall_score;
+
         Alert.alert('Success', 'Consistency videos processed successfully!');
-        navigation.navigate('ConsistencyResults', { frontData: dummyFrontData, sideData: dummySideData, overallScore: overallScore, user: user });
+        navigation.navigate('ConsistencyResults', { frontData: frontData, sideData: sideData, overallScore: overallScore, user: user });
       } else {
         Alert.alert('Error', 'Failed to process consistency videos.');
-        navigation.navigate('Consistency');
+        navigation.navigate('Consistency', { user: user });
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'An error occurred while uploading videos.');
       navigation.navigate('Consistency', { user: user });
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
   };
 

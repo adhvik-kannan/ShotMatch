@@ -103,12 +103,28 @@ def get_user_by_email(collection: Collection, email: str):
         
 # Define data schema 
 ### FIX THIS WITH WHATEVER DATA YOU NEED
-def add_new_data(collection: Collection, name: str, front_results: any, side_results: any, overall_score: any, mode: str, date: any):
+def add_new_data(
+    collection: Collection,
+    name: str,
+    eye_front_results: any,
+    eye_side_results: any,
+    max_front_results: any,
+    max_side_results: any,
+    waist_front_results: any,
+    waist_side_results: any,
+    overall_score: any,
+    mode: str,
+    date: any
+):
     try:
         package = {
             "name": name,
-            "front_results": front_results,
-            "side_results": side_results,
+            "eye_front_results": eye_front_results,
+            "eye_side_results": eye_side_results,
+            "max_front_results": max_front_results,
+            "max_side_results": max_side_results,
+            "waist_front_results": waist_front_results,
+            "waist_side_results": waist_side_results,
             "overall_score": overall_score,
             "mode": mode,
             "date": date
@@ -119,6 +135,7 @@ def add_new_data(collection: Collection, name: str, front_results: any, side_res
     except Exception as error:
         # logger.debug("Error adding package", exc_info=True)
         return False, error
+
 
 # Remove Data
 def remove_data_by_name_or_hash(collection: Collection, identifier: str):

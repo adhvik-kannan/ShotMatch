@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import torch
+import sys
+import os
+import glob
 from ultralytics import YOLO
 
 try:
@@ -105,7 +108,8 @@ def eye_level_measurement(eye, wrist, mouth, frame_height):
         mouth_x, mouth_y = mouth
         if wrist is not None:
             wrist_x, wrist_y = wrist
-            if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+            # if wrist_y < (2 * eye_y) - mouth_y and wrist_y > (2 * mouth_y) - eye_y:
+            if wrist_y < (2 * eye_y) - mouth_y and wrist_y > mouth_y:
                 frame_flag = True
     return frame_flag
 
@@ -114,7 +118,7 @@ def waist_level_measurement(hip, wrist, shoulder, frame_height):
     Returns True if wrist is near the hip (within 5% of frame height).
     '''
     if wrist and hip:
-        if abs(wrist[1] - hip[1]) < (0.05 * frame_height):
+        if (wrist[1] - hip[1]) < (0.1 * frame_height):
             return True
     return False
 
@@ -127,7 +131,7 @@ def analyze_video(video_path):
 
     pose = mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=1,
+        model_complexity=2,
         smooth_landmarks=True,
         enable_segmentation=False,
         min_detection_confidence=0.5,
@@ -400,8 +404,9 @@ def analyze_video(video_path):
     #     return None
     if len(eye_level_data) > 0:
         earliest_eye_index = min(eye_level_data.keys())
-        latest_eye_index = max(eye_level_data.keys())
-        latest_eye_frame = eye_level_data[latest_eye_index]
+        # latest_eye_index = max(eye_level_data.keys())
+        # latest_eye_frame = eye_level_data[latest_eye_index]
+        earlist_eye_frame = eye_level_data[earliest_eye_index]
         waist_before_index = None
         for w_i in waist_level_data.keys():
             if w_i < earliest_eye_index:
@@ -411,7 +416,13 @@ def analyze_video(video_path):
         hand_after_index = None
         max_wrist_y = None
         for h_i in hand_frame_data.keys():
-            if h_i > latest_eye_index:
+            # if h_i > latest_eye_index:
+            #     wrist = choose_valid_side(hand_frame_data[h_i]["left_wrist"], hand_frame_data[h_i]["right_wrist"])
+            #     wrist_y = wrist[1] if wrist is not None else float('inf')
+            #     if max_wrist_y is None or wrist_y > max_wrist_y:
+            #         max_wrist_y = wrist_y
+            #         hand_after_index = h_i
+            if h_i > earliest_eye_index:
                 wrist = choose_valid_side(hand_frame_data[h_i]["left_wrist"], hand_frame_data[h_i]["right_wrist"])
                 wrist_y = wrist[1] if wrist is not None else float('inf')
                 if max_wrist_y is None or wrist_y > max_wrist_y:
@@ -419,16 +430,37 @@ def analyze_video(video_path):
                     hand_after_index = h_i
         max_hand_frame_data = hand_frame_data[hand_after_index] if hand_after_index is not None else None
     else:
-        latest_eye_frame = None
+        # latest_eye_frame = None
+        earlist_eye_frame = None
         waist_frame_before_eye = None
         max_hand_frame_data = None
 
-    if latest_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
-        return waist_frame_before_eye, latest_eye_frame, max_hand_frame_data
+    # if latest_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
+    if earlist_eye_frame is not None or waist_frame_before_eye is not None or max_hand_frame_data is not None:
+        return waist_frame_before_eye, earlist_eye_frame, max_hand_frame_data
     else:
         return None, None, None
 
 if __name__ == "__main__":
+    
+    subject = sys.argv[1] if len(sys.argv) > 1 else "steph"
+    video_dir = f"/root/ShotMatch/video/{subject}"
+    videos = os.path.join(video_dir, f"{subject}_*.mp4")
+    video_files = sorted(glob.glob(videos))
+    if not video_files:
+        print(f"[!] No videos found for subject '{subject}' in {video_dir}")
+        sys.exit(0)
+    for path in video_files:
+        pose_data_waist, pose_data_eye, pose_data_high_hand = analyze_video(path)
+        label = os.path.splitext(os.path.basename(path))[0]
+        print(
+            f"{label} waist: {pose_data_waist}\n"
+            f"{label} eye: {pose_data_eye}\n"
+            f"{label} max_hand: {pose_data_high_hand}\n"
+            f"\n"
+        )
+    
+    '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_front_01.mp4")  
     print(f"steph_front_01 waist: {pose_data_waist}\nsteph_front_01 eye: {pose_data_eye}\nsteph_front_01 max_hand: {pose_data_high_hand}")
     print('\n')
@@ -510,7 +542,7 @@ if __name__ == "__main__":
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_side_ra_17.mp4")  
     print(f"steph_side_ra_17 waist: {pose_data_waist}\nsteph_side_ra_17 eye: {pose_data_eye}\nsteph_side_ra_17 max_hand: {pose_data_high_hand}")
     print('\n')
-
+    '''
     '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/klay/klay_front_01.mp4")  
     print(f"klay_front_01 waist: {pose_data_waist}\nklay_front_01 eye: {pose_data_eye}\nklay_front_01 max_hand: {pose_data_high_hand}")
@@ -595,8 +627,9 @@ if __name__ == "__main__":
     print('\n')
     '''
 
-
     '''
+    pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01_pro.mp4")  
+    print(f"lebron_front_01_pro waist: {pose_data_waist}\nlebron_front_01_pro eye: {pose_data_eye}\nlebron_front_01_pro max_hand: {pose_data_high_hand}")
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01.mp4")  
     print(f"lebron_front_01 waist: {pose_data_waist}\nlebron_front_01 eye: {pose_data_eye}\nlebron_front_01 max_hand: {pose_data_high_hand}")
     print('\n')

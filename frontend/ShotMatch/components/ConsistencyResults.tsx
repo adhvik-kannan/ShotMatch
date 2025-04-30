@@ -4,8 +4,8 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import Svg, { Circle, Text as SvgText } from 'react-native-svg';
 
 type Metric = {
-  metric: string;
-  score: number;
+  name: string;
+  value: number;
 };
 
 type RootStackParamList = {
@@ -26,7 +26,9 @@ interface ResultsProps {
 const ConsistencyResults: React.FC<ResultsProps> = ({ navigation }) => {
   const route = useRoute<ConsistencyResultsRouteProp>();
   const { frontData, sideData, overallScore, user } = route.params;
-  
+  console.log('Front Data:', frontData);
+  console.log('Side Data:', sideData);
+  console.log('Overall Score:', overallScore);
   // Circle configurations identical to PerformanceMetrics.tsx
   const radius = 45;
   const strokeWidth = 10;
@@ -85,8 +87,8 @@ const ConsistencyResults: React.FC<ResultsProps> = ({ navigation }) => {
         </View>
         {frontData.map((item, index) => (
           <View key={index} style={styles.row}>
-            <Text style={styles.cell}>{item.metric}</Text>
-            <Text style={styles.cell}>{item.score}</Text>
+            <Text style={styles.cell}>{item.name}</Text>
+            <Text style={styles.cell}>{item.value}</Text>
           </View>
         ))}
       </View>
@@ -99,8 +101,8 @@ const ConsistencyResults: React.FC<ResultsProps> = ({ navigation }) => {
         </View>
         {sideData.map((item, index) => (
           <View key={index} style={styles.row}>
-            <Text style={styles.cell}>{item.metric}</Text>
-            <Text style={styles.cell}>{item.score}</Text>
+            <Text style={styles.cell}>{item.name}</Text>
+            <Text style={styles.cell}>{item.value}</Text>
           </View>
         ))}
       </View>

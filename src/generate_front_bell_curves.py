@@ -124,7 +124,7 @@ def generate_front_parameters(data):
     sew_la = get_parameters(sew_la_list)
     ewa_ra = get_parameters(ewa_ra_list)
     ewp_la = get_parameters(ewp_la_list)
-
+    # print(hew_la_list)
     return hew_ra, hew_la, sew_ra, sew_la, ewa_ra, ewp_la
 
 def get_parameters(angles, max_val=180):
@@ -148,7 +148,7 @@ def get_parameters(angles, max_val=180):
     std_val = float(np.std(angles))
     m_y = mean_val / max_val
     s_y_sq = (std_val**2) / (max_val**2)
-    print(angles)
+    # print(angles)
     # print(f"s_y_sq: {s_y_sq}")
 
     if s_y_sq <= 0:
@@ -177,7 +177,7 @@ def generate_elbow_parameters(data):
             elbows_list.append(abs(((left_entry[1]) - (right_entry[1])) / arm_length))
 
     elbows = np.array(elbows_list)
-    # print(f"elbow diff list = {elbows_list}")
+    print(f"elbow diff list = {elbows_list}")
     if len(elbows > 0):
         mean_val = float(np.mean(elbows))
         std_val = float(np.std(elbows))
@@ -199,28 +199,23 @@ def generate_elbow_parameters(data):
 
     return {"mean": mean_val, "std": std_val, "alpha": alpha, "beta": beta_val}
 
-def plot_beta_distribution(params):
+def plot_beta_distribution(params, title):
     # print(f"params: {params}")
     alpha = params["alpha"]
     beta_val = params["beta"]
+    
+    x = np.linspace(0, 1, 100)          # Generate x values between 0 and 1=
+    y = beta.pdf(x, alpha, beta_val)    # Compute the Beta probability density function (PDF)
 
-    # Generate x values between 0 and 1
-    x = np.linspace(0, 1, 100)
-
-    # Compute the Beta probability density function (PDF)
-    y = beta.pdf(x, alpha, beta_val)
-
-    # Plot the distribution
+    # plot
     plt.figure(figsize=(8, 5))
     plt.plot(x, y, label=f'Beta({alpha:.2f}, {beta_val:.2f})', color='b')
-    plt.fill_between(x, y, alpha=0.3, color='blue')  # Fill under the curve
+    plt.fill_between(x, y, alpha=0.3, color='blue')  
     plt.xlabel('x')
     plt.ylabel('Density')
-    plt.title('Beta Distribution')
+    plt.title(title)
     plt.legend()
     plt.grid()
-
-    # Show the plot
     plt.show()
 
 def prep_data(dict_list):
@@ -233,8 +228,7 @@ def prep_data(dict_list):
     
     for d in dict_list:
         for key in merged_dict:
-            if d.get("Side") == 'FRONT':
-                merged_dict[key].append(d.get(key, None))
+            merged_dict[key].append(d.get(key, None))
     
     return merged_dict
 
@@ -250,73 +244,91 @@ def parse_data(file_content):
             continue
             
         try:
-            # xtract player ID and position (e.g., nba_1 waist)
-            match = re.match(r'(nba_\d+)\s+(\w+):\s+(.+)', entry)
+            # Extract player ID and position (e.g., klay_front_01 waist)
+            # Updated regex to match klay_front_## or klay_side_ra_## followed by position
+            # match = re.match(r'(klay_(?:front|side_ra)_\d+)\s+(\w+):\s+(.+)', entry)
+            match = re.match(r'(klay_front_\d+)\s+(\w+):\s+(.+)', entry)
             if not match:
+                print(f"Skipping entry, no match: {entry[:50]}...")
                 continue
                 
             player_id, position, data_str = match.groups()
             
-            data_dict = ast.literal_eval(data_str)
-            
-            if data_dict is None:
+            # Skip if data_str is 'None'
+            if data_str.strip().lower() == 'none':
                 continue
                 
+            # Parse the dictionary string
+            try:
+                data_dict = ast.literal_eval(data_str)
+            except (SyntaxError, ValueError) as e:
+                print(f"Error parsing dictionary in entry: {entry[:50]}... Error: {e}")
+                continue
+            
+            # Ensure data_dict is a dictionary, not None
+            if not isinstance(data_dict, dict):
+                print(f"Skipping entry, data_dict is not a dictionary: {entry[:50]}...")
+                continue
+                
+            # Add player_id to the dictionary
             data_dict['player_id'] = player_id
             
+            # Categorize based on position
             if position.lower() == 'waist':
                 waist_data.append(data_dict)
             elif position.lower() == 'eye':
                 eye_data.append(data_dict)
-            elif position.lower() == 'max':
+            elif position.lower() == 'max_hand':  # Updated to match data
                 hand_data.append(data_dict)
+            else:
+                print(f"Unknown position '{position}' in entry: {entry[:50]}...")
                     
-                    
-        except (SyntaxError, ValueError) as e:
-            print(f"Error parsing entry: {entry[:50]}... Error: {e}")
+        except Exception as e:
+            print(f"Error processing entry: {entry[:50]}... Error: {e}")
             continue
     
     return waist_data, eye_data, hand_data
 
 def main():
-    # Parse data from data_steph.txt
-    with open('data_steph.txt', 'r') as file:
+    # Parse data from data_klay.txt
+    with open('data_klay_new_std.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
     waist_data, eye_data, hand_data = parse_data(file_content)
         
-    waist_data = prep_data(waist_data)
-    eye_data = prep_data(eye_data)
-    hand_data = prep_data(hand_data)
+    w_data = prep_data(waist_data)
+    e_data = prep_data(eye_data)
+    m_data = prep_data(hand_data)
 
-    print("Waist Data:", len(waist_data), "entries")
-    print("Eye Data:", len(eye_data), "entries")
-    print("Hand Data:", len(hand_data), "entries")
+    print("Waist Data:", len(w_data['left_shoulder']), "entries")
+    print("Eye Data:", len(e_data['left_shoulder']), "entries")
+    print("Hand Data:", len(m_data['left_shoulder']), "entries")
 
-    data = eye_data
-
+    data = w_data
+    name = "MAX"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
     
     # print parameters
-    print(f"HEW Right Arm: {sc_f_hew_ra}")
-    print(f"HEW Left Arm: {sc_f_hew_la}")
-    print(f"SEW Right Arm: {sc_f_sew_ra}")
-    print(f"SEW Left Arm: {sc_f_sew_la}")
-    print(f"EWA Right Arm: {sc_f_ewa_ra}")
-    print(f"EWP Left Arm: {sc_f_ewp_la}")
-    print(f"Elbow Comparison: {sc_f_elbow}")
+    print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
+    print(f"{name}_F_EWA_RA: {sc_f_ewa_ra}")
+    print(f"{name}_F_EWP_LA: {sc_f_ewp_la}")
+    print(f"{name}_F_HEW_RA: {sc_f_hew_ra}")
+    print(f"{name}_F_HEW_LA: {sc_f_hew_la}")
+    print(f"{name}_F_SEW_RA: {sc_f_sew_ra}")
+    print(f"{name}_F_SEW_LA: {sc_f_sew_la}")
+    
     
     # plot
-    plot_beta_distribution(sc_f_hew_ra)
-    plot_beta_distribution(sc_f_hew_la)
-    plot_beta_distribution(sc_f_sew_ra)
-    plot_beta_distribution(sc_f_sew_la)
-    plot_beta_distribution(sc_f_ewa_ra)
-    plot_beta_distribution(sc_f_ewp_la)
-    plot_beta_distribution(sc_f_elbow)
+    # plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
+    # plot_beta_distribution(sc_f_ewp_la, name + "_F_EWP_LA")
+    # plot_beta_distribution(sc_f_hew_ra, name + "_F_HEW_RA")
+    # plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
+    # plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
+    # plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
+    # plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
 
 if __name__ == "__main__":
     main()

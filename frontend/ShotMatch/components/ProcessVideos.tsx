@@ -56,8 +56,8 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
         // console.log('Response:', response.json());
         if (response.ok) {
           const jsonData = await response.json();
-          console.log('Response from backend:', jsonData);
-          console.log(jsonData.frontMetrics);
+          // console.log('Response from backend:', jsonData);
+          // console.log(jsonData.frontMetrics);
           const dummyMetrics = [
             { metric: 'Points', you: 25, player: 30 },
             { metric: 'Assists', you: 7, player: 5 },
@@ -67,8 +67,12 @@ const ProcessVideos: React.FC<HomeProps> = ({ navigation }) => {
           setMessage('Videos processed successfully!');
           setTimeout(() => {
             navigation.navigate('PerformanceMetrics', {
-              frontMetrics: jsonData.frontMetrics,
-              sideMetrics: jsonData.sideMetrics,
+              frontEyeMetrics: jsonData.eye_front_metrics,
+              frontMaxMetrics: jsonData.max_front_metrics,
+              frontWaistMetrics: jsonData.waist_front_metrics,
+              sideEyeMetrics: jsonData.eye_side_metrics,
+              sideMaxMetrics: jsonData.max_side_metrics,
+              sideWaistMetrics: jsonData.waist_side_metrics,
               selectedPlayer: selectedPlayer,
               overallComparisonScore: jsonData.overallScore,
               user: user,

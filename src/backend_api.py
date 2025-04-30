@@ -8,11 +8,13 @@ import time
 from recognition_model import analyze_video
 from generate_front_statistics import compare_front
 from generate_side_statistics import compare_side_ra
+from compare_consistency_front import get_consistency_front
+from compare_consistency_side import get_consistency_side
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect_to_mongodb, add_user, get_user_by_email, get_data_by_name_or_hash, add_new_data
 import json
 import time
-
+import ast
 # Swagger imports
 from flasgger import Swagger
 
@@ -208,7 +210,7 @@ def process_videos():
         if not base64_data:
             return jsonify({"message": "Missing base64 data for video", "video": video_uri}), 400
 
-        print(f"Processing video {video_uri}", flush=True)
+        # print(f"Processing video {video_uri}", flush=True)
         try:
             # Decode the base64 video and write to a temporary file.
             temp_file_path = f"/tmp/{os.path.basename(video_uri)}"
@@ -216,9 +218,9 @@ def process_videos():
                 f.write(base64.b64decode(base64_data))
             
             # Run OCR analysis on the temporary file.
-            print(temp_file_path)
+            # print(temp_file_path)
             ocr_result = analyze_video(temp_file_path)
-            print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
+            # print(f"Processed video {video_uri} with data: {ocr_result}", flush=True)
 
             if not ocr_result:
                 print(f"Failed to process video {video_uri}", flush=True)
@@ -245,24 +247,277 @@ def process_videos():
     if not found:
         return jsonify({"message": "Player not found"}), 404
 
-    sew_f_ra = json.loads(player_data[0]["SEW_F_RA"]) 
-    sew_f_la = json.loads(player_data[0]["SEW_F_LA"])
-    ewa_f_ra = json.loads(player_data[0]["EWA_F_RA"])
-    ewp_f_la = json.loads(player_data[0]["EWP_F_LA"])
-    elbow_diff = json.loads(player_data[0]["ELBOW_DIFF"])
-    sew_s_ra = json.loads(player_data[0]["SEW_S_RA"])
-    ewp_s_ra = json.loads(player_data[0]["EWP_S_RA"])
-    hew_f_ra = json.loads(player_data[0]["HEW_F_RA"])
-    hew_f_la = json.loads(player_data[0]["HEW_F_LA"])
+    # # -----------------------------------------------------
+    # # LOADING MAX PARAMS
+    # # -----------------------------------------------------
+    # max_f_hew_ra = ast.literal_eval(player_data[0]["max_f_hew_ra"])
+    # max_f_hew_la = ast.literal_eval(player_data[0]["max_f_hew_la"])
+    # max_f_sew_ra = ast.literal_eval(player_data[0]["max_f_sew_ra"]) 
+    # max_f_sew_la = ast.literal_eval(player_data[0]["max_f_sew_la"])
+    # max_f_ewa_ra = ast.literal_eval(player_data[0]["max_f_ewa_ra"])
+    # max_f_ewp_la = ast.literal_eval(player_data[0]["max_f_ewp_la"])
+    # max_f_elbow_diff = ast.literal_eval(player_data[0]["max_f_elbow_diff"])
 
-    front_results = compare_front(processed_results[0], hew_f_ra, hew_f_la, sew_f_ra, sew_f_la, ewa_f_ra, ewp_f_la, elbow_diff)
-    side_results = compare_side_ra(processed_results[1], sew_s_ra, ewp_s_ra)
-    overall_score = (
-        front_results["hew_ra_score"] + front_results["hew_la_score"] +
-        front_results["sew_ra_score"] + front_results["ewa_ra_score"] +
-        front_results["ewp_la_score"] + front_results["ec_score"] +
-        side_results["sew_ra_score"] + side_results["ewp_ra_score"]
-    ) / 8
+    # max_s_ewp_ra = ast.literal_eval(player_data[0]["max_s_ewp_ra"])
+    # max_s_sew_ra = ast.literal_eval(player_data[0]["max_s_sew_ra"])
+    # max_s_hse_ra = ast.literal_eval(player_data[0]["max_s_hse_ra"])
+
+
+    # # -----------------------------------------------------
+    # # LOADING EYE PARAMS
+    # # -----------------------------------------------------
+    # eye_f_hew_ra = ast.literal_eval(player_data[0]["eye_f_hew_ra"])
+    # eye_f_hew_la = ast.literal_eval(player_data[0]["eye_f_hew_la"])
+    # eye_f_sew_ra = ast.literal_eval(player_data[0]["eye_f_sew_ra"]) 
+    # eye_f_sew_la = ast.literal_eval(player_data[0]["eye_f_sew_la"])
+    # eye_f_ewa_ra = ast.literal_eval(player_data[0]["eye_f_ewa_ra"])
+    # eye_f_ewp_la = ast.literal_eval(player_data[0]["eye_f_ewp_la"])
+    # eye_f_elbow_diff = ast.literal_eval(player_data[0]["eye_f_elbow_diff"])
+
+    # eye_s_ewp_ra = ast.literal_eval(player_data[0]["eye_s_ewp_ra"])
+    # eye_s_sew_ra = ast.literal_eval(player_data[0]["eye_s_sew_ra"])
+    # eye_s_hse_ra = ast.literal_eval(player_data[0]["eye_s_hse_ra"])
+
+
+    # # -----------------------------------------------------
+    # # LOADING WAIST PARAMS
+    # # -----------------------------------------------------
+    # waist_f_hew_ra = ast.literal_eval(player_data[0]["waist_f_hew_ra"])
+    # waist_f_hew_la = ast.literal_eval(player_data[0]["waist_f_hew_la"])
+    # waist_f_sew_ra = ast.literal_eval(player_data[0]["waist_f_sew_ra"]) 
+    # waist_f_sew_la = ast.literal_eval(player_data[0]["waist_f_sew_la"])
+    # waist_f_ewa_ra = ast.literal_eval(player_data[0]["waist_f_ewa_ra"])
+    # waist_f_ewp_la = ast.literal_eval(player_data[0]["waist_f_ewp_la"])
+    # waist_f_elbow_diff = ast.literal_eval(player_data[0]["waist_f_elbow_diff"])
+
+    # waist_s_ewp_ra = ast.literal_eval(player_data[0]["waist_s_ewp_ra"])
+    # waist_s_sew_ra = ast.literal_eval(player_data[0]["waist_s_sew_ra"])
+    # waist_s_hse_ra = ast.literal_eval(player_data[0]["waist_s_hse_ra"])
+
+    # -----------------------------------------------------
+    # LOADING MAX PARAMS
+    # -----------------------------------------------------
+    if player_data[0]["max_f_hew_ra"]:
+        max_f_hew_ra = ast.literal_eval(player_data[0]["max_f_hew_ra"])
+    else:
+        max_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_hew_la"]:
+        max_f_hew_la = ast.literal_eval(player_data[0]["max_f_hew_la"])
+    else:
+        max_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_sew_ra"]:
+        max_f_sew_ra = ast.literal_eval(player_data[0]["max_f_sew_ra"])
+    else:
+        max_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_sew_la"]:
+        max_f_sew_la = ast.literal_eval(player_data[0]["max_f_sew_la"])
+    else:
+        max_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_ewa_ra"]:
+        max_f_ewa_ra = ast.literal_eval(player_data[0]["max_f_ewa_ra"])
+    else:
+        max_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_ewp_la"]:
+        max_f_ewp_la = ast.literal_eval(player_data[0]["max_f_ewp_la"])
+    else:
+        max_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_f_elbow_diff"]:
+        max_f_elbow_diff = ast.literal_eval(player_data[0]["max_f_elbow_diff"])
+    else:
+        max_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_ewp_ra"]:
+        max_s_ewp_ra = ast.literal_eval(player_data[0]["max_s_ewp_ra"])
+    else:
+        max_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_sew_ra"]:
+        max_s_sew_ra = ast.literal_eval(player_data[0]["max_s_sew_ra"])
+    else:
+        max_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["max_s_hse_ra"]:
+        max_s_hse_ra = ast.literal_eval(player_data[0]["max_s_hse_ra"])
+    else:
+        max_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    # -----------------------------------------------------
+    # LOADING EYE PARAMS
+    # -----------------------------------------------------
+    if player_data[0]["eye_f_hew_ra"]:
+        eye_f_hew_ra = ast.literal_eval(player_data[0]["eye_f_hew_ra"])
+    else:
+        eye_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_hew_la"]:
+        eye_f_hew_la = ast.literal_eval(player_data[0]["eye_f_hew_la"])
+    else:
+        eye_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_sew_ra"]:
+        eye_f_sew_ra = ast.literal_eval(player_data[0]["eye_f_sew_ra"])
+    else:
+        eye_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_sew_la"]:
+        eye_f_sew_la = ast.literal_eval(player_data[0]["eye_f_sew_la"])
+    else:
+        eye_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_ewa_ra"]:
+        eye_f_ewa_ra = ast.literal_eval(player_data[0]["eye_f_ewa_ra"])
+    else:
+        eye_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_ewp_la"]:
+        eye_f_ewp_la = ast.literal_eval(player_data[0]["eye_f_ewp_la"])
+    else:
+        eye_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_f_elbow_diff"]:
+        eye_f_elbow_diff = ast.literal_eval(player_data[0]["eye_f_elbow_diff"])
+    else:
+        eye_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_ewp_ra"]:
+        eye_s_ewp_ra = ast.literal_eval(player_data[0]["eye_s_ewp_ra"])
+    else:
+        eye_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_sew_ra"]:
+        eye_s_sew_ra = ast.literal_eval(player_data[0]["eye_s_sew_ra"])
+    else:
+        eye_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["eye_s_hse_ra"]:
+        eye_s_hse_ra = ast.literal_eval(player_data[0]["eye_s_hse_ra"])
+    else:
+        eye_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    # -----------------------------------------------------
+    # LOADING WAIST PARAMS
+    # -----------------------------------------------------
+    if player_data[0]["waist_f_hew_ra"]:
+        waist_f_hew_ra = ast.literal_eval(player_data[0]["waist_f_hew_ra"])
+    else:
+        waist_f_hew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_hew_la"]:
+        waist_f_hew_la = ast.literal_eval(player_data[0]["waist_f_hew_la"])
+    else:
+        waist_f_hew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_sew_ra"]:
+        waist_f_sew_ra = ast.literal_eval(player_data[0]["waist_f_sew_ra"])
+    else:
+        waist_f_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_sew_la"]:
+        waist_f_sew_la = ast.literal_eval(player_data[0]["waist_f_sew_la"])
+    else:
+        waist_f_sew_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_ewa_ra"]:
+        waist_f_ewa_ra = ast.literal_eval(player_data[0]["waist_f_ewa_ra"])
+    else:
+        waist_f_ewa_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_ewp_la"]:
+        waist_f_ewp_la = ast.literal_eval(player_data[0]["waist_f_ewp_la"])
+    else:
+        waist_f_ewp_la = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_f_elbow_diff"]:
+        waist_f_elbow_diff = ast.literal_eval(player_data[0]["waist_f_elbow_diff"])
+    else:
+        waist_f_elbow_diff = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_ewp_ra"]:
+        waist_s_ewp_ra = ast.literal_eval(player_data[0]["waist_s_ewp_ra"])
+    else:
+        waist_s_ewp_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_sew_ra"]:
+        waist_s_sew_ra = ast.literal_eval(player_data[0]["waist_s_sew_ra"])
+    else:
+        waist_s_sew_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    if player_data[0]["waist_s_hse_ra"]:
+        waist_s_hse_ra = ast.literal_eval(player_data[0]["waist_s_hse_ra"])
+    else:
+        waist_s_hse_ra = {'mean': 0, 'std': 0, 'alpha': 0, 'beta': 0}
+
+    # -----------------------------------------------------
+    # COMPARISON 
+    # -----------------------------------------------------
+    # print("Hello: ", processed_results[0], flush=True)
+    print("Max Front: ", processed_results[0][2], flush=True)
+    print("Eye Front: ", processed_results[0][1], flush=True)
+    print("Waist Front: ", processed_results[0][0], flush=True)
+    print("Max Side: ", processed_results[1][2], flush=True)
+    print("Eye Side: ", processed_results[1][1], flush=True)
+    print("Waist Side: ", processed_results[1][0], flush=True)
+
+    max_front_results = compare_front(processed_results[0][2], max_f_hew_ra, max_f_hew_la, max_f_sew_ra, max_f_sew_la, max_f_ewa_ra, max_f_ewp_la, max_f_elbow_diff)
+    max_side_results = compare_side_ra(processed_results[1][2], max_s_ewp_ra, max_s_hse_ra, max_s_sew_ra)
+    eye_front_results = compare_front(processed_results[0][1], eye_f_hew_ra, eye_f_hew_la, eye_f_sew_ra, eye_f_sew_la, eye_f_ewa_ra, eye_f_ewp_la, eye_f_elbow_diff)
+    eye_side_results = compare_side_ra(processed_results[1][1], eye_s_ewp_ra, eye_s_hse_ra, eye_s_sew_ra)
+    waist_front_results = compare_front(processed_results[0][0], waist_f_hew_ra, waist_f_hew_la, waist_f_sew_ra, waist_f_sew_la, waist_f_ewa_ra, waist_f_ewp_la, waist_f_elbow_diff)
+    waist_side_results = compare_side_ra(processed_results[1][0], waist_s_ewp_ra, waist_s_hse_ra, waist_s_sew_ra)
+    # NEED TO CHANGE THIS PROCESSED RESULTS FOR EACH MAX_HAND, EYE, AND WAIST DATA processed_results[X]
+    # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+    max_front_overall_score = (
+        0.30 * max_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        0.20 * max_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        0.20 * max_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.10 * max_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.10 * max_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + 
+        0.10 * max_front_results["Elbow Alignment Score"]
+    ) 
+    eye_front_overall_score = (
+        0.25 * eye_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        0.25 * eye_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        0.05 * eye_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.10 * eye_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.10 * eye_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] + 
+        0.25 * eye_front_results["Elbow Alignment Score"]
+    ) 
+    waist_front_overall_score = (
+        1.00 * waist_front_results["Hip->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_front_results["Hip->Elbow->Wrist Score (Left Arm)"] +
+        1.00 * waist_front_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_front_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        1.00 * waist_front_results["Elbow->Wrist->Pinky Score (Left Arm)"] +
+        1.00 * waist_front_results["Elbow Alignment Score"]
+    ) / 6
+
+    max_side_overall_score = (
+        0.40 * max_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.50 * max_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] + 
+        0.10 * max_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) 
+    eye_side_overall_score = (
+        0.40 * eye_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        0.30 * eye_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        0.30 * eye_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) 
+    waist_side_overall_score = (
+        1.00 * waist_side_results["Shoulder->Elbow->Wrist Score (Right Arm)"] + 
+        1.00 * waist_side_results["Elbow->Wrist->Fingers Score (Right Arm)"] +
+        1.00 * waist_side_results["Hip->Shoulder->Elbow Score (Right Arm)"]
+    ) / 3
+
+    front_overall_score = (0.4 * max_front_overall_score) + (0.5 * eye_front_overall_score) + (0.1 * waist_front_overall_score)
+    side_overall_score = (0.4 * max_side_overall_score) + (0.5 * eye_side_overall_score) + (0.1 * waist_side_overall_score)
+    overall_score = (0.5 * front_overall_score) + (0.5 * side_overall_score)
+    
 
     try:
         now = datetime.datetime.now()
@@ -274,7 +529,7 @@ def process_videos():
             "minute": now.minute,
             "second": now.second
         }
-        added, inserted_data = add_new_data(player_data_collection, user, front_results, side_results, overall_score, "Compare", timestamp)
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_results, eye_side_results, max_front_results, max_side_results, waist_front_results, waist_side_results, overall_score, "Compare", timestamp)
     except Exception as e:
         print(f"Error inserting data into MongoDB: {e}")
         return jsonify({"message": "Error inserting data into MongoDB"}), 50
@@ -284,8 +539,12 @@ def process_videos():
     return jsonify({
         "message": "Videos processed successfully",
         "processed_count": processed_count,
-        "frontMetrics": front_results,
-        "sideMetrics": side_results,
+        "max_front_metrics": max_front_results,
+        "eye_front_metrics": eye_front_results,
+        "waist_front_metrics": waist_front_results,
+        "max_side_metrics": max_side_results,
+        "eye_side_metrics": eye_side_results,
+        "waist_side_metrics": waist_side_results,
         "overallScore": overall_score
     }), 200
 
@@ -333,14 +592,18 @@ def process_consistency_videos():
     data_json = request.get_json()
     front_videos = data_json.get("frontVideos")
     side_videos = data_json.get("sideVideos")
-    
+    user = data_json.get("user")
     if not front_videos or not isinstance(front_videos, list):
         return jsonify({"message": "No front videos provided or invalid format"}), 400
     if not side_videos or not isinstance(side_videos, list):
         return jsonify({"message": "No side videos provided or invalid format"}), 400
 
-    front_results = []
-    side_results = []
+    max_front_results = []
+    eye_front_results = []
+    waist_front_results = []
+    max_side_results = []
+    eye_side_results = []
+    waist_side_results = []
 
     # Process front videos
     for video in front_videos:
@@ -355,17 +618,20 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = analyze_video(temp_file_path)
-            print(f"Processed front video {video_uri} with data: {ocr_result}")
+            waist_data, eye_data, max_data = analyze_video(temp_file_path)
+            print(f"Processed front video {video_uri}")
             
-            if not ocr_result:
-                return jsonify({
-                    "message": "Failed to process front video",
-                    "video": video_uri,
-                    "data": None
-                }), 500
+            # if not waist_data or not eye_data or not max_data:
+            #   return jsonify({
+            #       "message": "Failed to process front video",
+            #       "video": video_uri,
+            #       "data": None
+            #   }), 500
             
-            front_results.append(ocr_result)
+            max_front_results.append(max_data)
+            eye_front_results.append(eye_data)
+            waist_front_results.append(waist_data)
+
         except Exception as e:
             print(f"Error processing front video {video_uri}: {e}")
             return jsonify({
@@ -390,17 +656,21 @@ def process_consistency_videos():
             with open(temp_file_path, "wb") as f:
                 f.write(base64.b64decode(base64_data))
             
-            ocr_result = analyze_video(temp_file_path)
-            print(f"Processed side video {video_uri} with data: {ocr_result}")
+            waist_data, eye_data, max_data = analyze_video(temp_file_path)
+            print(f"Processed side video {video_uri}")
             
-            if not ocr_result:
-                return jsonify({
-                    "message": "Failed to process side video",
-                    "video": video_uri,
-                    "data": None
-                }), 500
+            # if not waist_data or not eye_data or not max_data:
+            #   print(f"Failed to process side video {video_uri}")
+            #   return jsonify({
+            #       "message": "Failed to process side video",
+            #       "video": video_uri,
+            #       "data": None
+            #   }), 500
             
-            side_results.append(ocr_result)
+            max_side_results.append(max_data)
+            eye_side_results.append(eye_data)
+            waist_side_results.append(waist_data)
+
         except Exception as e:
             print(f"Error processing side video {video_uri}: {e}")
             return jsonify({
@@ -412,12 +682,43 @@ def process_consistency_videos():
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
 
+    max_front_score = get_consistency_front(max_front_results)
+    eye_front_score = get_consistency_front(eye_front_results)
+    waist_front_score = get_consistency_front(waist_front_results)
+    max_side_score = get_consistency_side(max_side_results)
+    eye_side_score = get_consistency_side(eye_side_results)
+    waist_side_score = get_consistency_side(waist_side_results)
+    overall_score = (
+        (0.2 * max_front_score) + (0.3 * eye_front_score) + 
+        (0.05 * waist_front_score) + (0.1 * max_side_score) + 
+        (0.3 * eye_side_score) + (0.05 * waist_side_score)
+    )
+    
+    try:
+        now = datetime.datetime.now()
+        timestamp = {
+            "year": now.year,
+            "month": now.month,
+            "day": now.day,
+            "hour": now.hour,
+            "minute": now.minute,
+            "second": now.second
+        }
+        added, inserted_data = add_new_data(player_data_collection, user, eye_front_score, eye_side_score, max_front_score, max_side_score, waist_front_score, waist_side_score, overall_score, "Consistency", timestamp)
+    except Exception as e:
+        print(f"Error inserting data into MongoDB: {e}")
+        return jsonify({"message": "Error inserting data into MongoDB"}), 50
     return jsonify({
         "message": "Consistency videos processed successfully",
         "front_processed_count": len(front_videos),
         "side_processed_count": len(side_videos),
-        "front_data": front_results,
-        "side_data": side_results
+        "max_front_score": max_front_score,
+        "eye_front_score": eye_front_score,
+        "waist_front_score": waist_front_score,
+        "max_side_score": max_side_score,
+        "eye_side_score": eye_side_score,
+        "waist_side_score": waist_side_score,
+        "overall_score": overall_score
     }), 200
 
 @app.route("/player_data", methods=["POST"])
@@ -456,6 +757,7 @@ def get_player_data_by_user():
         data = list(player_data_collection.find({"name": user}))
         for record in data:
             record["_id"] = str(record["_id"])  # Convert ObjectId to string for JSON serialization.
+        print(data)
         return jsonify({"player_data": data}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

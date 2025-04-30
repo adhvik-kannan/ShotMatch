@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from scipy.stats import beta
+import ast
+import re
 
 NUM_CLIPS = 0
 
@@ -57,6 +59,7 @@ def generate_side_la_parameters(data):
 def generate_side_ra_parameters(data):
     sew_ra_list = []
     ewp_ra_list = []
+    hse_ra_list = []
     
     for i in range(len(data["ball"])):
         # shoulder-elbow-wrist right arm
@@ -68,11 +71,17 @@ def generate_side_ra_parameters(data):
         if ((data["right_elbow"][i] != None) and (data["right_wrist"][i] != None) and (data["right_pinky"][i] != None)):
             angle = calculate_angle(data["right_wrist"][i], data["right_elbow"][i], data["right_pinky"][i])
             ewp_ra_list.append(angle)
+
+        # hip-shoulder-elbow right arm     
+        if ((data["right_hip"][i] != None) and (data["right_shoulder"][i] != None) and (data["right_elbow"][i] != None)):
+            angle = calculate_angle(data["right_shoulder"][i], data["right_hip"][i], data["right_elbow"][i])
+            hse_ra_list.append(angle)       
     
     sew_ra = get_parameters(sew_ra_list)
     ewp_ra = get_parameters(ewp_ra_list)
+    hse_ra = get_parameters(hse_ra_list)
 
-    return sew_ra, ewp_ra
+    return sew_ra, ewp_ra, hse_ra
 
 def get_parameters(angles, max_val=180):
     """
@@ -90,7 +99,10 @@ def get_parameters(angles, max_val=180):
             - alpha: Beta distribution alpha parameter
             - beta: Beta distribution beta parameter
     """
+    print(f"angles: {angles}")
     angles = np.array(angles)
+    if len(angles) == 0:
+        return {"mean": 0.0, "std": 0.0, "alpha": 100, "beta": 100}
     mean_val = float(np.mean(angles))
     std_val = float(np.std(angles))
     m_y = mean_val / max_val
@@ -143,61 +155,133 @@ def generate_plot(dist_params_sew, dist_params_ewa, arm_name, save_plot=True):
     plt.close()
 
 
-def get_steph_curry_s_ra_data():
-    """
-    manual steph data for generating his params
-    """
-    nba_1 = {'left_shoulder': [323, 733], 'right_shoulder': [408, 775], 'left_elbow': None, 'right_elbow': [495, 786], 'left_wrist': None, 'right_wrist': [454, 855], 'left_hip': [343, 538], 'right_hip': [399, 539], 'left_pinky': None, 'right_pinky': [448, 884], 'left_thumb': None, 'right_thumb': [440, 858], 'ball': None, 'Side': 'RIGHT', 'frame': 38}
-    nba_2 = {'left_shoulder': [260, 724], 'right_shoulder': [367, 760], 'left_elbow': None, 'right_elbow': [468, 767], 'left_wrist': None, 'right_wrist': [419, 843], 'left_hip': [291, 504], 'right_hip': [357, 501], 'left_pinky': None, 'right_pinky': [413, 874], 'left_thumb': None, 'right_thumb': [399, 858], 'ball': None, 'Side': 'RIGHT', 'frame': 81}
-    nba_4 = {'left_shoulder': [66, 656], 'right_shoulder': [-22, 657], 'left_elbow': None, 'right_elbow': [34, 665], 'left_wrist': [137, 685], 'right_wrist': [77, 743], 'left_hip': [61, 455], 'right_hip': [-1, 449], 'left_pinky': [144, 692], 'right_pinky': [91, 760], 'left_thumb': [134, 698], 'right_thumb': [79, 760], 'ball': None, 'Side': 'RIGHT', 'frame': 124}
-    nba_5 = {'left_shoulder': [249, 692], 'right_shoulder': [345, 737], 'left_elbow': None, 'right_elbow': [448, 735], 'left_wrist': None, 'right_wrist': [415, 812], 'left_hip': [273, 486], 'right_hip': [328, 489], 'left_pinky': None, 'right_pinky': [401, 841], 'left_thumb': None, 'right_thumb': [393, 820], 'ball': None, 'Side': 'RIGHT', 'frame': 35}
-    nba_6 = {'left_shoulder': [229, 688], 'right_shoulder': [300, 725], 'left_elbow': None, 'right_elbow': [386, 739], 'left_wrist': None, 'right_wrist': [370, 797], 'left_hip': [254, 504], 'right_hip': [297, 510], 'left_pinky': None, 'right_pinky': [365, 816], 'left_thumb': None, 'right_thumb': [347, 802], 'ball': None, 'Side': 'RIGHT', 'frame': 22}
-    nba_7 = {'left_shoulder': [186, 728], 'right_shoulder': [279, 767], 'left_elbow': None, 'right_elbow': [369, 782], 'left_wrist': None, 'right_wrist': [345, 849], 'left_hip': [208, 523], 'right_hip': [266, 521], 'left_pinky': None, 'right_pinky': [327, 877], 'left_thumb': None, 'right_thumb': [317, 853], 'ball': None, 'Side': 'RIGHT', 'frame': 24}
-    nba_8 = {'left_shoulder': [287, 682], 'right_shoulder': [340, 701], 'left_elbow': None, 'right_elbow': [422, 706], 'left_wrist': None, 'right_wrist': [406, 763], 'left_hip': [289, 499], 'right_hip': [322, 498], 'left_pinky': None, 'right_pinky': [390, 791], 'left_thumb': None, 'right_thumb': [378, 771], 'ball': None, 'Side': 'RIGHT', 'frame': 41}
-    nba_9 = {'left_shoulder': [201, 661], 'right_shoulder': [263, 696], 'left_elbow': None, 'right_elbow': [343, 704], 'left_wrist': None, 'right_wrist': [337, 760], 'left_hip': [204, 476], 'right_hip': [243, 481], 'left_pinky': None, 'right_pinky': [343, 775], 'left_thumb': None, 'right_thumb': [320, 763], 'ball': None, 'Side': 'RIGHT', 'frame': 24}
-    nba_10 = {'left_shoulder': [75, 709], 'right_shoulder': [138, 731], 'left_elbow': None, 'right_elbow': [222, 735], 'left_wrist': None, 'right_wrist': [193, 801], 'left_hip': [84, 530], 'right_hip': [120, 529], 'left_pinky': None, 'right_pinky': [190, 825], 'left_thumb': None, 'right_thumb': [179, 806], 'ball': None, 'Side': 'RIGHT', 'frame': 27}
-    nba_11 = {'left_shoulder': [75, 488], 'right_shoulder': [91, 494], 'left_elbow': None, 'right_elbow': [148, 496], 'left_wrist': None, 'right_wrist': [151, 540], 'left_hip': [97, 364], 'right_hip': [100, 361], 'left_pinky': None, 'right_pinky': [152, 555], 'left_thumb': None, 'right_thumb': [143, 549], 'ball': None, 'Side': 'RIGHT', 'frame': 34}
-    nba_12 = {'left_shoulder': [211, 552], 'right_shoulder': [223, 563], 'left_elbow': None, 'right_elbow': [282, 561], 'left_wrist': None, 'right_wrist': [263, 620], 'left_hip': [235, 412], 'right_hip': [223, 414], 'left_pinky': None, 'right_pinky': [260, 638], 'left_thumb': None, 'right_thumb': [253, 631], 'ball': None, 'Side': 'RIGHT', 'frame': 7}
-    nba_13 = {'left_shoulder': [216, 545], 'right_shoulder': [214, 548], 'left_elbow': None, 'right_elbow': [264, 560], 'left_wrist': None, 'right_wrist': [248, 608], 'left_hip': [223, 415], 'right_hip': [220, 415], 'left_pinky': None, 'right_pinky': [245, 624], 'left_thumb': None, 'right_thumb': [233, 615], 'ball': None, 'Side': 'RIGHT', 'frame': 19}
-    nba_14 = {'left_shoulder': [169, 556], 'right_shoulder': [140, 554], 'left_elbow': None, 'right_elbow': [180, 552], 'left_wrist': None, 'right_wrist': [183, 620], 'left_hip': [177, 415], 'right_hip': [152, 411], 'left_pinky': None, 'right_pinky': [179, 637], 'left_thumb': None, 'right_thumb': [178, 634], 'ball': None, 'Side': 'RIGHT', 'frame': 4}
-    nba_15 = {'left_shoulder': [328, 520], 'right_shoulder': [332, 522], 'left_elbow': None, 'right_elbow': [388, 510], 'left_wrist': None, 'right_wrist': [394, 565], 'left_hip': [340, 397], 'right_hip': [341, 396], 'left_pinky': None, 'right_pinky': [399, 577], 'left_thumb': None, 'right_thumb': [392, 574], 'ball': None, 'Side': 'RIGHT', 'frame': 41}
-    nba_16 = {'left_shoulder': [131, 595], 'right_shoulder': [130, 605], 'left_elbow': None, 'right_elbow': [177, 601], 'left_wrist': None, 'right_wrist': [173, 636], 'left_hip': [128, 473], 'right_hip': [128, 473], 'left_pinky': None, 'right_pinky': [174, 646], 'left_thumb': None, 'right_thumb': [170, 640], 'ball': None, 'Side': 'RIGHT', 'frame': 25}
-    nba_17 = {'left_shoulder': [297, 647], 'right_shoulder': [298, 647], 'left_elbow': None, 'right_elbow': [372, 653], 'left_wrist': None, 'right_wrist': [339, 724], 'left_hip': [324, 459], 'right_hip': [319, 461], 'left_pinky': None, 'right_pinky': [330, 745], 'left_thumb': None, 'right_thumb': [319, 733], 'ball': None, 'Side': 'RIGHT', 'frame': 18}
+def plot_beta_distribution(params, title):
+    # print(f"params: {params}")
+    alpha = params["alpha"]
+    beta_val = params["beta"]
+    
+    x = np.linspace(0, 1, 100)          # Generate x values between 0 and 1=
+    y = beta.pdf(x, alpha, beta_val)    # Compute the Beta probability density function (PDF)
 
-    merged_dict = {}
+    # plot
+    plt.figure(figsize=(8, 5))
+    plt.plot(x, y, label=f'Beta({alpha:.2f}, {beta_val:.2f})', color='b')
+    plt.fill_between(x, y, alpha=0.3, color='blue')  
+    plt.xlabel('x')
+    plt.ylabel('Density')
+    plt.title(title)
+    plt.legend()
+    plt.grid()
+    plt.show()
 
-    for d in [nba_1, nba_2, nba_4, nba_5, nba_6, nba_7, nba_8, nba_9, nba_10, nba_11, nba_12, nba_13, nba_14, nba_15, nba_16, nba_17]:
-        for key, value in d.items():
-            if key not in merged_dict:
-                merged_dict[key] = [value]
+
+def prep_data(dict_list):
+    merged_dict = {
+        'left_shoulder': [], 'right_shoulder': [], 'left_elbow': [], 'right_elbow': [],
+        'left_wrist': [], 'right_wrist': [], 'left_hip': [], 'right_hip': [],
+        'left_pinky': [], 'right_pinky': [], 'left_thumb': [], 'right_thumb': [],
+        'ball': []
+    }
+    
+    for d in dict_list:
+        for key in merged_dict:
+            merged_dict[key].append(d.get(key, None))
+    
+    return merged_dict
+
+
+def parse_data(file_content):
+    waist_data = []
+    eye_data = []
+    hand_data = []
+    
+    entries = file_content.strip().split('\n')
+    
+    for entry in entries:
+        if not entry.strip() or entry.strip().lower() == 'none':
+            continue
+            
+        try:
+            # Extract player ID and position, only for klay_side_ra_ entries
+            match = re.match(r'(klay_side_ra_\d+)\s+(\w+):\s+(.+)', entry)
+            if not match:
+                # Skip entries that don't match the side pattern
+                continue
+                
+            player_id, position, data_str = match.groups()
+            
+            # Skip if data_str is 'None'
+            if data_str.strip().lower() == 'none':
+                continue
+                
+            # Parse the dictionary string
+            try:
+                data_dict = ast.literal_eval(data_str)
+            except (SyntaxError, ValueError) as e:
+                print(f"Error parsing dictionary in entry: {entry[:50]}... Error: {e}")
+                continue
+            
+            # Ensure data_dict is a dictionary
+            if not isinstance(data_dict, dict):
+                print(f"Skipping entry, data_dict is not a dictionary: {entry[:50]}...")
+                continue
+                
+            # Add player_id to the dictionary
+            data_dict['player_id'] = player_id
+            
+            # Categorize based on position
+            if position.lower() == 'waist':
+                waist_data.append(data_dict)
+            elif position.lower() == 'eye':
+                eye_data.append(data_dict)
+            elif position.lower() == 'max_hand':
+                hand_data.append(data_dict)
             else:
-                merged_dict[key].append(value)
-
-    return merged_dict
-
-def get_steph_curry_s_la_data():
-    merged_dict = {}
-
-    # for d in [nba_]:
-    #     for key, value in d.items():
-    #         if key not in merged_dict:
-    #             merged_dict[key] = [value]
-    #         else:
-    #             merged_dict[key].append(value)
-
-    return merged_dict
+                print(f"Unknown position '{position}' in entry: {entry[:50]}...")
+                    
+        except Exception as e:
+            print(f"Error processing entry: {entry[:50]}... Error: {e}")
+            continue
+    
+    return waist_data, eye_data, hand_data
 
 def main():
-    sc_s_ra_data = get_steph_curry_s_ra_data()
-    sc_s_la_data = get_steph_curry_s_la_data()
+    # parse data from data_klay.txt
+    with open('data_klay_new_std.txt', 'r') as file:
+        file_content = file.read()
+    
+    waist_data, eye_data, max_data = parse_data(file_content)
+        
+    waist_data = prep_data(waist_data)
+    eye_data = prep_data(eye_data)
+    max_data = prep_data(max_data)
 
-    sc_s_sew_ra, sc_s_ewp_ra = generate_side_ra_parameters(sc_s_ra_data)
-    # sc_s_sew_la, sc_s_ewa_la = generate_side_la_parameters(sc_s_la_data)
+    print("Waist Data:", len(waist_data['left_shoulder']), "entries")
+    print("Eye Data:", len(eye_data['left_shoulder']), "entries")
+    print("Max Hand Data:", len(max_data['left_shoulder']), "entries")
 
-    print("\nSteph Curry Side-sew-ra params: ", sc_s_sew_ra)
-    # print("\nSteph Curry side-sew-la params: ", sc_s_sew_la)
-    print("\nSteph Curry Side-ewp-ra params: ", sc_s_ewp_ra)
-    # print("\nSteph Curry side-ewa-la params: ", sc_s_ewa_la)
+    data = waist_data
+    name = "dat"
+
+    # generate parameters
+    s_sew_ra, s_ewp_ra, s_hse_ra = generate_side_ra_parameters(data)
+    # s_sew_la, s_ewa_la = generate_side_la_parameters(data)
+
+    # right arm
+    print(f"{name}_S_EWP_RA: {s_ewp_ra}")
+    print(f"{name}_S_HSE_RA: {s_hse_ra}")
+    print(f"{name}_S_SEW_RA: {s_sew_ra}")
+
+    # plot_beta_distribution(s_ewp_ra, name + "_S_EWP_RA")
+    # plot_beta_distribution(s_hse_ra, name + "_S_HSE_RA")
+    # plot_beta_distribution(s_sew_ra, name + "_S_SEW_RA")
+    
+
+    # left arm
+    # print(f"{name}_S_EWA_LA: {s_ewa_la}")
+    # print(f"{name}_S_SEW_LA: {s_sew_la}")
+    # plot_beta_distribution(s_ewa_la, name + "_F_EWA_LA")
+    # plot_beta_distribution(s_sew_la, name + "_F_SEW_LA")
     
 
 if __name__ == "__main__":
