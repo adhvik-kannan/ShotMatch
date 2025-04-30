@@ -131,7 +131,7 @@ def analyze_video(video_path):
 
     pose = mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=1,
+        model_complexity=2,
         smooth_landmarks=True,
         enable_segmentation=False,
         min_detection_confidence=0.5,
@@ -442,6 +442,7 @@ def analyze_video(video_path):
         return None, None, None
 
 if __name__ == "__main__":
+    
     subject = sys.argv[1] if len(sys.argv) > 1 else "steph"
     video_dir = f"/root/ShotMatch/video/{subject}"
     videos = os.path.join(video_dir, f"{subject}_*.mp4")
@@ -458,6 +459,7 @@ if __name__ == "__main__":
             f"{label} max_hand: {pose_data_high_hand}\n"
             f"\n"
         )
+    
     '''
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/steph/steph_front_01.mp4")  
     print(f"steph_front_01 waist: {pose_data_waist}\nsteph_front_01 eye: {pose_data_eye}\nsteph_front_01 max_hand: {pose_data_high_hand}")
@@ -625,8 +627,9 @@ if __name__ == "__main__":
     print('\n')
     '''
 
-
     '''
+    pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01_pro.mp4")  
+    print(f"lebron_front_01_pro waist: {pose_data_waist}\nlebron_front_01_pro eye: {pose_data_eye}\nlebron_front_01_pro max_hand: {pose_data_high_hand}")
     pose_data_waist, pose_data_eye, pose_data_high_hand= analyze_video("/root/ShotMatch/video/lebron/lebron_front_01.mp4")  
     print(f"lebron_front_01 waist: {pose_data_waist}\nlebron_front_01 eye: {pose_data_eye}\nlebron_front_01 max_hand: {pose_data_high_hand}")
     print('\n')

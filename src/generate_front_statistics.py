@@ -18,14 +18,14 @@ def plot_beta_with_point(new_angle, params, label="Beta Distribution", save_file
     # Generate x-values over the range [0, 180].
     x = np.linspace(0, 180, 300)
     # Compute the Beta PDF scaled to [0,180]:
-    y = (1/360.0) * beta.pdf(x/360.0, params["alpha"], params["beta"])
+    y = (1/180.0) * beta.pdf(x/180.0, params["alpha"], params["beta"])
     
     plt.figure(figsize=(8, 6))
     plt.plot(x, y, label=f"Beta({params['alpha']:.2f}, {params['beta']:.2f})", color="blue")
     
     # Mark the new data point:
     # Compute PDF value at new_angle
-    new_val = (1/360.0) * beta.pdf(new_angle/360.0, params["alpha"], params["beta"])
+    new_val = (1/180.0) * beta.pdf(new_angle/180.0, params["alpha"], params["beta"])
     plt.axvline(new_angle, color="red", linestyle="--", label=f"New Angle: {new_angle:.1f}°")
     plt.scatter([new_angle], [new_val], color="red", zorder=5)
     
@@ -145,24 +145,24 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
         angle_ewp_la = calculate_angle(data["left_wrist"], data["left_elbow"], data["left_pinky"])
     
     # hew: Angle at shoulder using points: hip, shoulder, left_elbow.
-    pdf_hew_ra_new = beta.pdf(angle_hew_ra/360.0, hew_ra_params["alpha"], hew_ra_params["beta"])
-    pdf_hew_ra_mean = beta.pdf(hew_ra_params["mean"]/360.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    pdf_hew_ra_new = beta.pdf(angle_hew_ra/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
+    pdf_hew_ra_mean = beta.pdf(hew_ra_params["mean"]/180.0, hew_ra_params["alpha"], hew_ra_params["beta"])
     score_hew_ra = (pdf_hew_ra_new / pdf_hew_ra_mean) * 100 if pdf_hew_ra_mean != 0 else 0
     score_hew_ra = math.ceil(max(0, min(100, score_hew_ra)))
     # print("hew score pdf/pdf: ", score_hew_ra)
 
-    pdf_hew_la_new = beta.pdf(angle_hew_la/360.0, hew_la_params["alpha"], hew_la_params["beta"])
-    pdf_hew_la_mean = beta.pdf(hew_la_params["mean"]/360.0, hew_la_params["alpha"], hew_la_params["beta"])
+    pdf_hew_la_new = beta.pdf(angle_hew_la/180.0, hew_la_params["alpha"], hew_la_params["beta"])
+    pdf_hew_la_mean = beta.pdf(hew_la_params["mean"]/180.0, hew_la_params["alpha"], hew_la_params["beta"])
     score_hew_la = (pdf_hew_la_new / pdf_hew_la_mean) * 100 if pdf_hew_la_mean != 0 else 0
     score_hew_la = math.ceil(max(0, min(100, score_hew_la)))
 
 
 
     # sew: Angle at left_elbow using points: shoulder, left_elbow, wrist.
-    pdf_sew_ra_new = beta.pdf(angle_sew_ra/360.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    pdf_sew_la_new = beta.pdf(angle_sew_la/360.0, sew_la_params["alpha"], sew_la_params["beta"])
-    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/360.0, sew_ra_params["alpha"], sew_ra_params["beta"])
-    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/360.0, sew_la_params["alpha"], sew_la_params["beta"])
+    pdf_sew_ra_new = beta.pdf(angle_sew_ra/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_new = beta.pdf(angle_sew_la/180.0, sew_la_params["alpha"], sew_la_params["beta"])
+    pdf_sew_ra_mean = beta.pdf(sew_ra_params["mean"]/180.0, sew_ra_params["alpha"], sew_ra_params["beta"])
+    pdf_sew_la_mean = beta.pdf(sew_la_params["mean"]/180.0, sew_la_params["alpha"], sew_la_params["beta"])
     score_sew_ra = (pdf_sew_ra_new / pdf_sew_ra_mean) * 100 if pdf_sew_ra_mean != 0 else 0
     score_sew_la = (pdf_sew_la_new / pdf_sew_la_mean) * 100 if pdf_sew_la_mean != 0 else 0
     score_sew_ra = math.ceil(max(0, min(100, score_sew_ra)))
@@ -170,15 +170,15 @@ def compare_front(data, hew_ra_params, hew_la_params, sew_ra_params, sew_la_para
 
     
     # ewa: Angle at wrist using points: right elbow, wrist, average between thumb and pinky
-    pdf_ewa_ra_new = beta.pdf(angle_ewa_ra/360.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
-    pdf_ewa_ra_mean = beta.pdf(ewa_ra_params["mean"]/360.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    pdf_ewa_ra_new = beta.pdf(angle_ewa_ra/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
+    pdf_ewa_ra_mean = beta.pdf(ewa_ra_params["mean"]/180.0, ewa_ra_params["alpha"], ewa_ra_params["beta"])
     score_ewa_ra = (pdf_ewa_ra_new / pdf_ewa_ra_mean) * 100 if pdf_ewa_ra_mean != 0 else 0
     score_ewa_ra = math.ceil(max(0, min(100, score_ewa_ra)))
 
 
     # ewp: Angle at wrist using points: left_elbow, wrist, pinky.
-    pdf_ewp_la_new = beta.pdf(angle_ewp_la/360.0, ewp_la_params["alpha"], ewp_la_params["beta"])
-    pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/360.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    pdf_ewp_la_new = beta.pdf(angle_ewp_la/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
+    pdf_ewp_la_mean = beta.pdf(ewp_la_params["mean"]/180.0, ewp_la_params["alpha"], ewp_la_params["beta"])
     score_ewp_la = (pdf_ewp_la_new / pdf_ewp_la_mean) * 100 if pdf_ewp_la_mean != 0 else 0
     score_ewp_la = math.ceil(max(0, min(100, score_ewp_la)))
 

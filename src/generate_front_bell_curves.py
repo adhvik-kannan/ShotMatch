@@ -124,17 +124,17 @@ def generate_front_parameters(data):
     sew_la = get_parameters(sew_la_list)
     ewa_ra = get_parameters(ewa_ra_list)
     ewp_la = get_parameters(ewp_la_list)
-
+    # print(hew_la_list)
     return hew_ra, hew_la, sew_ra, sew_la, ewa_ra, ewp_la
 
-def get_parameters(angles, max_val=360):
+def get_parameters(angles, max_val=180):
     """
     Calculates distribution parameters for a given set of values by scaling
     them to the [0,1] interval and fitting a Beta distribution.
     
     Inputs:
         angles  = numpy array of values (in degrees by default; for ratios, adjust max_val)
-        max_val = maximum value (default is 360 for angles; for ratios use 1)
+        max_val = maximum value (default is 180 for angles; for ratios use 1)
     
     Outputs:
         A dictionary containing:
@@ -291,34 +291,35 @@ def parse_data(file_content):
 
 def main():
     # Parse data from data_klay.txt
-    with open('data_klay.txt', 'r') as file:
+    with open('data_klay_new_std.txt', 'r') as file:
         file_content = file.read()
     
     # Parse the data
     waist_data, eye_data, hand_data = parse_data(file_content)
         
-    waist_data = prep_data(waist_data)
-    eye_data = prep_data(eye_data)
-    max_data = prep_data(hand_data)
+    w_data = prep_data(waist_data)
+    e_data = prep_data(eye_data)
+    m_data = prep_data(hand_data)
 
-    print("Waist Data:", len(waist_data['left_shoulder']), "entries")
-    print("Eye Data:", len(eye_data['left_shoulder']), "entries")
-    print("Hand Data:", len(max_data['left_shoulder']), "entries")
+    print("Waist Data:", len(w_data['left_shoulder']), "entries")
+    print("Eye Data:", len(e_data['left_shoulder']), "entries")
+    print("Hand Data:", len(m_data['left_shoulder']), "entries")
 
-    data = max_data
+    data = w_data
     name = "MAX"
     # generate parameters
     sc_f_hew_ra, sc_f_hew_la, sc_f_sew_ra, sc_f_sew_la, sc_f_ewa_ra, sc_f_ewp_la = generate_front_parameters(data)
     sc_f_elbow = generate_elbow_parameters(data)
     
     # print parameters
+    print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
     print(f"{name}_F_EWA_RA: {sc_f_ewa_ra}")
     print(f"{name}_F_EWP_LA: {sc_f_ewp_la}")
     print(f"{name}_F_HEW_RA: {sc_f_hew_ra}")
     print(f"{name}_F_HEW_LA: {sc_f_hew_la}")
     print(f"{name}_F_SEW_RA: {sc_f_sew_ra}")
     print(f"{name}_F_SEW_LA: {sc_f_sew_la}")
-    print(f"{name}_F_ELBOW_DIFF: {sc_f_elbow}")
+    
     
     # plot
     # plot_beta_distribution(sc_f_ewa_ra, name + "_F_EWA_RA")
@@ -327,7 +328,6 @@ def main():
     # plot_beta_distribution(sc_f_hew_la, name + "_F_HEW_LA")
     # plot_beta_distribution(sc_f_sew_ra, name + "_F_SEW_RA")
     # plot_beta_distribution(sc_f_sew_la, name + "_F_SEW_LA")
-
     # plot_beta_distribution(sc_f_elbow, name + "_F_ELBOW_DIFF")
 
 if __name__ == "__main__":
