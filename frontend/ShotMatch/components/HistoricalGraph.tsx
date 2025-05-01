@@ -262,25 +262,73 @@ const HistoricalGraph: React.FC<HomeProps> = ({ navigation }) => {
       return isNaN(value) ? 0 : value;
     });
     chartDates = recentData.map(item => getRecordDate(item) || new Date());
+    // if (timeRange === '1 Day' || timeRange === '2 Days') {
+    //   const distinctDays: string[] = [];
+    //   chartDates.forEach(date => {
+    //     const dayStr = `${date.getMonth() + 1}/${date.getDate()}`;
+    //     if (!distinctDays.includes(dayStr)) {
+    //       distinctDays.push(dayStr);
+    //     }
+    //   });
+    //   const lastTwoDays = new Set(distinctDays.slice(-2));
+    //   const labeledDays = new Set<string>();
+    //   chartLabels = chartDates.map(date => {
+    //     const dayStr = `${date.getMonth() + 1}/${date.getDate()}`;
+    //     const timeLabel = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    //     if (lastTwoDays.has(dayStr) && !labeledDays.has(dayStr)) {
+    //       labeledDays.add(dayStr);
+    //       return `${dayStr} ${timeLabel}`;
+    //     }
+    //     return timeLabel;
+    //   });
     if (timeRange === '1 Day' || timeRange === '2 Days') {
-      const distinctDays: string[] = [];
-      chartDates.forEach(date => {
-        const dayStr = `${date.getMonth() + 1}/${date.getDate()}`;
-        if (!distinctDays.includes(dayStr)) {
-          distinctDays.push(dayStr);
+      const total = chartDates.length;
+      if (total === 0) {
+        chartLabels = [];
+      } else {
+        // Compute 4 predetermined indices: first, one‑third, two‑thirds, and last.
+        const predIndices: number[] = [];
+        predIndices.push(0);
+        if (total > 3) {
+          predIndices.push(Math.floor(total / 3));
+          predIndices.push(Math.floor((2 * total) / 3));
         }
-      });
-      const lastTwoDays = new Set(distinctDays.slice(-2));
-      const labeledDays = new Set<string>();
-      chartLabels = chartDates.map(date => {
-        const dayStr = `${date.getMonth() + 1}/${date.getDate()}`;
-        const timeLabel = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-        if (lastTwoDays.has(dayStr) && !labeledDays.has(dayStr)) {
-          labeledDays.add(dayStr);
-          return `${dayStr} ${timeLabel}`;
+        if (!predIndices.includes(total - 1)) {
+          predIndices.push(total - 1);
         }
-        return timeLabel;
-      });
+        predIndices.sort((a, b) => a - b);
+    
+        // Build labels array (default blank).
+        const labels = Array(total).fill("");
+    
+        // For the first predetermined index always show full date and time.
+        const firstDate = chartDates[predIndices[0]];
+        labels[predIndices[0]] = `${firstDate.getMonth() + 1}/${firstDate.getDate()} ${firstDate.getHours()}:${String(firstDate.getMinutes()).padStart(2, '0')}`;
+
+        // For later indices:
+        for (let i = 1; i < predIndices.length; i++) {
+          const idx = predIndices[i];
+          const date = chartDates[idx];
+          if (timeRange === '2 Days') {
+            // Compare the current label's date with the previous predetermined label's date.
+            const prevDate = chartDates[predIndices[i - 1]];
+            if (
+              date.getDate() !== prevDate.getDate() ||
+              date.getMonth() !== prevDate.getMonth() ||
+              date.getFullYear() !== prevDate.getFullYear()
+            ) {
+              // If the day is different, display full date and time.
+              labels[idx] = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            } else {
+              // Otherwise, display the time.
+              labels[idx] = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
+          } else { // '1 Day' branch always shows time (after the first label).
+            labels[idx] = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+          }
+        }
+        chartLabels = labels;
+      }
     } else if (timeRange === '1 Week') {
       const total = chartDates.length;
       const desiredLabelsCount = 4;
