@@ -26,6 +26,7 @@ If you are not certain if NodeJS is installed on your laptop or not, run the fol
 node -v
 npm -v
 ```
+If the output is not v22.14.0, follow the platform-specific steps below.
 
 ### Ubuntu
 Run the commands below: 
@@ -37,7 +38,8 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
 \. "$HOME/.nvm/nvm.sh"
 
 # Download and install Node.js:
-nvm install 22
+nvm install 22.14.0
+nvm use 22.14.0
 
 # Verify the Node.js version:
 node -v # Should print "v22.14.0".
@@ -55,7 +57,11 @@ Commands to install homebrew:
 ```
 Commands to install NodeJS:
 ```
-brew install node
+brew install node@22
+
+# Verify versions
+node -v  # Should print "v22.14.0"
+npm  -v  # Should print "10.9.2"
 ```
 
 3. Build the project locally
