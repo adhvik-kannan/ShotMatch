@@ -131,7 +131,7 @@ def analyze_video(video_path):
 
     pose = mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=2,
+        model_complexity=1,
         smooth_landmarks=True,
         enable_segmentation=False,
         min_detection_confidence=0.5,
